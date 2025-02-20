@@ -2,17 +2,17 @@ import numpy as np
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
 
-
+# CHANGE TO pos, neg, mid
 
 class BookRecommender:
     def __init__(self):
         self.user_profiles = defaultdict(lambda: {
             "genre_weights": defaultdict(float),
             "embedding_vector": None,
-            "read_books": set(),
-            "rated_books": {}
+            "read_books": {}
         })
         self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array}}
+        self.valid_ratings = ['pos', 'neg', 'mid']
 
     def add_book(self, book_id, genres, embedding):
         """Registers a book with genres and precomputed embedding"""
@@ -31,9 +31,9 @@ class BookRecommender:
         genres = self.get_book_genres(book_id)
         weight_change = 0  # Default (neutral)
 
-        if rating == "up":
+        if rating == "pos":
             weight_change = 1  # Increase preference
-        elif rating == "down":
+        elif rating == "neg":
             weight_change = -1  # Decrease preference
 
         for genre in genres:
@@ -52,8 +52,12 @@ class BookRecommender:
 
     def process_user_rating(self, user_id, book_id, rating):
         """Handles user book interactions and updates preferences"""
-        self.user_profiles[user_id]["rated_books"][book_id] = rating
-        self.user_profiles[user_id]["read_books"].add(book_id)
+
+        if rating not in self.valid_ratings:
+            print("NOT A VALID RATING")
+            pass
+        
+        self.user_profiles[user_id]["read_books"][book_id] = rating
 
         self.update_genre_weights(user_id, book_id, rating)
         self.update_embedding_vector(user_id, book_id)
@@ -96,10 +100,12 @@ recommender.add_book("Star Wars", ["Sci-Fi", "Fantasy"], np.random.rand(300))
 recommender.add_book("The Fellowship of the Ring", ["Fantasy", "Adventure"], np.random.rand(300))
 recommender.add_book("Lessons in Chemistry", ["Romance"], np.random.rand(300))
 recommender.add_book("Oryx and Crake", ["Sci-Fi", "Romance"], np.random.rand(300))
+recommender.add_book("Ender's Game", ["Sci-Fi"], np.random.rand(300))
 
 # User reads & rates books
-recommender.process_user_rating("User1", "Dune", "up")
-recommender.process_user_rating("User1", "The Hobbit", "down")
+recommender.process_user_rating("User1", "Dune", "pos")
+recommender.process_user_rating("User1", "The Hobbit", "neg")
+recommender.process_user_rating("User1", "Lessons in Chemistry", "neg")
 
 # print User info
 print("User1: ", recommender.user_profiles["User1"])
