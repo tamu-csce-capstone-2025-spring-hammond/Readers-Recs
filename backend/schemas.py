@@ -19,7 +19,7 @@ class PyObjectId(str):
 # BOOKS SCHEMA
 # -----------------------------------------------
 class BookSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")  # ✅ Fixed `_id` issue
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     author: str
     title: str
     page_count: int
@@ -31,6 +31,7 @@ class BookSchema(BaseModel):
     language: str
     publisher: str
     tags: List[str]
+    embedding: Array[float] # TODO: fix, array of floats (use a List for Python's sake?)
 
     class Config:
         populate_by_name = True
@@ -43,7 +44,7 @@ class OAuthSchema(BaseModel):
     access_token: str
 
 class UserSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")  # ✅ Fixed `_id`
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     first_name: str
     last_name: str
     username: str
@@ -52,6 +53,9 @@ class UserSchema(BaseModel):
     interests: List[str]
     profile_image: str
     demographics: List[str]
+    genre_weights: defaultdict(float) # TODO: fix, dict is the name of the genre and its weight
+    embedding: Array[float] # TODO: fix, array of floats (use a List for Python's sake?)
+    genre_tags: List[str]
 
     class Config:
         populate_by_name = True
@@ -73,7 +77,7 @@ class UserBookshelfSchema(BaseModel):
 # POSTS SCHEMA
 # -----------------------------------------------
 class PostSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")  # ✅ Fixed `_id`
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     user_id: PyObjectId
     book_id: PyObjectId
     title: str
@@ -89,7 +93,7 @@ class PostSchema(BaseModel):
 # COMMENTS SCHEMA
 # -----------------------------------------------
 class CommentSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")  # ✅ Fixed `_id`
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     post_id: PyObjectId
     user_id: PyObjectId
     parent_comment_id: Optional[int] = None
@@ -104,7 +108,7 @@ class CommentSchema(BaseModel):
 # CHAT_MESSAGES SCHEMA
 # -----------------------------------------------
 class ChatMessageSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")  # ✅ Fixed `_id`
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     book_id: PyObjectId
     user_id: PyObjectId
     message_text: str
