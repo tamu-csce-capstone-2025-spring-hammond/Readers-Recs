@@ -1,0 +1,30 @@
+@import 'sass/colors';
+@import 'sass/fonts';
+
+body {
+    background-color: $-dark-green;
+}
+
+.navbar {
+    background-color: $-tan;
+}
+
+h1 {
+    font-family: 'Virust', sans-serif;
+    font-size: 40px;
+    color: $-tan;
+}
+
+h2 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: $-tan;
+}
+
+h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: $-tan;
+}
