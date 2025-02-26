@@ -4,6 +4,7 @@ from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from backend.schemas import BookSchema
 from backend.database import collections
+from pymongo.errors import PyMongoError
 
 books_collection = collections["Books"]
 
@@ -13,61 +14,34 @@ books_collection.create_index("isbn13", unique=True)
 
 def create_book(title, author, page_count, genre, tags, publication_date, isbn, isbn13, cover_image, language, publisher, summary):
     try:
-        # Ensure author and tags are lists
-        if not isinstance(author, list):
+        # Ensure 'author' and 'tags' are lists
+        if isinstance(author, str):
             author = [author]
-        if not isinstance(tags, list):
+        if isinstance(tags, str):
             tags = [tags]
 
-        # Convert date to datetime format
+        # Convert 'publication_date' to datetime
         publication_date = datetime.strptime(publication_date, "%Y-%m-%d")
 
         # Validate data using BookSchema
         book_data = BookSchema(
-            title = title,
-            author = author,
-            page_count = page_count,
-            genre = genre,
-            tags = tags,
-            publication_date = publication_date,
-            isbn = isbn,
-            isbn13 = isbn13,
-            cover_image = cover_image,
-            language = language,
-            publisher = publisher,
-            summary = summary,
-        )
-
-        # Insert into MongoDB
-        return str(books_collection.insert_one(book_data.dict(by_alias=True)).inserted_id)
-
-    except ValidationError as e:
-        return f"Schema Validation Error: {str(e)}"
-    except DuplicateKeyError:
-        return "Error: ISBN or ISBN-13 must be unique!"
-    except ValueError:
-        return "Error: Invalid date format. Use YYYY-MM-DD."
-
-def create_book_from_api(title, author, page_count, publication_date, isbn, isbn13, language, publisher,):
-    try:
-        publication_date = datetime.strptime(publication_date, "%Y-%m-%d")
-
-        book_data = BookSchema(
             title=title,
-            author=author if isinstance(author, list) else [author],
+            author=author,
             page_count=page_count,
-            genre="",
-            tags=[],
+            genre=genre,
+            tags=tags,
             publication_date=publication_date,
             isbn=isbn,
             isbn13=isbn13,
-            cover_image="",
+            cover_image=cover_image,
             language=language,
             publisher=publisher,
-            summary="",
+            summary=summary,
         )
 
-        return str(books_collection.insert_one(book_data.dict(by_alias=True)).inserted_id)
+        # Insert into MongoDB
+        result = books_collection.insert_one(book_data.model_dump(by_alias=True))
+        return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
@@ -75,10 +49,13 @@ def create_book_from_api(title, author, page_count, publication_date, isbn, isbn
         return "Error: ISBN or ISBN-13 must be unique!"
     except ValueError:
         return "Error: Invalid date format. Use YYYY-MM-DD."
-
+    
 def read_book_field(book_id, field):
     book = books_collection.find_one({"_id": ObjectId(book_id)}, {field: 1, "_id": 0})
-    return book[field] if book else "Book not found"
+    if book:
+        return book.get(field, "Field not found")
+    else:
+        return "Book not found"
 
 def read_book_by_identifier(identifier, value):
     # value can be isbn, isbn13, or title
@@ -131,18 +108,25 @@ def read_book_publisher(book_id):
 def read_book_summary(book_id):
     return read_book_field(book_id, "summary")
 
-def update_book_details(book_id, **kwargs):
+def read_book_genre_tags(book_id):
+    return read_book_field(book_id, "genre_tags")
+
+def update_book_details(book_id: str, **kwargs):
     try:
         book_id = ObjectId(book_id)
 
+        # Fetch the existing book
         existing_book = books_collection.find_one({"_id": book_id})
         if not existing_book:
             return "Error: Book not found."
 
+        # Merge existing data with new data
         updated_data = {**existing_book, **kwargs}
 
+        # Validate and serialize the updated data
         validated_data = BookSchema(**updated_data).model_dump(by_alias=True)
 
+        # Update the book in MongoDB
         books_collection.update_one({"_id": book_id}, {"$set": validated_data})
         return "Book updated successfully."
 
@@ -153,35 +137,81 @@ def update_book_details(book_id, **kwargs):
 
 # functions for adding and removing specific list elements
 def add_book_author(book_id, new_author):
-    """
-    Adds an author to the book's author list if it's not already present.
-    """
-    return books_collection.update_one(
-        {"_id": ObjectId(book_id)},
-        {"$addToSet": {"author": new_author}}
-    )
+    if not ObjectId.is_valid(book_id):
+        return "Invalid book ID."
+
+    if not new_author:
+        return "Author name cannot be empty."
+
+    try:
+        result = books_collection.update_one(
+            {"_id": ObjectId(book_id)},
+            {"$addToSet": {"author": new_author}}
+        )
+        if result.modified_count > 0:
+            return "Author added successfully."
+        else:
+            return "Author was already in the list or book not found."
+    except PyMongoError as e:
+        return f"An error occurred: {str(e)}"
 
 def add_book_tag(book_id, new_tag):
-    """
-    Adds a tag to the book's tag list if it's not already present.
-    """
-    return books_collection.update_one(
-        {"_id": ObjectId(book_id)},
-        {"$addToSet": {"tags": new_tag}}
-    )
+    if not ObjectId.is_valid(book_id):
+        return "Invalid book ID."
 
-def remove_book_tag(book_id, tag_to_remove):
-    return books_collection.update_one(
-        {"_id": ObjectId(book_id)},
-        {"$pull": {"tags": tag_to_remove}}
-    )
+    if not new_tag:
+        return "Tag cannot be empty."
+
+    try:
+        result = books_collection.update_one(
+            {"_id": ObjectId(book_id)},
+            {"$addToSet": {"tags": new_tag}}
+        )
+        if result.modified_count > 0:
+            return "Tag added successfully."
+        else:
+            return "Tag was already in the list or book not found."
+    except PyMongoError as e:
+        return f"An error occurred: {str(e)}"
 
 def remove_book_author(book_id, author_to_remove):
-    return books_collection.update_one(
-        {"_id": ObjectId(book_id)},
-        {"$pull": {"author": author_to_remove}}
-    )
-    
+    if not ObjectId.is_valid(book_id):
+        return "Invalid book ID."
+
+    if not author_to_remove:
+        return "Author name cannot be empty."
+
+    try:
+        result = books_collection.update_one(
+            {"_id": ObjectId(book_id)},
+            {"$pull": {"author": author_to_remove}}
+        )
+        if result.modified_count > 0:
+            return "Author removed successfully."
+        else:
+            return "Author not found in the list or book not found."
+    except PyMongoError as e:
+        return f"An error occurred: {str(e)}"
+
+def remove_book_tag(book_id, tag_to_remove):
+    if not ObjectId.is_valid(book_id):
+        return "Invalid book ID."
+
+    if not tag_to_remove:
+        return "Tag cannot be empty."
+
+    try:
+        result = books_collection.update_one(
+            {"_id": ObjectId(book_id)},
+            {"$pull": {"tags": tag_to_remove}}
+        )
+        if result.modified_count > 0:
+            return "Tag removed successfully."
+        else:
+            return "Tag not found in the list or book not found."
+    except PyMongoError as e:
+        return f"An error occurred: {str(e)}"
+ 
 def delete_book(book_id):
     try:
         book_id = ObjectId(book_id)

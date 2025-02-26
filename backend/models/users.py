@@ -13,10 +13,13 @@ users_collection.create_index("refresh_token", unique=True)
 
 def create_user(first_name, last_name, username, email_address, oauth, profile_image, interests, demographics):
     try:
-        # validate OAuth
+        # Validate OAuth
         oauth_data = OAuthSchema(**oauth)
 
-        # validate UserSchema
+        # Validate demographics
+        demographics = OAuthSchema(**demographics)
+
+        # Validate UserSchema
         user_data = UserSchema(
             first_name=first_name,
             last_name=last_name,
@@ -28,7 +31,7 @@ def create_user(first_name, last_name, username, email_address, oauth, profile_i
             demographics=demographics if isinstance(demographics, list) else [demographics]
         )
 
-        # insert
+        # Insert
         return str(users_collection.insert_one(user_data.model_dump(by_alias=True)).inserted_id)
 
     except ValidationError as e:
@@ -99,40 +102,40 @@ def update_user_settings(user_id, first_name=None, last_name=None, interests=Non
     except ValueError:
         return "Error: Invalid ObjectId format."
 
-def update_username(user_id, new_username):
+def update_username(user_id, new_username):# TODO: ask if this is necessary
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$set": {"username": new_username}}
     )
 
-def update_email(user_id, new_email):
+def update_email(user_id, new_email): # TODO: ask if this is necessary
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$set": {"email_address": new_email}}
     )
 
 def update_profile_image(user_id, new_image):
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$set": {"profile_image": new_image}}
     )
 
 def add_interest(user_id, new_interest):
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$addToSet": {"interests": new_interest}}
     )
 
 def remove_interest(user_id, interest):
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$pull": {"interests": interest}}
     )
 
 def add_demographic(user_id, new_demographic):
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
-        {"$addToSet": {"demographics": new_demographic}}  # Ensures no duplicates
+        {"_id": ObjectId(user_id)},
+        {"$addToSet": {"demographics": new_demographic}}
     )
 
 def update_demographics(user_id, new_demographics):
@@ -143,14 +146,13 @@ def update_demographics(user_id, new_demographics):
         return "Error: Each demographic must be a string."
 
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$set": {"demographics": new_demographics}}
     )
 
-
 def remove_demographic(user_id, demographic_to_remove):
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, 
+        {"_id": ObjectId(user_id)},
         {"$pull": {"demographics": demographic_to_remove}}
     )
 

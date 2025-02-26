@@ -59,7 +59,7 @@ class UserSchema(BaseModel):
     username: str = Field(default="username")
     email_address: EmailStr = Field(default="user@example.com")
     oauth: OAuthSchema = Field(default_factory=OAuthSchema)
-    interests: List[str] = Field(default_factory=list)
+    interests: List[str] = Field(default_factory=list) #TODO: discuss and remove?
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
     genre_weights: dict[str, float] = Field(default_factory=lambda: defaultdict(float))
