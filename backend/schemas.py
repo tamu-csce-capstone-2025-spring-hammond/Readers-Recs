@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, model_validator
 from typing import List, Optional
 from bson import ObjectId
 from datetime import datetime, date
+from collections import defaultdict
+import numpy as np
 
 # Custom ObjectId validator for MongoDB
 class PyObjectId(str):
@@ -19,19 +21,20 @@ class PyObjectId(str):
 # BOOKS SCHEMA
 # -----------------------------------------------
 class BookSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-    author: str
-    title: str
-    page_count: int
-    genre: str
-    publication_date: datetime
-    isbn: str
-    isbn13: str
-    cover_image: str
-    language: str
-    publisher: str
-    tags: List[str]
-    embedding: Array[float] # TODO: fix, array of floats (use a List for Python's sake?)
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    author: List[str] = Field(default_factory=list)
+    title: str = Field(default="Unknown Title")
+    page_count: int = Field(default=0)
+    genre: str = Field(default="Unknown Genre")
+    publication_date: datetime = Field(default_factory=datetime.now)
+    isbn: str = Field(default="000-0000000000")
+    isbn13: str = Field(default="0000000000000")
+    cover_image: str = Field(default="default_cover_image.jpg")
+    language: str = Field(default="eng")
+    publisher: str = Field(default="Unknown Publisher")
+    tags: List[str] = Field(default_factory=list)
+    genre_tags: List[str] = Field(default_factory=list)
+    embedding: List[float] = Field(default_factory=list)  # Adjusted to List[float]
 
     class Config:
         populate_by_name = True
@@ -40,22 +43,28 @@ class BookSchema(BaseModel):
 # USERS SCHEMA
 # -----------------------------------------------
 class OAuthSchema(BaseModel):
-    refresh_token: str
-    access_token: str
+    refresh_token: str = Field(default="default_refresh_token")
+    access_token: str = Field(default="default_access_token")
+
+class DemographicSchema(BaseModel): #TODO: update based on demographics decisions
+    gender: str = Field(default="Not Specified")
+    age: int = Field(default=0)
+    country: str = Field(default="Not Specified")
+    birthday: date = Field(default_factory=date.today)
 
 class UserSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-    first_name: str
-    last_name: str
-    username: str
-    email_address: EmailStr
-    oauth: OAuthSchema
-    interests: List[str]
-    profile_image: str
-    demographics: List[str]
-    genre_weights: defaultdict(float) # TODO: fix, dict is the name of the genre and its weight
-    embedding: Array[float] # TODO: fix, array of floats (use a List for Python's sake?)
-    genre_tags: List[str]
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    first_name: str = Field(default="First Name")
+    last_name: str = Field(default="Last Name")
+    username: str = Field(default="username")
+    email_address: EmailStr = Field(default="user@example.com")
+    oauth: OAuthSchema = Field(default_factory=OAuthSchema)
+    interests: List[str] = Field(default_factory=list)
+    profile_image: str = Field(default="default_profile_image.jpg")
+    demographics: DemographicSchema = Field(default_factory=DemographicSchema)
+    genre_weights: dict[str, float] = Field(default_factory=lambda: defaultdict(float))
+    embedding: List[float] = Field(default_factory=list)
+    genre_tags: List[str] = Field(default_factory=list)
 
     class Config:
         populate_by_name = True
@@ -64,27 +73,27 @@ class UserSchema(BaseModel):
 # USER_BOOKSHELF SCHEMA (Junction Table)
 # -----------------------------------------------
 class UserBookshelfSchema(BaseModel):
-    user_id: PyObjectId
-    book_id: PyObjectId
-    status: str = Field(..., pattern=r"(?i)^(To Read|Currently Reading|Read)$")
-    page_number: int
-    date_added: date
-    date_started: Optional[date] = None
-    date_finished: Optional[date] = None
-    rating: Optional[str] = Field(None, pattern=r"(?i)^(pos|neg|mid)$")
+    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    book_id: PyObjectId = Field(default_factory=PyObjectId)
+    status: str = Field(default="To Read", pattern=r"(?i)^(To Read|Currently Reading|Read)$")
+    page_number: int = Field(default=0)
+    date_added: date = Field(default_factory=date.today)
+    date_started: date = Field(default_factory=date.today)
+    date_finished: date = Field(default_factory=date.today)
+    rating: str = Field(default="mid", pattern=r"(?i)^(pos|neg|mid)$")
 
 # -----------------------------------------------
 # POSTS SCHEMA
 # -----------------------------------------------
 class PostSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-    user_id: PyObjectId
-    book_id: PyObjectId
-    title: str
-    post_text: str
-    date_posted: datetime
-    date_edited: datetime
-    Tags: List[str]
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    book_id: PyObjectId = Field(default_factory=PyObjectId)
+    title: str = Field(default="Untitled Post")
+    post_text: str = Field(default="No content provided.")
+    date_posted: datetime = Field(default_factory=datetime.now)
+    date_edited: datetime = Field(default_factory=datetime.now)
+    tags: List[str] = Field(default_factory=list)
 
     class Config:
         populate_by_name = True
@@ -93,13 +102,13 @@ class PostSchema(BaseModel):
 # COMMENTS SCHEMA
 # -----------------------------------------------
 class CommentSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-    post_id: PyObjectId
-    user_id: PyObjectId
-    parent_comment_id: Optional[int] = None
-    comment_text: str
-    date_posted: datetime
-    date_edited: datetime
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    post_id: PyObjectId = Field(default_factory=PyObjectId)
+    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    parent_comment_id: int = Field(default=0)
+    comment_text: str = Field(default="No content provided.")
+    date_posted: datetime = Field(default_factory=datetime.now)
+    date_edited: datetime = Field(default_factory=datetime.now)
 
     class Config:
         populate_by_name = True
@@ -108,12 +117,12 @@ class CommentSchema(BaseModel):
 # CHAT_MESSAGES SCHEMA
 # -----------------------------------------------
 class ChatMessageSchema(BaseModel):
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-    book_id: PyObjectId
-    user_id: PyObjectId
-    message_text: str
-    date_posted: datetime
-    date_edited: datetime
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    book_id: PyObjectId = Field(default_factory=PyObjectId)
+    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    message_text: str = Field(default="No content provided.")
+    date_posted: datetime = Field(default_factory=datetime.now)
+    date_edited: datetime = Field(default_factory=datetime.now)
 
     class Config:
         populate_by_name = True
