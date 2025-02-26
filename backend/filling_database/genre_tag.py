@@ -554,9 +554,12 @@ approved_genre_related = {
         "new adult literature", "young-adult crossover"
     },
     "religious fiction": {
-        "religious fiction","spiritual fiction","faith-based fiction","christian fiction","theological fiction",
-        "biblical fiction","sacred fiction","inspirational fiction","divine fiction",
-        "religious allegory","parabolic fiction","mystical fiction","esoteric fiction"
+        "religious fiction", "spiritual fiction", "faith-based fiction", "christian fiction", "theological fiction",
+        "biblical fiction", "sacred fiction", "inspirational fiction", "divine fiction",
+        "religious allegory", "parabolic fiction", "mystical fiction", "esoteric fiction",
+        "faith journey", "redemption", "salvation", "spiritual fiction", "christian narrative", "biblical fiction", 
+        "spiritual journey", "sacred fiction", "divine fiction", "inspirational fiction",
+        "mystical fiction", "religious allegory", "parabolic fiction", "grace", "miracle", "holiness", "heaven"
     },
     "young adult": {
         "young adult", "young adult fiction", "ya fiction", "teen fiction", "adolescent",
@@ -593,6 +596,7 @@ approved_genre_related = {
     "science fiction": {
         "science fiction", "sci-fi", "futuristic", "space opera", "time travel",
         "cyberpunk", "dystopian sci-fi", "tech fiction", "speculative science fiction", "futuristic technology"
+        ,"Star Trek"
     },
     "western": {
         "western", "cowboy", "frontier", "old west", "ranch tales",
@@ -1087,7 +1091,8 @@ approved_genre_related = {
     # -- Nonfiction Group --
     "Nonfiction": {
         "nonfiction", "non-fiction", "factual literature", "real stories", "documentary writing",
-        "true narrative", "actual accounts", "authentic literature", "literary nonfiction", "true stories"
+        "true narrative", "actual accounts", "authentic literature", "literary nonfiction", "true stories",
+        "psychology", "productivity", ""
     },
     "Academic": {
         "academic", "scholarly", "research", "university", "educational",
@@ -1200,6 +1205,7 @@ approved_genre_related = {
     "Cookbook": {
         "cookbook", "recipe book", "cooking guide", "culinary book", "kitchen manual",
         "recipe collection", "food recipes", "cookery book", "cooking manual", "culinary recipes"
+        ,"cook book"
     },
     "Art & Photography": {
         "art & photography", "visual art", "photography", "fine art", "creative imaging",
@@ -1214,8 +1220,8 @@ approved_genre_related = {
         "heritage", "timeline", "ancient history", "historical study", "historical narrative"
     },
     "Travel": {
-        "travel", "journey", "voyage", "exploration",
-        "trip", "expedition", "travelogue", "wandering", "touring"
+        "journey", "exploration", "wanderlust", "adventure", "road trip", "travelogue", 
+        "tour across", "tour through", "travel memoir", "voyage", "cross-country", "traveler", "destination", "backpacking", "sightseeing"
     },
     "Guide Book": {
         "guide book", "travel guide", "tour guide", "manual", "handbook",
@@ -1267,11 +1273,15 @@ approved_genre_related = {
     },
     "Religion & Spirituality": {
         "religion & spirituality", "spiritual", "faith", "sacred", "divine",
-        "religious", "spirituality", "holiness", "soulful", "spiritual journey"
+        "religious", "spirituality", "holiness", "soulful", "spiritual journey",
+        'theology', 'spirituality', 'doctrine', 'beliefs', 
+        'sermon', "prayer", "prayers", "preaching"
     },
     "Christian": {
-        "christian", "christianity", "faith-based", "gospel", "biblical",
-        "christian literature", "christian values", "religious christian", "christian faith", "christian narrative"
+        "theology", "spirituality", "doctrine", "sermon", "christian history", "spiritual growth", 
+        "christian values", "christian teachings", "christian philosophy", 
+        "christian devotional", "religious study", "devotional", 
+        "christian literature", "christian ethics"
     },
     "Islamic": {
         "islamic", "islam", "muslim", "quranic", "islamic culture",
@@ -1291,11 +1301,16 @@ approved_genre_related = {
     },
     "Parenting & Families": {
         "parenting & families", "parenting", "child-rearing", "family dynamics",
-        "parenthood", "family relationships", "domestic life", "family values", "parental guidance"
+        "parenthood", "family relationships", "domestic life", "family values", "parental guidance",
+        "pregnancy", "pregnancies"
     },
     "Science & Technology": {
         "science & technology", "STEM", "tech", "scientific", "technological",
-        "innovation", "research", "engineering", "digital", "future tech"
+        "innovation", "research", "engineering", "digital", "future tech",
+        "C++", "Java", "Python", "CSS", "HTML", "Coding", "C plus plus",
+        "Computer Programming", "Computer programs", "Computer science",
+        "Fortran", "JavaScript", "PHP", "Pascal", "SQL", "RUBY", "StarLogo",
+        "Unix", "Linux", "computer", "computer program"
     },
     "Nonfiction Children's": {
         "nonfiction children's", "kids nonfiction", "juvenile nonfiction", "children's factual", "childrens real stories",
@@ -1303,18 +1318,8 @@ approved_genre_related = {
     }
 }
 
+
 # --- Utility Functions for Matching and User Interaction ---
-
-def needs_confirmation(genres):
-    """
-    Returns True if any genre in the set indicates religious content,
-    i.e. if it contains 'christian', 'religion', or 'theological'.
-    """
-    for g in genres:
-        if "christian" in g or "religion" in g or "theological" in g:
-            return True
-    return False
-
 def matches_phrase(text, phrase):
     """Return True if 'phrase' appears as a distinct whole word in 'text'."""
     pattern = r"\b" + re.escape(phrase.lower()) + r"\b"
@@ -1331,7 +1336,7 @@ def aggregate_book_text(book):
         parts.append(book["genre"])
     return " ".join(parts)
 
-def remove_mixed_fiction_nonfiction(genres, summary):
+def remove_mixed_fiction_nonfiction(genres, summary, genre, tags):
     """
     Separates genres into fiction, nonfiction, and neutral.
     If both fiction and nonfiction are present, prompt the user to choose which branch to keep,
@@ -1421,22 +1426,35 @@ def remove_mixed_fiction_nonfiction(genres, summary):
     if unclassified:
         print("Warning: The following genres are unclassified and will be dropped:", unclassified)
     
-    print(f"Summary: {summary}\n")
-
+    tags_lower = [tag.lower() for tag in tags]
+    genre_lower = genre.lower()
+    
     # Decide which branch to keep.
     if fiction_genres and not nonfiction_genres:
         chosen_branch = fiction_genres
     elif nonfiction_genres and not fiction_genres:
         chosen_branch = nonfiction_genres
     elif fiction_genres and nonfiction_genres:
-        print("Mixed fiction and nonfiction detected.")
-        print("Fiction genres found:", fiction_genres)
-        print("Nonfiction genres found:", nonfiction_genres)
-        choice = input("Keep (F)iction or (N)onfiction? ").strip().lower()
-        if choice == "n":
-            chosen_branch = nonfiction_genres
-        else:
+        if ('fiction' in tags_lower or 'fiction' in genre_lower) and ('nonfiction' not in tags_lower and 'nonfiction' not in genre_lower and 'non-fiction' not in tags_lower and 'non-fiction' not in genre_lower):
             chosen_branch = fiction_genres
+            print("Only fiction-related tags/genres found. Removing nonfiction genres.")
+            nonfiction_genres = set()
+
+        # If only nonfiction is found, opt to remove fiction genres and set the branch to nonfiction
+        elif ('nonfiction' in tags_lower or 'nonfiction' in genre_lower) and ('fiction' not in tags_lower and 'fiction' not in genre_lower):
+            chosen_branch = nonfiction_genres
+            print("Only nonfiction-related tags/genres found. Removing fiction genres.")
+            fiction_genres = set()
+        else:
+            print(f"Summary: {summary}\n")
+            print("Mixed fiction and nonfiction detected.")
+            print("Fiction genres found:", fiction_genres)
+            print("Nonfiction genres found:", nonfiction_genres)
+            choice = input("Keep (F)iction or (N)onfiction? ").strip().lower()
+            if choice == "n":
+                chosen_branch = nonfiction_genres
+            else:
+                chosen_branch = fiction_genres
     else:
         chosen_branch = set()
 
@@ -1444,11 +1462,14 @@ def remove_mixed_fiction_nonfiction(genres, summary):
     return chosen_branch | neutral_genres
 
 def process_books():
-    # Retrieve only books where 'genre_tags' does not exist.
-    books = list(books_collection.find({"genre_tags": {"$exists": False}}))
-    # books = list(books_collection.find({"genre_tags": {"$exists": True}}))
-    approved_genres = {k.lower() for k in approved_genre_related.keys()}
-    
+    # Retrieve books where 'genre_tags' does not exist or is an empty list.
+    books = list(books_collection.find({
+        "$or": [
+            {"genre_tags": {"$exists": False}},
+            {"genre_tags": {"$size": 0}}
+        ]
+    }))
+
     for book in books:
         text = aggregate_book_text(book)
         matched_genres = set()
@@ -1458,194 +1479,40 @@ def process_books():
             for phrase in phrases:
                 if matches_phrase(text, phrase):
                     matched_genres.add(genre.lower())
-                    break
-        
+                    break  # Prevent duplicate checks
+
+        title = book.get("title", "Untitled")
+        author = book.get("author", "Unknown Author")
+        summary = book.get("summary", "No summary available.")
+        genre = book.get("genre", "")
+        tags = book.get("tags", [])
+        current_tags = {tag.lower() for tag in book.get("genre_tags", [])} if book.get("genre_tags") else set()
+
+        print(f"\nBook: {title}")
+        print(f"Author: {author}")
+        print("Current genre_tags:", current_tags)
+        print("Matched Approved Genres:", matched_genres)
+
         if matched_genres:
-            title = book.get("title", "Untitled")
-            author = book.get("author", "Unknown Author")
-            summary = book.get("summary", "No summary available.")
-            current_tags = {tag.lower() for tag in book.get("genre_tags", [])}
+            # Extend final genres with parent genres using dag_mapping.
+            extended_genres = set(matched_genres)
+            for genre in matched_genres:
+                if genre in dag_mapping:
+                    extended_genres |= set(dag_mapping[genre])
 
-            print(f"\nBook: {title}")
-            print(f"Author: {author}")
-            # print(f"Summary: {summary}\n")
-            print("Current genre_tags:", current_tags)
-            print("Matched Approved Genres:", matched_genres)
+            extended_genres = remove_mixed_fiction_nonfiction(extended_genres, summary, genre, tags)
+            new_tags = list(current_tags | extended_genres)
 
-            # No interactive review/edit is requested unless a religious genre is present later.
-            final_genres = matched_genres
-
-            if final_genres:
-                # Extend final genres with parent genres using dag_mapping.
-                extended_genres = set(final_genres)
-                for genre in final_genres:
-                    if genre in dag_mapping:
-                        extended_genres |= set(dag_mapping[genre])
-                
-                extended_genres = remove_mixed_fiction_nonfiction(extended_genres, summary)
-
-                # Ask for confirmation ONLY if a religious genre is present.
-                if needs_confirmation(extended_genres):
-                    print("Warning: Religious genre_tags are present:")
-                    religious_tags = {g for g in extended_genres if "christian" in g or "religion" in g or "theological" in g}
-                    print("Religious tags:", religious_tags)
-
-                    user_conf = input(
-                        "Confirm update with these religious genre_tags? (yes/no): ").strip().lower()
-
-                    if user_conf != "yes":
-                        print("Removing religious genre_tags and updating with remaining genres.")
-                        extended_genres = extended_genres - religious_tags
-
-                print("Final genre_tags to add (including parent genres):", extended_genres)
-                new_tags = list(current_tags | extended_genres)
-                books_collection.update_one({"_id": book["_id"]}, {"$set": {"genre_tags": new_tags}})
-                print("Book updated with new genre_tags.")
+            if new_tags:
+                books_collection.update_one(
+                    {"_id": book["_id"]},
+                    {"$set": {"genre_tags": new_tags}}
+                )
+                print("Book updated with new genre_tags:", new_tags)
             else:
-                print("No genre_tags selected for addition.")
-
-
-def get_user_final_genres(default_set, approved_genres):
-    """
-    Let the user review, remove, or add genres from the approved list.
-    Returns a set of final genres to update in genre_tags.
-    """
-    current = set(default_set)
-    while True:
-        print("\nCurrent proposed genre_tags:", current)
-        print("Options:")
-        print("  [C]onfirm final list")
-        print("  [A]dd genre(s) from approved list")
-        print("  [R]emove genre(s) from the current list")
-        print("  [E]dit list manually (comma-separated)")
-        choice = input("Your choice (C/A/R/E): ").strip().lower()
-        if choice == "c":
-            return current
-        elif choice == "a":
-            print("\nApproved Genres:")
-            for idx, genre in enumerate(sorted(approved_genres), 1):
-                print(f"  {idx}. {genre.title()}")
-            add_input = input("Enter genre names to add (comma-separated): ").strip()
-            additions = {s.strip().lower() for s in add_input.split(",") if s.strip()}
-            valid = additions & approved_genres
-            current |= valid
-        elif choice == "r":
-            rem_input = input("Enter genre names to remove (comma-separated): ").strip()
-            removals = {s.strip().lower() for s in rem_input.split(",") if s.strip()}
-            current -= removals
-        elif choice == "e":
-            edit_input = input("Enter your final list (comma-separated): ").strip()
-            edited = {s.strip().lower() for s in edit_input.split(",") if s.strip()}
-            current = edited & approved_genres
+                print("No new genre_tags to add. Skipping update.")
         else:
-            print("Invalid option. Please choose C, A, R, or E.")
+            print("No genre_tags detected for addition.")
 
-def resolve_genre_conflicts():
-    # Define known fiction and nonfiction tags.
-    # (You can expand these sets as needed to cover your taxonomy.)
-    fiction_set = {
-        "fiction", "science fiction", "fantasy", "historical fiction",
-        "literary fiction", "thriller", "mystery", "speculative fiction",
-        "graphic novel", "children's", "speculative fiction",
-        "sci-fi comedy / comic science fiction", "historical fantasy",
-        "science fantasy", "libertarian sci-fi", "social sci-fi", 
-        "children's fantasy", "isekai",  "dying earth", "planetary romance", 
-        "sword and planet", "superhero fiction", "romantic fantasy", 
-        "gothic fiction", "american gothic","southern gothic", "space gothic",
-        "suburban gothic", "tasmanian gothic","urban gothic","weird west", 
-        "adventure fantasy", "heroic fantasy", "lost world", "sword-and-sandal", 
-        "sword-and-sorcery", "sword-and-soul", "wuxia", "space western", 
-        "fantasy comedy", "fantasy", "high fantasy", "low fantasy",
-        "contemporary fantasy", "occult detective fiction", "paranormal romance",
-        "urban", "cozy fantasy", "dark", "fairytale", "gaslamp", "grimdark",
-        "hard fantasy", "magical realism", "mythic fantasy", "supernatural", 
-        "shemo fiction", "science fiction", "apocalyptic & post-apocalyptic fiction",
-        "christian science fiction", "comedy science fiction", "dystopian", 
-        "cyberpunk", "biopunk",  "dieselpunk", "japanese cyberpunk",
-        "nanopunk", "utopian", "feminist science fiction", "gothic science fiction",
-        "hard science fiction", "mecha science fiction", "soft science fiction", 
-        "space science fiction",  "spy-fi", "tech noir", "comedy horror", "zombie comedy", 
-        "horror", "body horror", "ghost stories", "japanese horror",
-        "korean horror", "lovecraftian horror", "monster literature", 
-        "werewolf fiction", "vampire literature", "psychological", "techno-horror", "zombie apocalypse",
-        "historical mystery", "alternate history", "nautical fiction",  "pirate novel", "contemporary fiction",
-        "philosophical fiction", "pop culture", "postmodern", "realist", "hysterical",
-        "literary fiction", "action & adventure", "theatre fiction", "crime & mystery", "mystery",
-        "cozy mystery",  "city mystery",  "detective", "gong'an",  "girl detective", "police procedural",
-        "whodunit", "noir", "nardic noir", "tart noir", "thriller & suspense", "conspiracy thriller",
-        "erotic thriller", "legal thriller", "financial thriller", "political thriller", "psychological thriller", "techno-thriller",
-        "historical romance", "regency romance", "romantic suspense", "western romance", "romance", "amish romance", "chivalric romance",
-        "contemporary romance", "gay romance", "lesbian romance", "erotic romance", "inspirational romance",
-        "paranormal romance", "time-travel romance", "young adult romance", "women's fiction", "lgbtq+",
-        "graphic novel", "short story", "folklore", "animal tale",
-        "fable",  "fairy tale", "ghost story", "legend", "myth", "parable", "personal narrative",
-        "urban legend", "satire", "political thriller",  "western", "northwestern", "action & adventure",
-        "robinsonade fiction",  "nautical fiction", "pirate fiction", "spy fiction", "spy-fi",
-        "subterranean fiction", "swashbuckler", "picaresque", "comedy", "burleque",
-        "parody", "metaparody", "surreal comedy", "tall tale", "tragicomedy"
-    }
-
-    fiction_set = {tag.lower() for tag in (
-        fiction_set
-    )}
-    
-    nonfiction_set = {
-        "nonfiction", "academic", "literature review", "scientific",
-        "technical report", "textbook", "thesis", "memoir & autobiography",
-        "memoir", "autobiography", "biography", "journalistic writing",
-        "arts journalism", "business journalism", "data-driven journalism",
-        "entertainment journalism", "environmental journalism", "fashion journalism",
-        "global journalism", "medical journalism", "political journalism",
-        "science journalism", "sports journalism", "technical journalism",
-        "trade journalism", "video games journalism", "world journalism",
-        "food & drink", "cookbook", "art & photography", "self-help", "history",
-        "travel", "guide book", "travel blog", "true crime", "reference work",
-        "dictionary", "thesaurus", "encyclopedia", "almanac", "atlas",
-        "humor", "essay", "position paper", "guide/how-to",
-        "religion & spirituality", "christian", "islamic", "theological", "visionary",
-        "humanities & social sciences", "parenting & families", "science & technology",
-        "nonfiction children's"
-    }
-    
-    # Retrieve books that already have genre_tags.
-    books = list(books_collection.find({"genre_tags": {"$exists": True}}))
-    
-    for book in books:
-        # Normalize tags to lowercase.
-        current_tags = {tag.lower() for tag in book.get("genre_tags", [])}
-        
-        # Count how many tags fall into each category.
-        fiction_count = sum(1 for tag in current_tags if tag in fiction_set)
-        nonfiction_count = sum(1 for tag in current_tags if tag in nonfiction_set)
-        
-        # Initialize updated_tags to current_tags.
-        updated_tags = set(current_tags)
-        
-        # Only prompt if there is a conflict (unequal counts).
-        if fiction_count != nonfiction_count:
-            print("\n------------------------------------")
-            print(f"Book: {book.get('title', 'Untitled')}")
-            print("Current genre_tags:", ", ".join(sorted(current_tags)))
-            print(f"Fiction count: {fiction_count}, Nonfiction count: {nonfiction_count}")
-            
-            # Ask the user which tags to keep.
-            user_choice = input("Which tags do you want to keep? (Enter 'fiction' or 'nonfiction'): ").strip().lower()
-            
-            if user_choice == "fiction" or user_choice == "f":
-                updated_tags = {tag for tag in updated_tags if tag not in nonfiction_set}
-            elif user_choice == "nonfiction" or user_choice == "n":
-                updated_tags = {tag for tag in updated_tags if tag not in fiction_set}
-            else:
-                print("Invalid choice. Skipping update for this book.")
-                continue  # Skip updating if the input is invalid.
-            
-            # Update the book only if changes occurred.
-            if updated_tags != current_tags:
-                books_collection.update_one({"_id": book["_id"]}, {"$set": {"genre_tags": list(updated_tags)}})
-                print(f"Updated '{book.get('title', 'Untitled')}' with genre_tags: {', '.join(sorted(updated_tags))}")
-        else:
-            print(f"\nNo conflict for '{book.get('title', 'Untitled')}'. (Tie: {fiction_count} vs {nonfiction_count})")
-
-# Run the conflict resolution function.
+# call the function
 process_books()
-# resolve_genre_conflicts()
