@@ -34,7 +34,7 @@ class BookSchema(BaseModel):
     publisher: str = Field(default="Unknown Publisher")
     tags: List[str] = Field(default_factory=list)
     genre_tags: List[str] = Field(default_factory=list)
-    embedding: List[float] = Field(default_factory=list)  # Adjusted to List[float]
+    embedding: List[float] = Field(default_factory=list)
 
     class Config:
         populate_by_name = True
@@ -62,7 +62,7 @@ class UserSchema(BaseModel):
     interests: List[str] = Field(default_factory=list) #TODO: discuss and remove?
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
-    genre_weights: dict[str, float] = Field(default_factory=lambda: defaultdict(float))
+    genre_weights: dict[str, float] = Field(default_factory=dict) # TODO: discuss. store as an object?
     embedding: List[float] = Field(default_factory=list)
     genre_tags: List[str] = Field(default_factory=list)
 
