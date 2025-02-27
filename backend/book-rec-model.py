@@ -1,123 +1,3 @@
-# import numpy as np
-# from collections import defaultdict
-# from sklearn.metrics.pairwise import cosine_similarity
-
-
-# # BOOK RECOMMENDER WITHOUT SUMMARY TOKENIZATION
-# class BookRecommender:
-#     def __init__(self):
-#         self.user_profiles = defaultdict(lambda: {
-#             "genre_weights": defaultdict(float),
-#             "embedding_vector": None,
-#             "read_books": {}
-#         })
-#         self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array}}
-#         self.valid_ratings = ['pos', 'neg', 'mid']
-
-#     def add_book(self, book_id, genres):
-#         """Registers a book with genres and precomputed embedding"""
-        
-#         # GENERATE EMBEDDING
-#         book_embedding = np.random.rand(300)
-#         self.book_data[book_id] = {"genres": genres, "embedding": np.array(book_embedding)}
-
-#     def get_book_genres(self, book_id):
-#         """Retrieves genres of a book"""
-#         return self.book_data.get(book_id, {}).get("genres", [])
-
-#     def get_book_embedding(self, book_id):
-#         """Retrieves embedding vector of a book"""
-#         return self.book_data.get(book_id, {}).get("embedding", np.zeros(300))  # Default 300-dim zero vector
-
-#     def update_genre_weights(self, user_id, book_id, rating):
-#         """Adjusts genre preferences based on user rating"""
-#         genres = self.get_book_genres(book_id)
-#         weight_change = 0  # Default (neutral)
-
-#         if rating == "pos":
-#             weight_change = 1  # Increase preference
-#         elif rating == "neg":
-#             weight_change = -1  # Decrease preference
-
-#         for genre in genres:
-#             self.user_profiles[user_id]["genre_weights"][genre] += weight_change
-
-#     def update_embedding_vector(self, user_id, book_id):
-#         """Updates the user's preference embedding by averaging book embeddings"""
-#         book_vector = self.get_book_embedding(book_id)
-
-#         if self.user_profiles[user_id]["embedding_vector"] is None:
-#             self.user_profiles[user_id]["embedding_vector"] = book_vector
-#         else:
-#             self.user_profiles[user_id]["embedding_vector"] = (
-#                 self.user_profiles[user_id]["embedding_vector"] + book_vector
-#             ) / 2
-
-#     def process_user_rating(self, user_id, book_id, rating):
-#         """Handles user book interactions and updates preferences"""
-
-#         if rating not in self.valid_ratings:
-#             print("NOT A VALID RATING")
-#             pass
-        
-#         self.user_profiles[user_id]["read_books"][book_id] = rating
-
-#         self.update_genre_weights(user_id, book_id, rating)
-#         self.update_embedding_vector(user_id, book_id)
-
-#     def recommend_books(self, user_id, top_n=3):
-#         """Recommends books based on user embedding similarity & genre preference"""
-#         user_vector = self.user_profiles[user_id]["embedding_vector"]
-
-#         ## UPDATE LATER based on initial diagnostic quiz
-#         if user_vector is None:
-#             return []
-
-#         book_scores = []
-#         for book_id, book_info in self.book_data.items():
-#             if book_id not in self.user_profiles[user_id]["read_books"]:  # Avoid recommending read books
-#                 book_vector = book_info["embedding"]
-#                 similarity = cosine_similarity(user_vector.reshape(1, -1), book_vector.reshape(1, -1))[0][0]
-
-#                 # Compute genre-based score
-#                 genre_score = sum(self.user_profiles[user_id]["genre_weights"].get(g, 0) for g in book_info["genres"])
-#                 final_score = similarity + genre_score  # Weighted sum
-
-#                 book_scores.append((book_id, final_score))
-
-#         # Sort and return top recommendations
-#         book_scores.sort(key=lambda x: x[1], reverse=True)
-#         return [book[0] for book in book_scores[:top_n]]
-
-
-# # Initialize the recommender system
-# recommender = BookRecommender()
-
-# # Add books to the system
-# recommender.add_book("Dune", ["Sci-Fi", "Adventure"]) # LIKED
-# recommender.add_book("The Hobbit", ["Fantasy", "Adventure"]) # DID NOT LIKE
-
-# recommender.add_book("Foundation", ["Sci-Fi"])
-# recommender.add_book("I, Robot", ["Sci-Fi", "Adventure"])
-# recommender.add_book("Star Wars", ["Sci-Fi", "Fantasy"])
-# recommender.add_book("The Fellowship of the Ring", ["Fantasy", "Adventure"])
-# recommender.add_book("Lessons in Chemistry", ["Romance"])
-# recommender.add_book("Oryx and Crake", ["Sci-Fi", "Romance"])
-# recommender.add_book("Ender's Game", ["Sci-Fi"])
-
-# # User reads & rates books
-# recommender.process_user_rating("User1", "Dune", "pos")
-# recommender.process_user_rating("User1", "The Hobbit", "neg")
-# recommender.process_user_rating("User1", "Lessons in Chemistry", "neg")
-
-# # print User info
-# print("User1: ", recommender.user_profiles["User1"])
-
-# # Get recommendations for the user
-# print("Recommended books:", recommender.recommend_books("User1"))
-
-
-
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from collections import defaultdict
@@ -140,13 +20,11 @@ class BookRecommender:
 
     def add_book(self, book_id, genres, summary):
         """Registers a book with genres and raw summary, processing summary into an embedding."""
-        book_embedding = np.random.rand(384)  # Replace with actual metadata-based embedding if needed
         summary_embedding = self.process_summary(summary)
         
         # Store book metadata
         self.book_data[book_id] = {
             "genres": genres,
-            "embedding": book_embedding,
             "summary": summary,
             "summary_embedding": summary_embedding
         }
@@ -161,15 +39,14 @@ class BookRecommender:
 
     def update_embedding_vector(self, user_id, book_id):
         """Updates the user's preference embedding by averaging book and summary embeddings"""
-        book_vector = self.book_data[book_id]["embedding"]
+    
         summary_vector = self.book_data[book_id]["summary_embedding"]
-        combined_vector = (book_vector + summary_vector) / 2
-
+        
         if self.user_profiles[user_id]["embedding_vector"] is None:
-            self.user_profiles[user_id]["embedding_vector"] = combined_vector
+            self.user_profiles[user_id]["embedding_vector"] = summary_vector
         else:
             self.user_profiles[user_id]["embedding_vector"] = (
-                self.user_profiles[user_id]["embedding_vector"] + combined_vector
+                self.user_profiles[user_id]["embedding_vector"] + summary_vector
             ) / 2
 
     def process_user_rating(self, user_id, book_id, rating):
@@ -181,7 +58,8 @@ class BookRecommender:
         self.user_profiles[user_id]["read_books"][book_id] = rating
 
         self.update_genre_weights(user_id, book_id, rating)
-        self.update_embedding_vector(user_id, book_id)
+        if rating == 'pos':
+            self.update_embedding_vector(user_id, book_id)
 
     def recommend_books(self, user_id, top_n=3):
         """Recommends books based on user embedding similarity & genre preference"""
@@ -193,10 +71,8 @@ class BookRecommender:
         book_scores = []
         for book_id, book_info in self.book_data.items():
             if book_id not in self.user_profiles[user_id]["read_books"]:
-                book_vector = book_info["embedding"]
                 summary_vector = book_info["summary_embedding"]
-                combined_vector = (book_vector + summary_vector) / 2
-                similarity = cosine_similarity(user_vector.reshape(1, -1), combined_vector.reshape(1, -1))[0][0]
+                similarity = cosine_similarity(user_vector.reshape(1, -1), summary_vector.reshape(1, -1))[0][0]
 
                 # Compute genre-based score
                 genre_score = sum(self.user_profiles[user_id]["genre_weights"].get(g, 0) for g in book_info["genres"])
@@ -231,13 +107,20 @@ if __name__ == "__main__":
     recommender.add_book("Frankenstein", ["horror", "classic"], "A scientist creates a living being, leading to tragic consequences.")
     recommender.add_book("Brave New World", ["dystopian", "sci-fi"], "A future society controls its citizens through genetic engineering and conditioning.")
     recommender.add_book("To Kill a Mockingbird", ["historical", "drama"], "A young girl learns about racism and justice in the American South.")
+    recommender.add_book("It", ["horror", "thriller", "classic"], "A group of childhood friends must confront a malevolent, shape-shifting entity. ")
     
     users = {"user1": [("1984", "pos"), ("Dune", "neg"), ("The Hobbit", "pos"), ("Moby Dick", "mid")],
              "user2": [("Pride and Prejudice", "pos"), ("The Name of the Wind", "pos"), ("Dracula", "neg"), ("Frankenstein", "pos")],
              "user3": [("The Road", "pos"), ("The Shining", "neg"), ("Dune", "pos"), ("Brave New World", "pos")],
-             "user4": [("Dracula", "pos"), ("The Hobbit", "neg"), ("1984", "pos"), ("To Kill a Mockingbird", "pos")]
+             "user4": [("Dracula", "pos"), ("The Hobbit", "neg"), ("1984", "pos"), ("To Kill a Mockingbird", "pos")],
+             "user5": [("Dracula", "pos"), ("The Shining", "pos")]
     }
-
+# 
+# Recommended books for user1: ['The Night Circus', 'The Name of the Wind', 'Dracula', 'Atomic Habits', 'Educated']
+# Recommended books for user2: ['The Hobbit', 'The Night Circus', 'Moby Dick', 'Dune', 'The Alchemist']
+# Recommended books for user3: ['The Hobbit', 'The Alchemist', 'To Kill a Mockingbird', 'The Name of the Wind', '1984']
+# Recommended books for user4: ['Frankenstein', 'The Road', 'The Shining', 'Pride and Prejudice', 'Brave New World']
+# 
     
     for user_id, ratings in users.items():
         for book_id, rating in ratings:
