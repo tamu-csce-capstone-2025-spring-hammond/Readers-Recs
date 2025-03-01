@@ -10,11 +10,11 @@ const Home = () => {
             <h1>Book RECOMMENDATIONS</h1>
             <div className='book-recommendation-covers'>
                 {/* Spots for 5 Book Covers Recommended GO HERE */}
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
+                <div className='book-cover'></div>
+                <div className='book-cover'></div>
+                <div className='book-cover'></div>
+                <div className='book-cover'></div>
+                <div className='book-cover'></div>
             </div>
         </div>
         {/* Bottom Section (Current Read, Last Finished, To-Read) */}
@@ -22,13 +22,13 @@ const Home = () => {
             {/* Current Read */}
             <div className='current-read-view'>
                 <h1>Current Read</h1>
-                <div className='current-read-cover'></div>
+                <div className='book-cover'></div>
                 <button className='text-button'>Update Progress</button>
             </div>
             {/* Last Finished */}
             <div className='last-finished-view'>
                 <h1>Last Finished</h1>
-                <div className='last-finished-cover'></div>
+                <div className='book-cover'></div>
                 <button className='text-button'>Go to Chat→</button>
             </div>
             {/* To-Read Shelf*/}
