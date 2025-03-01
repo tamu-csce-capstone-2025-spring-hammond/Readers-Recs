@@ -1,0 +1,4 @@
+pymongo>=4.11.1
+pydantic>=2.10.6
+numpy>=2.1.1
+
