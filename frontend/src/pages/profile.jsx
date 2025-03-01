@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from '../components/navbar';
 import "../style/style.css";
 
-const Home = () => {
+const Profile = () => {
     return (
     <div>
         <div className='profile-view'>
@@ -48,4 +48,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default Profile;
