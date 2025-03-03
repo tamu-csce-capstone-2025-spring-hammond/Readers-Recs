@@ -1,21 +1,25 @@
-from pydantic import BaseModel, Field, EmailStr, model_validator
-from typing import List, Optional
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from typing import List
 from bson import ObjectId
 from datetime import datetime, date
-from collections import defaultdict
-import numpy as np
+
+# from collections import defaultdict
+# import numpy as np
+
 
 # Custom ObjectId validator for MongoDB
 class PyObjectId(str):
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def __get_pydantic_core_schema__(cls, source, handler=None):
+        from pydantic_core.core_schema import no_info_plain_validator_function
 
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError(f"Invalid ObjectId: {v}")
-        return str(v)
+        def validate(v, info):
+            if not ObjectId.is_valid(v):
+                raise ValueError(f"Invalid ObjectId: {v}")
+            return str(v)
+
+        return no_info_plain_validator_function(validate)
+
 
 # -----------------------------------------------
 # BOOKS SCHEMA
@@ -33,11 +37,12 @@ class BookSchema(BaseModel):
     language: str = Field(default="eng")
     publisher: str = Field(default="Unknown Publisher")
     tags: List[str] = Field(default_factory=list)
+    summary: str = Field(default="No summary available.")
     genre_tags: List[str] = Field(default_factory=list)
     embedding: List[float] = Field(default_factory=list)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
+
 
 # -----------------------------------------------
 # USERS SCHEMA
@@ -46,11 +51,13 @@ class OAuthSchema(BaseModel):
     refresh_token: str = Field(default="default_refresh_token")
     access_token: str = Field(default="default_access_token")
 
-class DemographicSchema(BaseModel): #TODO: update based on demographics decisions
+
+class DemographicSchema(BaseModel):  # TODO: update based on demographics decisions
     gender: str = Field(default="Not Specified")
     age: int = Field(default=0)
     country: str = Field(default="Not Specified")
     birthday: date = Field(default_factory=date.today)
+
 
 class UserSchema(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -59,15 +66,17 @@ class UserSchema(BaseModel):
     username: str = Field(default="username")
     email_address: EmailStr = Field(default="user@example.com")
     oauth: OAuthSchema = Field(default_factory=OAuthSchema)
-    interests: List[str] = Field(default_factory=list) #TODO: discuss and remove?
+    interests: List[str] = Field(default_factory=list)
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
-    genre_weights: dict[str, float] = Field(default_factory=dict) # TODO: discuss. store as an object?
+    genre_weights: dict[str, float] = Field(
+        default_factory=dict
+    )  # TODO: discuss. store as an object?
     embedding: List[float] = Field(default_factory=list)
     genre_tags: List[str] = Field(default_factory=list)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
+
 
 # -----------------------------------------------
 # USER_BOOKSHELF SCHEMA (Junction Table)
@@ -75,12 +84,15 @@ class UserSchema(BaseModel):
 class UserBookshelfSchema(BaseModel):
     user_id: PyObjectId = Field(default_factory=PyObjectId)
     book_id: PyObjectId = Field(default_factory=PyObjectId)
-    status: str = Field(default="To Read", pattern=r"(?i)^(To Read|Currently Reading|Read)$")
+    status: str = Field(
+        default="To Read", pattern=r"(?i)^(To Read|Currently Reading|Read)$"
+    )
     page_number: int = Field(default=0)
     date_added: date = Field(default_factory=date.today)
     date_started: date = Field(default_factory=date.today)
     date_finished: date = Field(default_factory=date.today)
     rating: str = Field(default="mid", pattern=r"(?i)^(pos|neg|mid)$")
+
 
 # -----------------------------------------------
 # POSTS SCHEMA
@@ -95,8 +107,8 @@ class PostSchema(BaseModel):
     date_edited: datetime = Field(default_factory=datetime.now)
     tags: List[str] = Field(default_factory=list)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
+
 
 # -----------------------------------------------
 # COMMENTS SCHEMA
@@ -110,8 +122,8 @@ class CommentSchema(BaseModel):
     date_posted: datetime = Field(default_factory=datetime.now)
     date_edited: datetime = Field(default_factory=datetime.now)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
+
 
 # -----------------------------------------------
 # CHAT_MESSAGES SCHEMA
@@ -124,5 +136,4 @@ class ChatMessageSchema(BaseModel):
     date_posted: datetime = Field(default_factory=datetime.now)
     date_edited: datetime = Field(default_factory=datetime.now)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

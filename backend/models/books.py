@@ -12,7 +12,22 @@ books_collection = collections["Books"]
 books_collection.create_index("isbn", unique=True)
 books_collection.create_index("isbn13", unique=True)
 
-def create_book(title, author, page_count, genre, tags, publication_date, isbn, isbn13, cover_image, language, publisher, summary):
+
+def create_book(
+    title,
+    author,
+    page_count,
+    genre,
+    tags,
+    publication_date,
+    isbn,
+    isbn13,
+    cover_image,
+    language,
+    publisher,
+    summary,
+    genre_tags,
+):
     try:
         # Ensure 'author' and 'tags' are lists
         if isinstance(author, str):
@@ -37,6 +52,7 @@ def create_book(title, author, page_count, genre, tags, publication_date, isbn, 
             language=language,
             publisher=publisher,
             summary=summary,
+            genre_tags=genre_tags,
         )
 
         # Insert into MongoDB
@@ -49,13 +65,15 @@ def create_book(title, author, page_count, genre, tags, publication_date, isbn, 
         return "Error: ISBN or ISBN-13 must be unique!"
     except ValueError:
         return "Error: Invalid date format. Use YYYY-MM-DD."
-    
+
+
 def read_book_field(book_id, field):
     book = books_collection.find_one({"_id": ObjectId(book_id)}, {field: 1, "_id": 0})
     if book:
         return book.get(field, "Field not found")
     else:
         return "Book not found"
+
 
 def read_book_by_identifier(identifier, value):
     # value can be isbn, isbn13, or title
@@ -72,44 +90,58 @@ def read_book_by_identifier(identifier, value):
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
 
+
 def read_book_title(book_id):
     return read_book_field(book_id, "title")
+
 
 def read_book_author(book_id):
     return read_book_field(book_id, "author")
 
+
 def read_book_page_count(book_id):
     return read_book_field(book_id, "page_count")
+
 
 def read_book_genre(book_id):
     return read_book_field(book_id, "genre")
 
+
 def read_book_tags(book_id):
     return read_book_field(book_id, "tags")
+
 
 def read_book_publication_date(book_id):
     return read_book_field(book_id, "publication_date")
 
+
 def read_book_isbn(book_id):
     return read_book_field(book_id, "isbn")
+
 
 def read_book_isbn13(book_id):
     return read_book_field(book_id, "isbn13")
 
+
 def read_book_cover_image(book_id):
     return read_book_field(book_id, "cover_image")
+
 
 def read_book_language(book_id):
     return read_book_field(book_id, "language")
 
+
 def read_book_publisher(book_id):
     return read_book_field(book_id, "publisher")
+
 
 def read_book_summary(book_id):
     return read_book_field(book_id, "summary")
 
+
 def read_book_genre_tags(book_id):
     return read_book_field(book_id, "genre_tags")
+
 
 def update_book_details(book_id: str, **kwargs):
     try:
@@ -135,6 +167,7 @@ def update_book_details(book_id: str, **kwargs):
     except ValueError:
         return "Error: Invalid ObjectId format."
 
+
 # functions for adding and removing specific list elements
 def add_book_author(book_id, new_author):
     if not ObjectId.is_valid(book_id):
@@ -145,8 +178,7 @@ def add_book_author(book_id, new_author):
 
     try:
         result = books_collection.update_one(
-            {"_id": ObjectId(book_id)},
-            {"$addToSet": {"author": new_author}}
+            {"_id": ObjectId(book_id)}, {"$addToSet": {"author": new_author}}
         )
         if result.modified_count > 0:
             return "Author added successfully."
@@ -154,6 +186,7 @@ def add_book_author(book_id, new_author):
             return "Author was already in the list or book not found."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
+
 
 def add_book_tag(book_id, new_tag):
     if not ObjectId.is_valid(book_id):
@@ -164,8 +197,7 @@ def add_book_tag(book_id, new_tag):
 
     try:
         result = books_collection.update_one(
-            {"_id": ObjectId(book_id)},
-            {"$addToSet": {"tags": new_tag}}
+            {"_id": ObjectId(book_id)}, {"$addToSet": {"tags": new_tag}}
         )
         if result.modified_count > 0:
             return "Tag added successfully."
@@ -173,6 +205,7 @@ def add_book_tag(book_id, new_tag):
             return "Tag was already in the list or book not found."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
+
 
 def remove_book_author(book_id, author_to_remove):
     if not ObjectId.is_valid(book_id):
@@ -183,8 +216,7 @@ def remove_book_author(book_id, author_to_remove):
 
     try:
         result = books_collection.update_one(
-            {"_id": ObjectId(book_id)},
-            {"$pull": {"author": author_to_remove}}
+            {"_id": ObjectId(book_id)}, {"$pull": {"author": author_to_remove}}
         )
         if result.modified_count > 0:
             return "Author removed successfully."
@@ -192,6 +224,7 @@ def remove_book_author(book_id, author_to_remove):
             return "Author not found in the list or book not found."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
+
 
 def remove_book_tag(book_id, tag_to_remove):
     if not ObjectId.is_valid(book_id):
@@ -202,8 +235,7 @@ def remove_book_tag(book_id, tag_to_remove):
 
     try:
         result = books_collection.update_one(
-            {"_id": ObjectId(book_id)},
-            {"$pull": {"tags": tag_to_remove}}
+            {"_id": ObjectId(book_id)}, {"$pull": {"tags": tag_to_remove}}
         )
         if result.modified_count > 0:
             return "Tag removed successfully."
@@ -211,7 +243,8 @@ def remove_book_tag(book_id, tag_to_remove):
             return "Tag not found in the list or book not found."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
- 
+
+
 def delete_book(book_id):
     try:
         book_id = ObjectId(book_id)
@@ -224,7 +257,15 @@ def delete_book(book_id):
 
         # delete related records
         db["Posts"].delete_many({"book_id": book_id})
-        db["Comments"].delete_many({"post_id": {"$in": [post["_id"] for post in db["Posts"].find({"book_id": book_id})]}})
+        db["Comments"].delete_many(
+            {
+                "post_id": {
+                    "$in": [
+                        post["_id"] for post in db["Posts"].find({"book_id": book_id})
+                    ]
+                }
+            }
+        )
         db["Chat_Messages"].delete_many({"chat_id": book_id})
         db["User_Bookshelf"].delete_many({"book_id": book_id})
 
