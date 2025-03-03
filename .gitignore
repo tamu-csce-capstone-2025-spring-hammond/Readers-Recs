@@ -3,7 +3,7 @@
 backend/__pycache__
 backend/models/__pycache__
 tests/__pycache__
-
+.coverage
 
 # local environment files
 .env*.local
