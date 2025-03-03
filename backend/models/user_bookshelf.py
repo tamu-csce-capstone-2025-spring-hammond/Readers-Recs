@@ -1,15 +1,17 @@
 from bson.objectid import ObjectId
-from datetime import datetime
+
+# from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from backend.database import collections
-from backend.schemas import BookSchema, UserSchema, UserBookshelfSchema
+from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
 user_bookshelf_collection = collections["UserBookshelf"]
 
 user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
+
 
 def is_valid_object_id(collection_name, obj_id):
     """
@@ -21,13 +23,22 @@ def is_valid_object_id(collection_name, obj_id):
     collection = collections[collection_name]
     return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
+
 # user_id and book_id need to be verified
-def create_user_bookshelf(user_id, book_id, status="To Read", page_number=0, date_started=None, date_finished=None, rating="mid"):
+def create_user_bookshelf(
+    user_id,
+    book_id,
+    status="To Read",
+    page_number=0,
+    date_started=None,
+    date_finished=None,
+    rating="mid",
+):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        
+
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
@@ -39,11 +50,13 @@ def create_user_bookshelf(user_id, book_id, status="To Read", page_number=0, dat
             page_number=page_number,
             date_started=date_started,
             date_finished=date_finished,
-            rating=rating
+            rating=rating,
         )
 
         # Insert into MongoDB
-        result = user_bookshelf_collection.insert_one(user_bookshelf_data.dict(by_alias=True))
+        result = user_bookshelf_collection.insert_one(
+            user_bookshelf_data.dict(by_alias=True)
+        )
         return str(result.inserted_id)
 
     except ValidationError as e:
@@ -53,28 +66,13 @@ def create_user_bookshelf(user_id, book_id, status="To Read", page_number=0, dat
     except Exception as e:
         return f"Error: {str(e)}"
 
-def read_user_bookshelf(user_id, book_id):
-    try:
-        # Validate user_id and book_id
-        user_id = ObjectId(user_id)
-        book_id = ObjectId(book_id)
-
-        # Query the collection
-        user_bookshelf = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": book_id})
-        if user_bookshelf:
-            return UserBookshelfSchema(**user_bookshelf).model_dump(by_alias=True)
-        else:
-            return "UserBookshelf entry not found."
-
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 def update_user_bookshelf_status(user_id, book_id, new_status):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        
+
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
@@ -84,8 +82,7 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 
         # Update the status
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id},
-            {"$set": {"status": new_status}}
+            {"user_id": user_id, "book_id": book_id}, {"$set": {"status": new_status}}
         )
 
         if result.matched_count:
@@ -95,38 +92,15 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 
     except Exception as e:
         return f"Error: {str(e)}"
-    
-def update_user_bookshelf_status(user_id, book_id, new_status):
-    try:
-        # Validate user_id and book_id
-        user_id = ObjectId(user_id)
-        book_id = ObjectId(book_id)
 
-        # Validate new_status
-        if new_status not in ["To Read", "Currently Reading", "Read"]:
-            return "Error: Invalid status value."
-
-        # Update the status
-        result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id},
-            {"$set": {"status": new_status}}
-        )
-
-        if result.matched_count:
-            return "UserBookshelf status updated successfully."
-        else:
-            return "UserBookshelf entry not found."
-
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 def rate_book(user_id, book_id, new_rating):
-    #TODO: add check that book has been completed
+    # TODO: add check that book has been completed
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        
+
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
@@ -136,8 +110,7 @@ def rate_book(user_id, book_id, new_rating):
 
         # Update the rating
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id},
-            {"$set": {"rating": new_rating}}
+            {"user_id": user_id, "book_id": book_id}, {"$set": {"rating": new_rating}}
         )
 
         if result.matched_count:
@@ -148,17 +121,20 @@ def rate_book(user_id, book_id, new_rating):
     except Exception as e:
         return f"Error: {str(e)}"
 
+
 def delete_user_bookshelf(user_id, book_id):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        
+
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
         # Delete the document
-        result = user_bookshelf_collection.delete_one({"user_id": user_id, "book_id": book_id})
+        result = user_bookshelf_collection.delete_one(
+            {"user_id": user_id, "book_id": book_id}
+        )
         if result.deleted_count:
             return "UserBookshelf entry deleted successfully."
         else:
