@@ -18,5 +18,5 @@ collections = {
     "Comments": db["Comments"],
     "Posts": db["Posts"],
     "User_Bookshelf": db["User_Bookshelf"],
-    "Users": db["Users"]
+    "Users": db["Users"],
 }
