@@ -113,7 +113,8 @@ if __name__ == "__main__":
              "user2": [("Pride and Prejudice", "pos"), ("The Name of the Wind", "pos"), ("Dracula", "neg"), ("Frankenstein", "pos")],
              "user3": [("The Road", "pos"), ("The Shining", "neg"), ("Dune", "pos"), ("Brave New World", "pos")],
              "user4": [("Dracula", "pos"), ("The Hobbit", "neg"), ("1984", "pos"), ("To Kill a Mockingbird", "pos")],
-             "user5": [("Dracula", "pos"), ("The Shining", "pos")]
+             "user5": [("It", "pos")],
+             "user6": [("The Night Circus", "neg")]
     }
 # 
 # Recommended books for user1: ['The Night Circus', 'The Name of the Wind', 'Dracula', 'Atomic Habits', 'Educated']
