@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
 
-class BookRecommender:
+class BookRecommenderNoDB:
     def __init__(self):
         self.user_profiles = defaultdict(lambda: {
             "genre_weights": defaultdict(float),
@@ -85,7 +85,7 @@ class BookRecommender:
 
 
 if __name__ == "__main__":
-    recommender = BookRecommender()
+    recommender = BookRecommenderNoDB()
 
 
     recommender.add_book("1984", ["dystopian", "political fiction"], "A totalitarian regime uses surveillance and control to oppress its people.")
@@ -138,9 +138,9 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 
-from users import read_user_by_username, read_user, update_genre_weights, retrieve_genre_weights, update_embedding, retrieve_embedding
+from users import read_user, update_genre_weights, retrieve_genre_weights, update_embedding, retrieve_embedding
 
-class BookRecommenderwithDB:
+class BookRecommender:
     def __init__(self):
         # MongoDB setup - is this needed? 
         self.client = MongoClient("mongodb://localhost:27017/")
