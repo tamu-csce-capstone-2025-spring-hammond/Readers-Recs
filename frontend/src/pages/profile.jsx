@@ -136,9 +136,9 @@ const Profile = () => {
     username: "Username",
     memberSince: "Day Month, Year",
     currentRead: null,
-    progress: 30, // Example progress percentage
-    booksRead: Array(5).fill(null), // Changed to 5 to match image
-    toReadShelf: Array(6).fill(null) // Adjusted to match image
+    progress: 30,
+    booksRead: Array(5).fill(null), 
+    toReadShelf: Array(3).fill(null) 
   };
 
   return (
