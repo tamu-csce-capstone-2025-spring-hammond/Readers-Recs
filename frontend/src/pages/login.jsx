@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import '../style/login.scss';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,13 +10,13 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (email && password) {
-      console.log('Login attempted with:', email);
-      // In a real implementation, send these credentials to your server
-      // loginUser(email, password);
-    } else {
-      alert('Please enter both email and password');
-    }
+    // if (email && password) {
+    //   console.log('Login attempted with:', email);
+    //   // In a real implementation, send these credentials to your server
+    //   // loginUser(email, password);
+    // } else {
+    //   alert('Please enter both email and password');
+    // }
   };
 
   const handleGoogleLogin = () => {
@@ -24,6 +26,8 @@ const Login = () => {
     // googleAuth.signIn().then(handleSignIn).catch(handleError);
   };
 
+    const navigate = useNavigate();
+    
   return (
     <div className='login-page'>
     <div className="login-container">
@@ -60,7 +64,7 @@ const Login = () => {
             </div>
             <a href="#" className="forgot-password">Forgot password?</a>
           </div>
-          <button type="submit" className="login-button">
+          <button type="submit" className="login-button" onClick={() => navigate('/')}>
             Sign In
             <ArrowRight size={18} />
           </button>
