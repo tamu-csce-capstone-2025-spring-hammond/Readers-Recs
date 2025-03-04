@@ -42,8 +42,8 @@ def create_user(
                 demographics if isinstance(demographics, list) else [demographics]
             ),
             # ADDED EMPTY GENRE WEIGHTS & EMBEDDING TO INITIALIZE
-            genre_weights={},  
-            embedding=[], 
+            genre_weights={},
+            embedding=[],
         )
 
         # Insert
@@ -145,13 +145,15 @@ def update_genre_weights(user_id, new_genre_weights):
     """
     if not isinstance(new_genre_weights, dict):
         return "Error: Genre weights must be a dictionary."
-    
-    if not all(isinstance(k, str) and isinstance(v, (int, float)) for k, v in new_genre_weights.items()):
+
+    if not all(
+        isinstance(k, str) and isinstance(v, (int, float))
+        for k, v in new_genre_weights.items()
+    ):
         return "Error: Genre keys must be strings and weights must be numerical values."
-    
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": {"genre_weights": new_genre_weights}}
+        {"_id": ObjectId(user_id)}, {"$set": {"genre_weights": new_genre_weights}}
     )
 
 
@@ -168,12 +170,13 @@ def update_embedding(user_id, new_embedding):
     Update the user's embedding vector.
     Expects new_embedding to be an array (list) of floats.
     """
-    if not isinstance(new_embedding, list) or not all(isinstance(x, (int, float)) for x in new_embedding):
+    if not isinstance(new_embedding, list) or not all(
+        isinstance(x, (int, float)) for x in new_embedding
+    ):
         return "Error: Embedding must be a list of numerical values."
-    
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": {"embedding": new_embedding}}
+        {"_id": ObjectId(user_id)}, {"$set": {"embedding": new_embedding}}
     )
 
 
@@ -184,7 +187,9 @@ def retrieve_embedding(user_id):
     user = users_collection.find_one({"_id": ObjectId(user_id)}, {"embedding": 1})
     return user.get("embedding", []) if user else "Error: User not found."
 
+
 ### End of new update/retrieval functions
+
 
 def update_username(user_id, new_username):  # TODO: ask if this is necessary
     return users_collection.update_one(
