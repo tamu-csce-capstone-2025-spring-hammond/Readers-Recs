@@ -41,6 +41,9 @@ def create_user(
             demographics=(
                 demographics if isinstance(demographics, list) else [demographics]
             ),
+            # ADDED EMPTY GENRE WEIGHTS & EMBEDDING TO INITIALIZE
+            genre_weights={},  
+            embedding=[], 
         )
 
         # Insert
@@ -133,6 +136,55 @@ def update_user_settings(
     except ValueError:
         return "Error: Invalid ObjectId format."
 
+
+# ADDED FOR BOOK REC MODEL (anna)
+def update_genre_weights(user_id, new_genre_weights):
+    """
+    Update the genre weight dictionary for a user.
+    Expects new_genre_weights to be a dictionary with genre names as keys and float values as weights.
+    """
+    if not isinstance(new_genre_weights, dict):
+        return "Error: Genre weights must be a dictionary."
+    
+    if not all(isinstance(k, str) and isinstance(v, (int, float)) for k, v in new_genre_weights.items()):
+        return "Error: Genre keys must be strings and weights must be numerical values."
+    
+    return users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"genre_weights": new_genre_weights}}
+    )
+
+
+def retrieve_genre_weights(user_id):
+    """
+    Retrieve the genre weight dictionary for a user.
+    """
+    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"genre_weights": 1})
+    return user.get("genre_weights", {}) if user else "Error: User not found."
+
+
+def update_embedding(user_id, new_embedding):
+    """
+    Update the user's embedding vector.
+    Expects new_embedding to be an array (list) of floats.
+    """
+    if not isinstance(new_embedding, list) or not all(isinstance(x, (int, float)) for x in new_embedding):
+        return "Error: Embedding must be a list of numerical values."
+    
+    return users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"embedding": new_embedding}}
+    )
+
+
+def retrieve_embedding(user_id):
+    """
+    Retrieve the embedding vector for a user.
+    """
+    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"embedding": 1})
+    return user.get("embedding", []) if user else "Error: User not found."
+
+### End of new update/retrieval functions
 
 def update_username(user_id, new_username):  # TODO: ask if this is necessary
     return users_collection.update_one(

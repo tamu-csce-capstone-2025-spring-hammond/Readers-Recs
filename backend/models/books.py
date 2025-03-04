@@ -53,6 +53,7 @@ def create_book(
             publisher=publisher,
             summary=summary,
             genre_tags=genre_tags,
+            embedding=[],
         )
 
         # Insert into MongoDB

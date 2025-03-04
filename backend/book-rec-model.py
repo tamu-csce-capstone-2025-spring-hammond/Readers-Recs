@@ -10,7 +10,7 @@ class BookRecommender:
             "embedding_vector": None,
             "read_books": {}
         })
-        self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
+        # self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
         self.valid_ratings = ['pos', 'neg', 'mid']
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -130,3 +130,121 @@ if __name__ == "__main__":
     for user_id in users.keys():
         recommendations = recommender.recommend_books(user_id, top_n=5)
         print(f"Recommended books for {user_id}: {recommendations}")
+
+
+
+from books import read_book_field
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+
+
+from users import read_user_by_username, read_user, update_genre_weights, retrieve_genre_weights, update_embedding, retrieve_embedding
+
+class BookRecommenderwithDB:
+    def __init__(self):
+        # MongoDB setup - is this needed? 
+        self.client = MongoClient("mongodb://localhost:27017/")
+        self.db = self.client["book_recommendation"]
+        self.books_collection = self.db["books"]
+
+        self.valid_ratings = ['pos', 'neg', 'mid']
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    def process_summary(self, summary):
+        """Converts a book summary into an embedding representation using Sentence Transformers."""
+        return self.model.encode(summary)
+
+
+    # MAY NOT BE NEEDED
+    def add_book(self, book_id, genres, summary):
+        """Adds a book to DB with genres and embedding."""
+        summary_embedding = self.process_summary(summary)
+
+        self.books_collection.update_one(
+            {"_id": book_id},
+            {"$set": {
+                "genres": genres,
+                "summary": summary,
+                "summary_embedding": summary_embedding.tolist()
+            }},
+            upsert=True
+        )
+
+    def process_user_rating(self, user_id, book_id, rating):
+        """Handles user book interactions and updates preferences."""
+        if rating not in self.valid_ratings:
+            print("NOT A VALID RATING")
+            return
+
+        # Fetch or create user
+        user = read_user(user_id)
+        if not user:
+            # create_user(username=username, first_name="", last_name="", email_address="", oauth={}, profile_image="", interests=[], demographics={})
+            # user = get_user(username)
+            print("USER NOT FOUND")
+
+        book = self.books_collection.find_one({"_id": book_id})
+        if not book:
+            print(f"Book {book_id} not found in database.")
+            return
+
+        # genre weight update
+        genres = book["genres"]
+        weight_change = 1 if rating == "pos" else -1 if rating == "neg" else 0
+
+        
+        genre_weights = retrieve_genre_weights(user_id)
+        if isinstance(genre_weights, str):
+            genre_weights = {} # do not exist
+
+        
+        for genre in genres:
+            genre_weights[genre] = genre_weights.get(genre, 0) + weight_change
+
+        update_genre_weights(user_id, genre_weights)
+
+        # embedding update
+        if rating == "pos":
+            user_embedding = np.array(retrieve_embedding(user_id))
+            book_embedding = np.array(book["summary_embedding"])
+            
+            if user_embedding.size == 0:
+                new_embedding = book_embedding
+            else:
+                new_embedding = (user_embedding + book_embedding) / 2  # average - change later if needed?
+            
+            update_embedding(user_id, new_embedding.tolist())
+
+    def recommend_books(self, user_id, top_n=5):
+        """Recommends books based on user embedding similarity & genre preference."""
+        user = read_user(user_id)
+        if not user:
+            print("NO USER FOUND")
+            return []
+
+        user_vector = np.array(retrieve_embedding(user_id))
+        if user_vector.size == 0:
+            print("USER HAS NO READING HISTORY")
+            return []
+
+        books = list(self.books_collection.find({}))
+        book_scores = []
+
+        genre_weights = retrieve_genre_weights(user_id)
+        if isinstance(genre_weights, str):
+            genre_weights = {}  # Handle error case
+
+        for book in books:
+            book_id = book["_id"] # not sure if this is how it works?
+            summary_embedding = read_book_field(book_id, "embedding")
+            genres = read_book_field(book_id, "genres")
+            similarity = cosine_similarity(user_vector.reshape(1, -1), summary_embedding.reshape(1, -1))[0][0]
+
+            
+            genre_score = sum(genre_weights.get(g, 0) for g in genres)
+            final_score = similarity + genre_score  # Weighted sum
+
+            book_scores.append((book_id, final_score))
+
+        book_scores.sort(key=lambda x: x[1], reverse=True)
+        return [book[0] for book in book_scores[:top_n]]
