@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@font-face {
+  font-family: "Virust";
+  src: url("../assets/virust.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  background-color: #796855;
+}
+
+.navbar {
+  background-color: #EBE8E1;
+}
+
+h1 {
+  font-family: "Virust", sans-serif;
+  font-size: 40px;
+  color: #EBE8E1;
+}
+
+h2 {
+  font-family: "Open Sans", sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #EBE8E1;
+}
+
+h3 {
+  font-family: "Open Sans", sans-serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: #EBE8E1;
+}
+
+.navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #EBE8E1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+}
+.navbar .logo-button img {
+  width: 270px;
+  height: auto;
+  padding-right: 280px;
+}
+.navbar .nav-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #0E3523;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+.navbar .nav-button svg {
+  background-color: #2A664D;
+  padding: 14px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  fill: #2A664D;
+  stroke: #EBE8E1;
+  stroke-width: 1.5px;
+}
+.navbar .nav-button span {
+  margin-top: -12px;
+  font-size: 13px;
+  background-color: #EBE8E1;
+  padding: 2px 14px;
+}
+.navbar .nav-button:hover {
+  color: #7E4F34;
+}/*# sourceMappingURL=style.css.map */
