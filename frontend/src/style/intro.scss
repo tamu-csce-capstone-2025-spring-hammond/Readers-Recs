@@ -470,13 +470,13 @@ footer {
     }
 }
 
-.book:nth-child(1) { left: 10%; background-color: var(--brown); animation-duration: 18s; rotate: 10deg; }
+.book:nth-child(1) { left: 10%; background-color: var(--brown); animation-duration: 18s; rotate: 10deg; animation-delay: 0.2s;}
 .book:nth-child(2) { left: 25%; background-color: var(--dark-green); animation-duration: 22s; rotate: -6deg; }
-.book:nth-child(3) { left: 40%; background-color: (var(--green)); animation-duration: 19s;rotate: 12deg; }
+.book:nth-child(3) { left: 40%; background-color: (var(--green)); animation-duration: 19s;rotate: 12deg; animation-delay: 0.3s;}
 .book:nth-child(4) { left: 55%; background-color: var(--rust-brown);animation-duration: 21s; rotate: 17deg;}
-.book:nth-child(5) { left: 70%; background-color: var(--dark-green);animation-duration: 25s; rotate: 14deg;}
-.book:nth-child(6) { left: 85%; background-color: var(--rust-brown);animation-duration: 20s; rotate: -23deg;}
-.book:nth-child(7) { left: 95%; background-color: var(--green);animation-duration: 22s; rotate: 14deg; }
+.book:nth-child(5) { left: 70%; background-color: var(--dark-green);animation-duration: 25s; rotate: 14deg; animation-delay: 3s;}
+.book:nth-child(6) { left: 85%; background-color: var(--rust-brown);animation-duration: 20s; rotate: -23deg; animation-delay: 2s;}
+.book:nth-child(7) { left: 95%; background-color: var(--green);animation-duration: 22s; rotate: 14deg; animation-delay: 10s; }
 
 
 .fade-in {
