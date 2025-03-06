@@ -1,462 +1,590 @@
-// @import "./sass/colors"; 
-// @import "./sass/fonts";  
-
-// .home-container {   
-//   padding: 20px;   
-//   padding-bottom: 100px;   
-//   background-color: $-brown; 
-// }  
-
-// .section-title {   
-//   font-family: 'Virust', serif;   
-//   color: $-tan;   
-//   margin-bottom: 15px;
-//   text-align: center;
-//   font-size: 24px;
-//   text-transform: uppercase;
-//   letter-spacing: 2px;
-// }  
-
-// .recommendations-section {   
-//   background-color: $-dark-green;   
-//   padding: 20px;   
-//   border-radius: 5px;   
-//   margin-bottom: 20px;    
-  
-//   .section-title {     
-//     text-align: center;     
-//     font-size: 48px;   
-//   }    
-  
-//   .book-grid {     
-//     display: grid;     
-//     grid-template-columns: repeat(3, 1fr);     
-//     gap: 20px;
-//     padding: 10px 20px;      
-    
-//     @media (min-width: 768px) {       
-//       grid-template-columns: repeat(6, 1fr);     
-//     }   
-//   } 
-// }  
-
-// .reading-sections {   
-//   display: grid;   
-//   grid-template-columns: 1fr;   
-//   gap: 20px;    
-  
-//   @media (min-width: 768px) {     
-//     grid-template-columns: repeat(3, 1fr);   
-//   } 
-// }  
-
-// .reading-section {   
-//   background-color: $-dark-green;   
-//   padding: 15px 15px 25px;   
-//   border-radius: 5px;   
-//   display: flex;   
-//   flex-direction: column;
-//   align-items: center;    
-  
-//   .section-title {     
-//     font-size: 20px;
-//     margin-bottom: 20px;
-//   }    
-  
-//   &.to-read {     
-//     .book-grid {       
-//       display: grid;       
-//       grid-template-columns: repeat(3, 1fr);       
-//       gap: 20px;
-//       width: 100%;     
-//     }   
-//   } 
-// }  
-
-// .book-cover {   
-//   background-color: white;   
-//   aspect-ratio: 2/3;   
-//   border-radius: 0;   
-//   box-shadow: none;
-//   width: 100%;
-//   display: flex;   
-//   flex-direction: column;   
-//   align-items: center;   
-//   justify-content: center;   
-//   gap: 15px;        
-// } 
-
-// .current-book {   
-//   display: flex;   
-//   flex-direction: column;   
-//   align-items: center;   
-//   justify-content: center;   
-//   gap: 15px;    
-  
-//   .book-cover {     
-//     width: 80%;     
-//     max-width: 250px;
-//     height: 70%;   
-//   } 
-// }  
-
-// .last-finished {   
-//   display: flex;   
-//   flex-direction: column;   
-//   align-items: center;   
-//   justify-content: center;   
-//   gap: 15px;    
-  
-//   .book-cover {     
-//     width: 80%;     
-//     max-width: 250px;
-//     height: 70%;   
-//   } 
-// }  
-
-// .update-button, .chat-button {   
-//   background-color: $-brown;   
-//   color: white;   
-//   border: none;   
-//   border-radius: 5px;   
-//   padding: 12px 36px;   
-//   font-family: "Open Sans", sans-serif;   
-//   font-weight: 500;   
-//   cursor: pointer;   
-//   display: flex;   
-//   align-items: center;   
-//   justify-content: center;   
-//   text-decoration: none;   
-//   font-size: 18px;
-//   margin-top: 10px;    
-  
-//   &:hover {     
-//     background-color: $-rust-brown;   
-//   } 
-// }  
-
-// .more-link {   
-//   display: flex;   
-//   align-items: center;   
-//   justify-content: center;   
-//   background-color: $-brown;   
-//   border-radius: 50%;   
-//   width: 40px;   
-//   height: 40px;   
-//   position: absolute;
-//   right: 15px;
-//   bottom: 50%;
-//   transform: translateY(50%);    
-  
-//   svg {     
-//     color: white;   
-//   }    
-  
-//   &:hover {     
-//     background-color: $-rust-brown;   
-//   } 
-// }
-
-
-// .reading-sections {   
-//   display: grid;   
-//   grid-template-columns: 1fr;   
-//   gap: 20px;    
-  
-//   @media (min-width: 768px) {     
-//     grid-template-columns: 1fr 1fr 2fr;   
-//   } 
-// }
-
-// .reading-section {   
-//   background-color: $-dark-green;   
-//   padding: 15px 15px 25px;   
-//   border-radius: 5px;   
-//   display: flex;   
-//   flex-direction: column;
-//   align-items: center;    
-//   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-//   .section-title {     
-//     font-size: 20px;
-//     margin-bottom: 20px;
-//   }    
-  
-//   &.to-read {     
-//     .book-grid {       
-//       display: grid;       
-//       grid-template-columns: repeat(3, 1fr);       
-//       gap: 20px;
-//       width: 100%;     
-//     }   
-//   } 
-// }
-
-// .book-cover {   
-//   background-color: white;   
-//   aspect-ratio: 2/3;   
-//   border-radius: 0;   
-//   box-shadow: none;
-//   width: 100%;
-//   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-//   &:hover {
-//     transform: translateY(-5px);
-//     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-//   }
-// }
-
-// .recommendations-section { 
-//   .book-grid {
-//     .book-cover:hover {
-//       transform: translateY(-5px);
-//       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-//     }
-//   }
-// }
-
-// .to-read {
-//   .book-grid {
-//     .book-cover:hover {
-//       transform: translateY(-5px);
-//       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-//     }
-//   }
-// }
-
-
-
-
 @import "./sass/colors";
-@import "./sass/fonts";  
+@import "./sass/fonts";
 
-.home-container {   
-  padding: 30px;   
-  padding-bottom: 100px;   
-  background-color: $-brown; 
-}  
+// Brighter color variables
+$gradient-start: #ffffff;
+$gradient-end: #EBE8E1;
+$card-bg: rgba(255, 255, 255, 0.9);
+$card-shadow: rgba(0, 0, 0, 0.1);
+$text-primary: #2c3e50;
+$text-secondary: #5d6d7e;
+$accent-color: $-green;
+$hover-color: $-rust-brown;
+$tan-color: #EBE8E1;
+$white-color: #ffffff;
 
-.section-title {   
-  font-family: 'Virust', serif;   
-  color: $-tan;   
-  margin-bottom: 15px;
+// Animation keyframes
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Base page styles - more compact layout
+.page-wrapper {
+  min-height: 100vh;
+  position: relative; // Make sure the wrapper is positioned relative for the pseudo-element
+
+  // Content will be displayed normally here
+  &.loaded .home-container {
+    opacity: 1;
+  }
+
+  // Apply a pseudo-element to handle the background image and opacity
+  &::before {
+    content: '';
+    position: absolute; // Absolutely position the pseudo-element inside the wrapper
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../assets/libpic.jpg') no-repeat center center;
+    background-size: cover; // Make sure the image covers the entire background
+    opacity: 0.15; // Lower opacity to make the image more subtle
+    z-index: -1; // Ensure the image stays behind all content
+  }
+}
+
+
+.home-container {
+  padding: 45px;
+  padding-bottom: 100px; // Reduced padding
+  max-width: 2000px; // max-width: 1200px;
+  height:auto;
+  margin: 0 auto;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.page-header {
   text-align: center;
-  font-size: 24px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-weight: normal;
-}  
-
-.recommendations-section {   
-  background-color: $-dark-green;   
-  padding: 7px;   
-  border-radius: 5px;   
-  margin-bottom: 20px;    
+  margin-bottom: 15px; // Reduced margin
+  animation: fadeIn 0.6s ease forwards;
+  margin-top: -27px;
   
-  .section-title {     
-    text-align: center;     
-    font-size: 58px;
-    font-weight: normal;   
-  }    
+  .page-title {
+    font-family: 'Virust', serif;
+    font-size: 54px; 
+    color: $-green;
+    margin-bottom: -5px;
+    letter-spacing: 2.5px;
+  }
   
-  .book-grid {     
-    display: grid;     
-    grid-template-columns: repeat(3, 1fr);     
-    gap: 10px;
-    padding-left: 34px;  
-    
-    @media (min-width: 768px) {       
-      grid-template-columns: repeat(6, 1fr);     
-    }   
-    .book-cover {   
-      width: 90%;   
-      max-width: 280px;   
-      height: 80%;   
-    }
+  .welcome-text {
+    font-family: 'Open Sans', sans-serif;
+    color: $text-secondary;
+    font-size: 18px;
+    font-weight: 300;
+  }
+}
 
-    .book-cover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-  } 
-}  
-
-// .reading-sections {   
-//   display: grid;   
-//   grid-template-columns: 1fr;   
-//   gap: 20px;    
-  
-//   @media (min-width: 768px) {     
-//     grid-template-columns: repeat(3, 1fr);   
-//   } 
-// }  
-
-.reading-section {   
-  background-color: $-dark-green;   
-  padding: 15px 15px 25px;   
-  border-radius: 5px;   
-  display: flex;   
+// New grid layout to reduce scrolling
+.main-grid {
+  display: flex;
   flex-direction: column;
-  align-items: center;    
-  
-  .section-title {     
-    font-size: 32px;
-    margin-bottom: 20px;
-    font-weight: normal;
-  }    
-
-  
-  &.to-read {     
-    .book-grid {       
-      display: grid;       
-      grid-template-columns: repeat(3, 1fr);       
-      gap: 10px;
-      width: 100%;  
-      height: 400px;
-
-      .book-cover {   
-        width: 90%;   
-        max-width: 280px;   
-        height: 80%;   
-      }
-  
-      .book-cover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      }
-    }   
-  } 
-}  
-
-// .book-cover {   
-//   background-color: white;   
-//   aspect-ratio: 2/3;   
-//   border-radius: 0;   
-//   box-shadow: none;
-//   width: 80%;   
-//   max-width: 250px;   
-//   height: 70%;
-//   display: flex;   
-//   flex-direction: column;   
-//   align-items: center;   
-//   justify-content: center;   
-//   gap: 15px;   
-//   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-//   &:hover {
-//     transform: translateY(-5px);
-//     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-//   }
-// } 
-
-.current-book {   
-  display: flex;   
-  flex-direction: column;   
-  align-items: center;   
-  justify-content: center;  
-  gap: 10px;     
-  
-  .book-cover {   
-    width: 100% !important;  
-    max-width: 300px !important;    
-    height: 80% !important; 
-  }
-
-  .book-cover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  } 
-}  
-
-.last-finished {   
-  display: flex;   
-  flex-direction: column;   
-  align-items: center;   
-  justify-content: center;  
-  margin-top: -20px; 
-  gap: 10px;    
-  
-  .book-cover {     
-    width: 110%;     
-    max-width: 330px;
-    height: 70%;   
-  }
-
-  .book-cover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-}  
-
-.update-button, .chat-button {   
-  background-color: $-brown;   
-  color: white;   
-  border: none;   
-  border-radius: 5px;   
-  padding: 12px 36px;   
-  font-family: "Open Sans", sans-serif;   
-  font-weight: normal;   
-  cursor: pointer;   
-  display: flex;   
-  align-items: center;   
-  justify-content: center;   
-  text-decoration: none;   
-  font-size: 18px;
-  margin-top: 10px;    
-  
-  &:hover {     
-    background-color: $-rust-brown;   
-  } 
-}  
-
-.more-link {   
-  display: flex;   
-  align-items: center;   
-  justify-content: center;   
-  background-color: $-brown;   
-  border-radius: 50%;   
-  width: 40px;   
-  height: 40px;   
-  position: absolute;
-  right: 60px;
-  bottom: 300px;
-  
-  transform: translateY(50%);   
-  
-  svg {     
-    color: white;   
-  }    
-  
-  &:hover {     
-    background-color: $-rust-brown;   
-  } 
+  gap: 20px;
 }
 
-.reading-sections {   
-  display: grid;   
-  grid-template-columns: 1fr;   
-  gap: 20px;    
+.top-row, .bottom-row {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
   
-  @media (min-width: 768px) {     
-    grid-template-columns: 1fr 1fr 2fr;   
-  } 
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-// .reading-section {   
-//   background-color: $-dark-green;   
-//   padding: 15px 15px 25px;   
-//   border-radius: 5px;   
-//   display: flex;   
-//   flex-direction: column;
-//   align-items: center;    
-//   transition: transform 0.2s ease, box-shadow 0.2s ease;
+// Section styles - more compact
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; // Reduced margin
   
-//   .section-title {     
-//     font-size: 20px;
-//     margin-bottom: 20px;
-//     font-weight: normal;
-//   }    
-// }
+  .section-icon {
+    margin-right: 8px;
+    stroke: $accent-color;
+    stroke-width: 2px;
+    background-color: rgba($accent-color, 0.1);
+    padding: 6px;
+    border-radius: 50%;
+  }
+  
+  .section-title {
+    font-family: 'Virust', serif;
+    color: $-green;
+    font-size: 30px; // Smaller title
+    letter-spacing: 1.2px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
 
+// Recommendations section
+.recommendations-section {
+  background-color: $white-color;
+  border: 1px solid $tan-color;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.08),
+    0 3px 10px rgba(0, 0, 0, 0.04);
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+      0 15px 30px rgba(0, 0, 0, 0.12),
+      0 8px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  // 3D depth effect
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, $accent-color, $hover-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover::after {
+    opacity: 1;
+  }
+  
+  .book-cards-container {
+    overflow-x: auto;
+    padding: 5px 0 10px;
+    
+    // Hide scrollbar but keep functionality
+    scrollbar-width: none; // Firefox
+    &::-webkit-scrollbar {
+      display: none; // Chrome, Safari, Edge
+    }
+  }
+}
 
+// Book grid and cards - optimized sizing
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); // Smaller minimum size
+  gap: 15px;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+  
 
+  &.recommendations-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 15px;
+    padding: 5px 0;
+  }
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.6s ease forwards;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  &:hover {
+    transform: translateY(-5px) rotateZ(0.5deg);
+    
+    .book-cover {
+      box-shadow: 
+        0 10px 20px rgba(0, 0, 0, 0.15),
+        0 6px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .book-title {
+      color: $accent-color;
+    }
+  }
+  
+  .book-info {
+    padding: 6px 3px;
+    text-align: center;
+  }
+  
+  .book-title {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: $-brown;
+    margin: 5px 0 2px;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .book-author {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: rgba($-brown, 0.8);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.book-cover {
+  position: relative;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 15px rgba(0, 0, 0, 0.12),
+    0 4px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  max-width: 350px; // book cover size
+  
+  // Book spine effect
+  .book-spine {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  // Featured books have proportionally sized covers
+  &.featured-cover {
+    width: 100%;
+    max-width: 120px; // Smaller max size
+  }
+}
+
+// Individual reading section styling
+.reading-section {
+  background-color: $white-color;
+  border: 1px solid $tan-color;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.08),
+    0 3px 10px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  
+  &:hover, &.active {
+    transform: translateY(-3px);
+    box-shadow: 
+      0 15px 30px rgba(0, 0, 0, 0.12),
+      0 8px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  // 3D depth effect
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, $accent-color, $hover-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover::after, &.active::after {
+    opacity: 1;
+  }
+}
+
+// New horizontal layout for book display
+.book-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  padding: 5px;
+  
+  .book-info {
+    flex: 1;
+    text-align: left;
+    
+    .book-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: $-brown;
+      margin: 5px 0px px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .book-author {
+      font-size: 14px;
+      color: rgba($-brown, 0.8);
+      margin: 0 0 6px;
+    }
+  }
+}
+
+// Current book section
+.current-book {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  
+  .progress-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 10px;
+    
+    .progress-percentage {
+      font-size: 16px;
+      font-weight: 700;
+      color: $accent-color;
+    }
+    
+    .progress-text {
+      font-size: 12px;
+      color: rgba($-brown, 0.8);
+    }
+  }
+  
+  .reading-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .reading-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, $accent-color, $hover-color);
+    transition: width 1s ease-in-out;
+  }
+}
+
+// Last finished book section
+.last-finished {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  
+  .book-badge {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    background: $accent-color;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 30px;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  // Thumbs rating system
+  .rating-thumbs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    
+    .thumb-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: all 0.2s ease;
+      padding: 0;
+      margin: 0;
+      
+      svg {
+        stroke: $tan-color;
+        stroke-width: 2px;
+        height: 25px;
+        width: 25px;
+        margin-bottom: 2px;
+      }
+      
+      span {
+        font-size: 10px;
+        color: $-green;
+      }
+      
+      &.selected {
+        opacity: 1;
+        
+        &.thumbs-up svg {
+          stroke: #4CAF50; // Green for thumbs up
+          fill: rgba(#4CAF50, 0.2);
+        }
+        
+        &.thumbs-mid svg {
+          stroke: #FFC107; // Amber for neutral
+          fill: rgba(#FFC107, 0.2);
+        }
+        
+        &.thumbs-down svg {
+          stroke: #F44336; // Red for thumbs down
+          fill: rgba(#F44336, 0.2);
+        }
+      }
+      
+      &:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+      }
+    }
+  }
+}
+
+// To read shelf styling - more compact
+.to-read-shelf {
+  width: 100%;
+  
+  .to-read-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); // Smaller books
+    gap: 10px; // Reduced gap
+    width: 100%;
+    
+    @media (min-width: 992px) {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+  }
+  
+  .add-more-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 2/3;
+    border-radius: 8px;
+    border: 2px dashed rgba($tan-color, 0.5);
+    color: $tan-color;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    
+    .add-more-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      
+      svg {
+        stroke: $tan-color;
+        transition: all 0.3s ease;
+        height: 24px;
+        width: 24px;
+      }
+      
+      span {
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+    
+    &:hover {
+      background-color: rgba($tan-color, 0.1);
+      border-color: $tan-color;
+      transform: translateY(-3px);
+      
+      svg {
+        stroke: $accent-color;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+// Action buttons styling
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: $accent-color;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px; // Smaller padding
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 8px;
+  
+  &:hover {
+    background-color: $hover-color;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Make room for the floating navbar
+body {
+  padding-bottom: calc(60px + 2rem);
+}
+
+// More aggressive responsive adjustments
+@media (max-width: 767px) {
+  .home-container {
+    padding: 12px;
+    padding-bottom: 80px;
+  }
+  
+  .page-header .page-title {
+    font-size: 28px;
+  }
+  
+  .section-header .section-title {
+    font-size: 18px;
+  }
+  
+  .main-grid, .top-row, .bottom-row {
+    gap: 15px;
+  }
+  
+  .reading-section, .recommendations-section {
+    padding: 12px;
+  }
+  
+  .book-display {
+    gap: 10px;
+    
+    .book-info .book-title {
+      font-size: 14px;
+    }
+  }
+  
+  .action-button {
+    padding: 6px 14px;
+    font-size: 11px;
+  }
+}

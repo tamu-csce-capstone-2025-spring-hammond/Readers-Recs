@@ -1,111 +1,328 @@
-@import "./sass/colors";
-@import "./sass/fonts";
+//finsih styling search 
 
-.search-container {
-  padding: 40px;
-  padding-bottom: 140px;
-  background-color: $-brown
-}
 
-.search-bar {
-  background-color: $-dark-green;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
+// @import "./sass/colors";
+// @import "./sass/fonts";
 
-  .search-icon {
-    color: $-tan;
-    font-size: 24px;
-  }
+// // Enhanced SearchBooks styling with more refined colors and interactions
+// .search-container {
+//   padding: 40px;
+//   padding-bottom: 140px;
+//   // background: linear-gradient(135deg, $-brown, darken($-brown, 10%));
+//   min-height: 100vh;
+//   position: relative;
+  
+//   &::before {
+//     content: '';
+//     position: absolute; // Absolutely position the pseudo-element inside the wrapper
+//     top: 0;
+//     left: 0;
+//     width: 100%;
+//     height: 100%;
+//     background: url('../assets/libpic.jpg') no-repeat center center;
+//     background-size: cover; // Make sure the image covers the entire background
+//     opacity: 0.15; // Lower opacity to make the image more subtle
+//     z-index: -1; // Ensure the image stays behind all content
+//   }
+// }
 
-  input {
-    flex: 1;
-    background-color: transparent;
-    border: none;
-    color: $-tan;
-    font-family: "Open Sans", sans-serif;
-    font-size: 20px;
-    outline: none;
+// // Enhanced search bar with animation
+// .search-bar {
+//   background-color: rgba($-dark-green, 0.9);
+//   padding: 18px 24px;
+//   border-radius: 12px;
+//   margin-bottom: 30px;
+//   display: flex;
+//   align-items: center;
+//   gap: 15px;
+//   box-shadow: 
+//     0 10px 25px rgba(0, 0, 0, 0.15),
+//     0 5px 10px rgba(0, 0, 0, 0.12);
+//   transform: translateY(0);
+//   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+//   position: relative;
+//   z-index: 5;
+  
+//   &:focus-within {
+//     transform: translateY(-3px);
+//     box-shadow: 
+//       0 15px 35px rgba(0, 0, 0, 0.2),
+//       0 8px 15px rgba(0, 0, 0, 0.15);
+    
+//     // Subtle glow effect when focused
+//     &::after {
+//       opacity: 1;
+//     }
+    
+//     .search-icon {
+//       color: $-green;
+//     }
+//   }
+  
+//   // Bottom border glow effect
+//   &::after {
+//     content: '';
+//     position: absolute;
+//     bottom: 0;
+//     left: 0;
+//     width: 100%;
+//     height: 3px;
+//     background: linear-gradient(90deg, $-green, $-tan);
+//     border-radius: 0 0 12px 12px;
+//     opacity: 0;
+//     transition: opacity 0.3s ease;
+//   }
 
-    &::placeholder {
-      color: rgba($-tan, 0.7);
-      font-size: 18px;
-    }
-  }
-}
+//   .search-icon {
+//     color: rgba($-tan, 0.9);
+//     transition: color 0.3s ease;
+//   }
 
-.search-results {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+//   input {
+//     flex: 1;
+//     background-color: transparent;
+//     border: none;
+//     color: $-tan;
+//     font-family: "Virust", serif;
+//     font-size: 18px;
+//     outline: none;
+//     transition: all 0.3s ease;
+//     letter-spacing: 0.5px;
 
-.book-card {
-  background-color: $-dark-green;
-  border-radius: 8px;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 20px;
-  align-items: start;
-  position: relative;
-}
+//     &::placeholder {
+//       color: rgba($-tan, 0.6);
+//       font-size: 18px;
+//       font-family: "Open Sans", sans-serif;
+//       font-weight: 300;
+//     }
+//   }
+// }
 
-.book-cover {
-  background-color: white;
-  width: 200px; 
-  aspect-ratio: 2/3;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+// // Enhanced search results layout
+// .search-results {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 20px;
+//   position: relative;
+//   z-index: 1;
+// }
 
-.book-info {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+// // Beautiful book card design
+// .book-card {
+//   background-color: rgba($-dark-green, 0.85);
+//   border-radius: 16px;
+//   padding: 24px;
+//   display: grid;
+//   grid-template-columns: auto 1fr auto;
+//   gap: 25px;
+//   align-items: start;
+//   position: relative;
+//   box-shadow: 
+//     0 8px 20px rgba(0, 0, 0, 0.1),
+//     0 4px 8px rgba(0, 0, 0, 0.08);
+//   transform: translateY(0);
+//   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+//   overflow: hidden;
+  
+//   // Hover effects
+//   &:hover {
+//     transform: translateY(-5px);
+//     box-shadow: 
+//       0 15px 30px rgba(0, 0, 0, 0.15),
+//       0 8px 12px rgba(0, 0, 0, 0.1);
+    
+//     .book-cover {
+//       transform: rotateY(-8deg) translateX(5px);
+//       box-shadow: 
+//         -10px 10px 20px rgba(0, 0, 0, 0.3),
+//         -5px 5px 10px rgba(0, 0, 0, 0.2);
+//     }
+    
+//     .add-button {
+//       background-color: $-green;
+//       transform: scale(1.1);
+//     }
+    
+//     &::after {
+//       opacity: 1;
+//     }
+//   }
+  
+//   // Bottom border accent
+//   &::after {
+//     content: '';
+//     position: absolute;
+//     bottom: 0;
+//     left: 0;
+//     width: 100%;
+//     height: 4px;
+//     background: linear-gradient(90deg, $-green, $-rust-brown);
+//     opacity: 0;
+//     transition: opacity 0.3s ease;
+//   }
+// }
 
-.book-title {
-  font-family: "Open Sans", sans-serif;
-  font-weight: 800;
-  color: $-tan;
-  margin: 0;
-  font-size: 26px; 
-}
+// // Enhanced book cover with 3D effects
+// .book-cover {
+//   background-color: #fff;
+//   width: 140px;
+//   aspect-ratio: 2/3;
+//   border-radius: 8px;
+//   box-shadow: 
+//     0 8px 15px rgba(0, 0, 0, 0.15),
+//     0 4px 8px rgba(0, 0, 0, 0.1);
+//   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+//   position: relative;
+//   overflow: hidden;
+  
+//   // Book spine effect
+//   &::before {
+//     content: '';
+//     position: absolute;
+//     left: 0;
+//     top: 0;
+//     width: 6px;
+//     height: 100%;
+//     background: rgba(0, 0, 0, 0.15);
+//     border-right: 1px solid rgba(255, 255, 255, 0.2);
+//   }
+// }
 
-.book-author {
-  font-family: "Open Sans", sans-serif;
-  color: $-tan;
-  margin: 0;
-  font-size: 20px; 
-  font-style: italic;
-}
+// // Enhanced book information styling
+// .book-info {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 12px;
+// }
 
-.book-description {
-  font-family: "Open Sans", sans-serif;
-  color: $-tan;
-  margin: 8px 0 0;
-  font-size: 36px; 
-  line-height: 1.8; 
-}
+// .book-title {
+//   font-family: "Virust", serif;
+//   font-weight: 700;
+//   color: $-tan;
+//   margin: 0;
+//   font-size: 24px;
+//   letter-spacing: 0.5px;
+//   line-height: 1.2;
+//   position: relative;
+//   display: inline-block;
+  
+//   // Stylish underline effect
+//   &::after {
+//     content: '';
+//     position: absolute;
+//     bottom: -4px;
+//     left: 0;
+//     width: 40px;
+//     height: 2px;
+//     background-color: $-green;
+//     transition: width 0.3s ease;
+//   }
+  
+//   // Expand underline on parent hover
+//   .book-card:hover & {
+//     &::after {
+//       width: 100%;
+//     }
+//   }
+// }
 
-.add-button {
-  background-color: $-brown;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 45px; 
-  height: 45px; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 20px;
+// .book-author {
+//   font-family: "Open Sans", sans-serif;
+//   color: rgba($-tan, 0.85);
+//   margin: 0;
+//   font-size: 16px;
+//   font-style: italic;
+//   font-weight: 400;
+// }
 
-  &:hover {
-    background-color: $-rust-brown;
-  }
-}
+// .book-description {
+//   font-family: "Open Sans", sans-serif;
+//   color: rgba($-tan, 0.75);
+//   margin: 8px 0 0;
+//   font-size: 15px;
+//   line-height: 1.6;
+//   max-height: 0;
+//   overflow: hidden;
+//   transition: max-height 0.5s ease, margin 0.5s ease;
+  
+//   // Expand description on hover
+//   .book-card:hover & {
+//     max-height: 150px;
+//     margin-top: 12px;
+//   }
+// }
+
+// // Enhanced add button with animation
+// .add-button {
+//   background-color: $-brown;
+//   color: white;
+//   border: none;
+//   border-radius: 50%;
+//   width: 42px;
+//   height: 42px;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   cursor: pointer;
+//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+//   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+//   &:hover {
+//     background-color: $-green;
+//     transform: rotate(90deg);
+//   }
+  
+//   &:active {
+//     transform: scale(0.95);
+//   }
+// }
+
+// // No results message
+// .no-results {
+//   text-align: center;
+//   padding: 40px 0;
+//   color: $-tan;
+//   font-family: "Open Sans", sans-serif;
+  
+//   h3 {
+//     font-family: "Virust", serif;
+//     color: $-green;
+//     margin-bottom: 15px;
+//   }
+// }
+
+// // Responsive adjustments
+// @media (max-width: 768px) {
+//   .search-container {
+//     padding: 20px;
+//     padding-bottom: 120px;
+//   }
+  
+//   .book-card {
+//     grid-template-columns: 1fr;
+//     gap: 15px;
+//     padding: 16px;
+//   }
+  
+//   .book-cover {
+//     width: 100px;
+//     margin: 0 auto;
+//   }
+  
+//   .book-info {
+//     text-align: center;
+//   }
+  
+//   .book-title::after {
+//     left: 50%;
+//     transform: translateX(-50%);
+//   }
+  
+//   .add-button {
+//     position: absolute;
+//     top: 10px;
+//     right: 10px;
+//     width: 36px;
+//     height: 36px;
+//   }
+// }
