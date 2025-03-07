@@ -1,15 +1,15 @@
 from pymongo import errors
 from bson.objectid import ObjectId
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema
-from backend.database import collections
+from schemas import UserSchema, OAuthSchema
+from database import collections
 
 users_collection = collections["Users"]
 
 # require username, email address, and refresh tokens to be unique
-users_collection.create_index("username", unique=True)
-users_collection.create_index("email_address", unique=True)
-users_collection.create_index("refresh_token", unique=True)
+# users_collection.create_index("username", unique=True)
+# users_collection.create_index("email_address", unique=True)
+# users_collection.create_index("refresh_token", unique=True)
 
 
 def create_user(
@@ -184,8 +184,12 @@ def retrieve_embedding(user_id):
     """
     Retrieve the embedding vector for a user.
     """
-    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"embedding": 1})
-    return user.get("embedding", []) if user else "Error: User not found."
+    user = users_collection.find_one({"_id": user_id})
+    if user and "embedding" in user and user["embedding"]:  # Check if "embedding" exists and is not empty
+        return user["embedding"]
+    else:
+        return None
+
 
 
 ### End of new update/retrieval functions
