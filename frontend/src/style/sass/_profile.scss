@@ -1,0 +1,17 @@
+@import "./colors";
+@import "./fonts";
+
+.profile-container {
+  padding: 40px;
+  padding-bottom: 150px;
+  background-color: $-brown;
+}
+
+.profile-inner {
+  padding: 20px;
+  background-color: $-dark-green;
+  border-radius: 5px;
+  display: grid;
+  grid-template-rows: 30% 70%;
+  gap: 20px;
+}

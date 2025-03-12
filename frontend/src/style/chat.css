@@ -1,0 +1,193 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@font-face {
+  font-family: "Virust";
+  src: url("../../assets/virust.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+.chat-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 120px;
+}
+
+.chat-content {
+  display: flex;
+  height: calc(100vh - 100px);
+}
+
+.book-section {
+  width: 30%;
+  padding: 20px;
+  border-right: 1px solid rgba(224, 214, 200, 0.2);
+  background-color: #796855;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.book-cover {
+  background-color: white;
+  width: 330px;
+  aspect-ratio: 3/4;
+  border-radius: 3px;
+  border: 20px solid #0E3523;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+}
+
+.book-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.book-title {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  color: #e0d6c8;
+  margin: 0;
+  font-size: 36px;
+}
+
+.book-author {
+  font-family: "Open Sans", sans-serif;
+  color: #e0d6c8;
+  margin: 0;
+  font-size: 26px;
+  font-style: italic;
+}
+
+.book-description {
+  font-family: "Open Sans", sans-serif;
+  color: #e0d6c8;
+  margin: 5px 0 0;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.chat-section {
+  width: 70%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: #0E3523;
+}
+
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.message-container {
+  display: flex;
+  margin-bottom: 10px;
+  padding-top: 20px;
+}
+.message-container.mine {
+  justify-content: flex-end;
+}
+.message-container.mine .message {
+  background-color: #796855;
+  border: 2px solid #6a5b4a;
+}
+.message-container.other {
+  justify-content: flex-start;
+}
+.message-container.other .message {
+  background-color: #8b5939;
+  border: 2px solid #794d32;
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 10px;
+  max-width: 70%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.message .message-text {
+  color: white;
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  font-size: 22px;
+}
+.message .message-username {
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  margin: 5px 0 0;
+}
+
+.message-input-form {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding: 10px 0;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 25px;
+  border: none;
+  background-color: #e0d6c8;
+  font-family: "Open Sans", sans-serif;
+  font-size: 22px;
+  outline: none;
+  color: #0E3523;
+  min-height: 40px;
+}
+.message-input::-moz-placeholder {
+  color: rgba(14, 53, 35, 0.7);
+}
+.message-input::placeholder {
+  color: rgba(14, 53, 35, 0.7);
+}
+
+.send-button {
+  background-color: #2A664D;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.send-button svg {
+  color: white;
+}
+.send-button:hover {
+  background-color: #23543f;
+}
+
+@media (max-width: 768px) {
+  .chat-content {
+    flex-direction: column;
+  }
+  .book-section,
+  .chat-section {
+    width: 100%;
+  }
+  .book-section {
+    max-height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(224, 214, 200, 0.2);
+  }
+  .chat-section {
+    height: 70%;
+  }
+}/*# sourceMappingURL=chat.css.map */
