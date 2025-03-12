@@ -1,13 +1,5 @@
-@import "./sass/colors";
-@import "./sass/fonts";
-
-// Define the variables based on the screenshot
-$dark-green: #0E3523;
-$green: #2A664D;
-$tan: #e0d6c8;
-$rust-brown: #8b5939;
-$brown: #796855;
-$accent-blue: #39b4c5;
+@import "./colors";
+@import "./fonts";
 
 .chat-page-container {
   // background-color: $brown;
@@ -27,8 +19,8 @@ $accent-blue: #39b4c5;
 .book-section {
   width: 30%;
   padding: 20px;
-  border-right: 1px solid rgba($tan, 0.2);
-  background-color: $brown; 
+  border-right: 1px solid rgba($-tan, 0.2);
+  background-color: $-brown;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,7 +34,7 @@ $accent-blue: #39b4c5;
   width: 330px;
   aspect-ratio: 3/4;
   border-radius: 3px;
-  border: 20px solid $dark-green;
+  border: 20px solid $-dark-green;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px;
 }
@@ -57,14 +49,14 @@ $accent-blue: #39b4c5;
 .book-title {
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
-  color: $tan;
+  color: $-tan;
   margin: 0;
   font-size: 36px;
 }
 
 .book-author {
   font-family: "Open Sans", sans-serif;
-  color: $tan;
+  color: $-tan;
   margin: 0;
   font-size: 26px;
   font-style: italic;
@@ -72,7 +64,7 @@ $accent-blue: #39b4c5;
 
 .book-description {
   font-family: "Open Sans", sans-serif;
-  color: $tan;
+  color: $-tan;
   margin: 5px 0 0;
   font-size: 22px;
   line-height: 1.4;
@@ -84,7 +76,7 @@ $accent-blue: #39b4c5;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  background-color: $dark-green;
+  background-color: $-dark-green;
 }
 
 .chat-messages {
@@ -106,8 +98,8 @@ $accent-blue: #39b4c5;
     justify-content: flex-end;
     
     .message {
-      background-color: $brown;
-      border: 2px solid darken($brown, 5%);
+      background-color: $-brown;
+      border: 2px solid darken($-brown, 5%);
     }
   }
   
@@ -115,8 +107,8 @@ $accent-blue: #39b4c5;
     justify-content: flex-start;
     
     .message {
-      background-color: $rust-brown;
-      border: 2px solid darken($rust-brown, 5%);
+      background-color: $-rust-brown;
+      border: 2px solid darken($-rust-brown, 5%);
     }
   }
 }
@@ -154,20 +146,20 @@ $accent-blue: #39b4c5;
   padding: 12px 15px;
   border-radius: 25px;
   border: none;
-  background-color: $tan;
+  background-color: $-tan;
   font-family: "Open Sans", sans-serif;
   font-size: 22px;
   outline: none;
-  color: $dark-green;
+  color: $-dark-green;
   min-height: 40px;
   
   &::placeholder {
-    color: rgba($dark-green, 0.7);
+    color: rgba($-dark-green, 0.7);
   }
 }
 
 .send-button {
-  background-color: $green;
+  background-color: $-green;
   border: none;
   border-radius: 50%;
   width: 50px;
@@ -182,7 +174,7 @@ $accent-blue: #39b4c5;
   }
   
   &:hover {
-    background-color: darken($green, 5%);
+    background-color: darken($-green, 5%);
   }
 }
 
@@ -203,7 +195,7 @@ $accent-blue: #39b4c5;
     max-height: 30%;
     overflow-y: auto;
     border-right: none;
-    border-bottom: 1px solid rgba($tan, 0.2);
+    border-bottom: 1px solid rgba($-tan, 0.2);
   }
   
   .chat-section {

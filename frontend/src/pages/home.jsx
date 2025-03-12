@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import Navbar from '../components/navbar'; 
-import '../style/home.scss';
+import '../style/style.css';
 
 const Home = () => {
   const recommendations = Array(6).fill(null);

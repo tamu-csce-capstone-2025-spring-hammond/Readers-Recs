@@ -1,45 +1,40 @@
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
-@font-face {
-  font-family: "Virust";
-  src: url("../../assets/virust.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
+@import "./colors";
+@import "./fonts";
+
 .search-container {
   padding: 40px;
   padding-bottom: 140px;
-  background-color: #796855;
+  background-color: $-brown
 }
 
 .search-bar {
-  background-color: #0E3523;
+  background-color: $-dark-green;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 30px;
   display: flex;
   align-items: center;
   gap: 15px;
-}
-.search-bar .search-icon {
-  color: #EBE8E1;
-  font-size: 24px;
-}
-.search-bar input {
-  flex: 1;
-  background-color: transparent;
-  border: none;
-  color: #EBE8E1;
-  font-family: "Open Sans", sans-serif;
-  font-size: 20px;
-  outline: none;
-}
-.search-bar input::-moz-placeholder {
-  color: rgba(235, 232, 225, 0.7);
-  font-size: 18px;
-}
-.search-bar input::placeholder {
-  color: rgba(235, 232, 225, 0.7);
-  font-size: 18px;
+
+  .search-icon {
+    color: $-tan;
+    font-size: 24px;
+  }
+
+  input {
+    flex: 1;
+    background-color: transparent;
+    border: none;
+    color: $-tan;
+    font-family: "Open Sans", sans-serif;
+    font-size: 20px;
+    outline: none;
+
+    &::placeholder {
+      color: rgba($-tan, 0.7);
+      font-size: 18px;
+    }
+  }
 }
 
 .search-results {
@@ -49,7 +44,7 @@
 }
 
 .book-card {
-  background-color: #0E3523;
+  background-color: $-dark-green;
   border-radius: 8px;
   padding: 20px;
   display: grid;
@@ -61,7 +56,7 @@
 
 .book-cover {
   background-color: white;
-  width: 200px;
+  width: 200px; 
   aspect-ratio: 2/3;
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -76,40 +71,41 @@
 .book-title {
   font-family: "Open Sans", sans-serif;
   font-weight: 800;
-  color: #EBE8E1;
+  color: $-tan;
   margin: 0;
-  font-size: 26px;
+  font-size: 26px; 
 }
 
 .book-author {
   font-family: "Open Sans", sans-serif;
-  color: #EBE8E1;
+  color: $-tan;
   margin: 0;
-  font-size: 20px;
+  font-size: 20px; 
   font-style: italic;
 }
 
 .book-description {
   font-family: "Open Sans", sans-serif;
-  color: #EBE8E1;
+  color: $-tan;
   margin: 8px 0 0;
-  font-size: 36px;
-  line-height: 1.8;
+  font-size: 36px; 
+  line-height: 1.8; 
 }
 
 .add-button {
-  background-color: #796855;
+  background-color: $-brown;
   color: white;
   border: none;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 45px; 
+  height: 45px; 
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 20px;
+
+  &:hover {
+    background-color: $-rust-brown;
+  }
 }
-.add-button:hover {
-  background-color: #7E4F34;
-}/*# sourceMappingURL=searchBooks.css.map */

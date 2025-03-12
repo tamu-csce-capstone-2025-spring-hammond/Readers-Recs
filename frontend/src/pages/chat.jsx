@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, Search, BookOpen, User } from 'lucide-react';
 import Navbar from '../components/navbar';
-import '../style/chat.scss';
+import '../style/style.css';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
