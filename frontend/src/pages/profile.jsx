@@ -1,15 +1,15 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import '../style/style.css';
-import Navbar from '../components/navbar'; // Assuming your Navbar component path
+import Navbar from '../components/navbar';
 
 const Profile = () => {
   // Placeholder data
   const user = {
-    firstName: "FIRSTNAME",
-    lastName: "LASTNAME",
-    username: "Username",
-    memberSince: "Day Month, Year",
+    firstName: "Katelyn",
+    lastName: "Clark",
+    username: "mygblvsh",
+    memberSince: "March 12, 2025",
     currentRead: null,
     progress: 30,
     booksRead: Array(5).fill(null), 
@@ -24,7 +24,7 @@ const Profile = () => {
             <div className="profile-picture"></div>
             <div className="profile-info">
               <h1 className="profile-name">{user.firstName} {user.lastName}</h1>
-              <p className="profile-username">{user.username}</p>
+              <h2 className="profile-username">{user.username}</h2>
               <p className="profile-member-since">Member Since {user.memberSince}</p>
               <button className="edit-profile-button">Edit Profile</button>
             </div>

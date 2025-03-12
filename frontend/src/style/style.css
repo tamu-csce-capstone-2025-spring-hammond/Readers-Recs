@@ -84,22 +84,66 @@ h3 {
   padding: 2px 14px;
 }
 .navbar .nav-button:hover {
-  color: #7E4F34;
+  color: #7e4f34;
 }
 
 .profile-container {
   padding: 40px;
-  padding-bottom: 150px;
   background-color: #796855;
 }
 
 .profile-inner {
-  padding: 20px;
+  padding: 60px;
+  margin-bottom: 150px;
   background-color: #0E3523;
   border-radius: 5px;
   display: grid;
   grid-template-rows: 30% 70%;
   gap: 20px;
+}
+
+.profile-top {
+  display: flex;
+  gap: 40px;
+  color: #EBE8E1;
+}
+.profile-top .profile-picture {
+  background-color: #EBE8E1;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  display: block;
+}
+.profile-top .profile-info {
+  flex: 1;
+}
+.profile-top .profile-info .profile-name {
+  font-size: 48px;
+  margin-bottom: -10px;
+}
+.profile-top .profile-info .profile-member-since {
+  font-family: "Open Sans", sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  margin-top: 5px;
+}
+.profile-top .profile-info .edit-profile-button {
+  background-color: #7e4f34;
+  color: #EBE8E1;
+  font-family: "Open Sans", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  padding: 10px 25px;
+  border-radius: 5px;
+  margin-top: 15px;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+.profile-top .profile-info .edit-profile-button:hover, .profile-top .profile-info .edit-profile-button:focus {
+  background-color: #582f17;
 }
 
 .chat-page-container {
@@ -203,7 +247,7 @@ h3 {
   justify-content: flex-start;
 }
 .message-container.other .message {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   border: 2px solid #6c442d;
 }
 
@@ -419,7 +463,7 @@ h3 {
   margin-top: 10px;
 }
 .update-button:hover, .chat-button:hover {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
 }
 
 .more-link {
@@ -439,7 +483,7 @@ h3 {
   color: white;
 }
 .more-link:hover {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
 }
 
 .reading-sections {
@@ -512,7 +556,7 @@ nav {
 }
 
 .cta-button {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   color: white;
   border: none;
   padding: 1.5rem 2.1rem;
@@ -719,7 +763,7 @@ nav {
 
 .cta {
   padding: 5rem 2rem;
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   color: white;
   text-align: center;
 }
@@ -748,7 +792,7 @@ nav {
 
 .cta-primary {
   background-color: white;
-  color: #7E4F34;
+  color: #7e4f34;
   padding: 0.8rem 2rem;
   border-radius: 50px;
   font-weight: bold;
@@ -891,7 +935,7 @@ footer {
 
 .book:nth-child(4) {
   left: 55%;
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   animation-duration: 21s;
   rotate: 17deg;
 }
@@ -906,7 +950,7 @@ footer {
 
 .book:nth-child(6) {
   left: 85%;
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   animation-duration: 20s;
   rotate: -23deg;
   animation-delay: 2s;
@@ -995,7 +1039,7 @@ footer {
 }
 
 .get-started-nav {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
   color: white;
   border: none;
   padding: 0.5rem 1.5rem;
@@ -1171,7 +1215,7 @@ footer {
   color: #666;
 }
 .signup-link a {
-  color: #7E4F34;
+  color: #7e4f34;
   text-decoration: none;
   font-weight: 600;
 }
@@ -1285,5 +1329,5 @@ footer {
   font-size: 20px;
 }
 .add-button:hover {
-  background-color: #7E4F34;
+  background-color: #7e4f34;
 }/*# sourceMappingURL=style.css.map */
