@@ -62,7 +62,7 @@ h3 {
   flex-direction: column;
   align-items: center;
   text-decoration: none;
-  color: #0E3523;
+  color: #0e3523;
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
   font-size: 14px;
@@ -88,14 +88,14 @@ h3 {
 }
 
 .profile-container {
-  padding: 40px;
+  padding: 25px 40px 15px 40px;
   background-color: #796855;
 }
 
 .profile-inner {
-  padding: 60px;
+  padding: 40px 60px 20px 60px;
   margin-bottom: 150px;
-  background-color: #0E3523;
+  background-color: #0e3523;
   border-radius: 5px;
   display: grid;
   grid-template-rows: 30% 70%;
@@ -146,6 +146,59 @@ h3 {
   background-color: #582f17;
 }
 
+.profile-bottom {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+}
+.profile-bottom .section-title.current-read-title {
+  color: #2A664D;
+  font-family: "Virust", sans-serif;
+  font-size: 40px;
+  line-height: 85%;
+}
+.profile-bottom .section-title.shelves {
+  color: #2A664D;
+  font-family: "Open Sans", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: left;
+}
+.profile-bottom .current-read-section {
+  background-color: #EBE8E1;
+  width: 330px;
+  height: 420px;
+  padding: 30px;
+  border-radius: 5px;
+}
+.profile-bottom .profile-bottom-right {
+  flex: 1;
+  background-color: #EBE8E1;
+  padding: 30px;
+  border-radius: 5px;
+  height: 420px;
+}
+.profile-bottom .profile-bottom-right .books-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.book-cover-profile {
+  height: 120px;
+  width: 90px;
+  background-color: white;
+  box-shadow: 5px 0 10px rgba(4, 53, 35, 0.3);
+  margin-top: -40px;
+  margin-bottom: 30px;
+}
+
+.book-cover-profile.current {
+  height: 230px;
+  width: 180px;
+  margin-top: -20px;
+  margin-bottom: 30px;
+}
+
 .chat-page-container {
   min-height: 100vh;
   display: flex;
@@ -177,7 +230,7 @@ h3 {
   width: 330px;
   aspect-ratio: 3/4;
   border-radius: 3px;
-  border: 20px solid #0E3523;
+  border: 20px solid #0e3523;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px;
 }
@@ -218,7 +271,7 @@ h3 {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  background-color: #0E3523;
+  background-color: #0e3523;
 }
 
 .chat-messages {
@@ -286,7 +339,7 @@ h3 {
   font-family: "Open Sans", sans-serif;
   font-size: 22px;
   outline: none;
-  color: #0E3523;
+  color: #0e3523;
   min-height: 40px;
 }
 .message-input::-moz-placeholder {
@@ -350,7 +403,7 @@ h3 {
 }
 
 .recommendations-section {
-  background-color: #0E3523;
+  background-color: #0e3523;
   padding: 7px;
   border-radius: 5px;
   margin-bottom: 20px;
@@ -382,7 +435,7 @@ h3 {
 }
 
 .reading-section {
-  background-color: #0E3523;
+  background-color: #0e3523;
   padding: 15px 15px 25px;
   border-radius: 5px;
   display: flex;
@@ -506,7 +559,7 @@ h3 {
 
 body {
   background-color: #EBE8E1;
-  color: #0E3523;
+  color: #0e3523;
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -605,7 +658,7 @@ nav {
 .hero-title {
   font-size: 4.5rem;
   margin-bottom: 1rem;
-  color: #0E3523;
+  color: #0e3523;
   font-family: Virust, sans-serif;
 }
 
@@ -620,7 +673,7 @@ nav {
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  color: #0E3523;
+  color: #0e3523;
   font-size: 2rem;
   animation: bounce 2s infinite;
   display: flex;
@@ -826,7 +879,7 @@ nav {
 }
 
 footer {
-  background-color: #0E3523;
+  background-color: #0e3523;
   color: #EBE8E1;
   padding: 2rem;
   text-align: center;
@@ -920,7 +973,7 @@ footer {
 
 .book:nth-child(2) {
   left: 25%;
-  background-color: #0E3523;
+  background-color: #0e3523;
   animation-duration: 22s;
   rotate: -6deg;
 }
@@ -942,7 +995,7 @@ footer {
 
 .book:nth-child(5) {
   left: 70%;
-  background-color: #0E3523;
+  background-color: #0e3523;
   animation-duration: 25s;
   rotate: 14deg;
   animation-delay: 3s;
@@ -1076,7 +1129,7 @@ footer {
 }
 
 .login-header {
-  background-color: #0E3523;
+  background-color: #0e3523;
   color: white;
   padding: 30px 20px;
   text-align: center;
@@ -1104,7 +1157,7 @@ footer {
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #0E3523;
+  color: #0e3523;
   font-weight: 600;
 }
 .form-group .input-wrapper {
@@ -1160,7 +1213,7 @@ footer {
   transition: background-color 0.3s;
 }
 .login-button:hover {
-  background-color: #0E3523;
+  background-color: #0e3523;
 }
 
 .divider {
@@ -1230,7 +1283,7 @@ footer {
 }
 
 .search-bar {
-  background-color: #0E3523;
+  background-color: #0e3523;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 30px;
@@ -1267,7 +1320,7 @@ footer {
 }
 
 .book-card {
-  background-color: #0E3523;
+  background-color: #0e3523;
   border-radius: 8px;
   padding: 20px;
   display: grid;

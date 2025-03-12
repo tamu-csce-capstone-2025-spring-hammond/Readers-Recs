@@ -1,10 +1,10 @@
 .profile-container {
-  padding: 40px;
+  padding: 25px 40px 15px 40px;
   background-color: $-brown;
 }
 
 .profile-inner {
-  padding: 60px;
+  padding: 40px 60px 20px 60px;
   margin-bottom: 150px;
   background-color: $-dark-green;
   border-radius: 5px;
@@ -58,5 +58,54 @@
 }
 
 .profile-bottom {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
 
+  .section-title.current-read-title{
+    color: $-green;
+    font-family: 'Virust', sans-serif;
+    font-size: 40px;
+    line-height: 85%;
+  }
+  .section-title.shelves {
+    color: $-green;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: left;
+  }
+  .current-read-section {
+    background-color: $-tan;
+    width: 330px;
+    height: 420px;
+    padding: 30px;
+    border-radius: 5px;
+  }
+  .profile-bottom-right {
+    flex: 1;
+    background-color: $-tan;
+    padding: 30px;
+    border-radius: 5px;
+    height: 420px;
+    .books-grid {
+      display: flex;
+      gap: 20px;
+    }
+  }
+}
+
+.book-cover-profile {
+  height: 120px;
+  width: 90px;
+  background-color: white;
+  box-shadow: 5px 0 10px rgba(4, 53, 35, 0.3);
+  margin-top: -40px;
+  margin-bottom: 30px;
+}
+.book-cover-profile.current {
+  height: 230px;
+  width: 180px;
+  margin-top: -20px;
+  margin-bottom: 30px;
 }

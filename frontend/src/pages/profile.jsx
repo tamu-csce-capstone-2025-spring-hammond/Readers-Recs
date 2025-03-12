@@ -31,9 +31,9 @@ const Profile = () => {
           </div>
           <div className="profile-bottom">
             <div className="current-read-section">
-              <h2 className="section-title">CURRENT<br />READ</h2>
+              <h2 className="section-title current-read-title">CURRENT<br />READ</h2>
               <div className="current-book">
-                <div className="book-cover"></div>
+                <div className="book-cover-profile current"></div>
                 <div className="progress-bar">
                   <div className="progress-indicator" style={{ height: `${user.progress}%` }}></div>
                 </div>
@@ -41,10 +41,10 @@ const Profile = () => {
             </div>
             <div className="profile-bottom-right">
               <div className="bookshelf-section">
-                <h2 className="section-title">Books Read</h2>
+                <h2 className="section-title shelves">Books Read</h2>
                 <div className="books-grid">
                   {user.booksRead.map((_, index) => (
-                    <div key={`read-${index}`} className="book-cover"></div>
+                    <div key={`read-${index}`} className="book-cover-profile"></div>
                   ))}
                   <div className="more-link">
                     <ChevronRight size={24} />
@@ -52,10 +52,10 @@ const Profile = () => {
                 </div>
               </div>
               <div className="to-read-section">
-                <h2 className="section-title">To-Read Shelf</h2>
+                <h2 className="section-title shelves">To-Read Shelf</h2>
                 <div className="books-grid">
                   {user.toReadShelf.map((_, index) => (
-                    <div key={`to-read-${index}`} className="book-cover"></div>
+                    <div key={`to-read-${index}`} className="book-cover-profile"></div>
                   ))}
                 </div>
               </div>
