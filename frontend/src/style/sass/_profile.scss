@@ -82,6 +82,30 @@
     padding: 30px;
     border-radius: 5px;
   }
+  .current-book {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: row;
+  }
+  .progress-bar {
+    width: 15px;
+    height: 230px;
+    background-color: white;
+    border: 1px solid $-green;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 50px;
+    
+    .progress-indicator {
+      width: 100%;
+      background-color: $-brown;
+      position: absolute;
+      bottom: 0;
+      border-radius: 8px;
+    }
+  }
   .profile-bottom-right {
     flex: 1;
     background-color: $-tan;
@@ -91,8 +115,49 @@
     .books-grid {
       display: flex;
       gap: 20px;
+      // OVERFLOW NOT WORKING AS EXPECTED
+      // overflow-x: auto;
+      // padding: 10px 0;
+      // max-width: 100%;
+      // white-space: nowrap;
+      // position: relative;
+      // -ms-overflow-style: none;
+      // scrollbar-width: none;
+      // overflow: hidden;
     }
   }
+}
+
+.bookshelf-section {
+  position: relative;
+}
+.books-grid::-webkit-scrollbar {
+  display: none;
+}
+.scroll-button {
+  background: $-rust-brown;
+  color: $-tan;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  &:hover, &:focus {
+    background: $-rust-brown-hover;
+  }
+}
+.scroll-button.left {
+  left: -10px;
+}
+.scroll-button.right {
+  right: -10px;
 }
 
 .book-cover-profile {

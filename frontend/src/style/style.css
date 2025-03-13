@@ -171,6 +171,29 @@ h3 {
   padding: 30px;
   border-radius: 5px;
 }
+.profile-bottom .current-book {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row;
+}
+.profile-bottom .progress-bar {
+  width: 15px;
+  height: 230px;
+  background-color: white;
+  border: 1px solid #2A664D;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 50px;
+}
+.profile-bottom .progress-bar .progress-indicator {
+  width: 100%;
+  background-color: #796855;
+  position: absolute;
+  bottom: 0;
+  border-radius: 8px;
+}
 .profile-bottom .profile-bottom-right {
   flex: 1;
   background-color: #EBE8E1;
@@ -181,6 +204,42 @@ h3 {
 .profile-bottom .profile-bottom-right .books-grid {
   display: flex;
   gap: 20px;
+}
+
+.bookshelf-section {
+  position: relative;
+}
+
+.books-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-button {
+  background: #7e4f34;
+  color: #EBE8E1;
+  font-family: "Open Sans", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.scroll-button:hover, .scroll-button:focus {
+  background: #582f17;
+}
+
+.scroll-button.left {
+  left: -10px;
+}
+
+.scroll-button.right {
+  right: -10px;
 }
 
 .book-cover-profile {

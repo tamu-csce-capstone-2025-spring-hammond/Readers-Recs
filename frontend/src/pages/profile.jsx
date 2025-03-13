@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 
@@ -14,6 +15,13 @@ const Profile = () => {
     progress: 30,
     booksRead: Array(5).fill(null), 
     toReadShelf: Array(3).fill(null) 
+  };
+  const scrollBooks = (id, direction) => {
+    const container = document.getElementById(id);
+    if (container) {
+      const scrollAmount = 250;
+      container.scrollBy({ left: direction * scrollAmount, behavior: "smooth" });
+    }
   };
 
   return (
@@ -46,10 +54,13 @@ const Profile = () => {
                   {user.booksRead.map((_, index) => (
                     <div key={`read-${index}`} className="book-cover-profile"></div>
                   ))}
-                  <div className="more-link">
-                    <ChevronRight size={24} />
-                  </div>
                 </div>
+                <button className="scroll-button left" onClick={() => scrollBooks("books-read", -1)}>
+                  <ChevronLeft size={24} />
+                </button>
+                <button className="scroll-button right" onClick={() => scrollBooks("books-read", 1)}>
+                  <ChevronRight size={24} />
+                </button>
               </div>
               <div className="to-read-section">
                 <h2 className="section-title shelves">To-Read Shelf</h2>
