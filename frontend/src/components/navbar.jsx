@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "../style/style.css";
+import "../style/navbar.scss";
 import logo from "../assets/logo.png";
 import { Search, MessageSquare, User } from "lucide-react";
 

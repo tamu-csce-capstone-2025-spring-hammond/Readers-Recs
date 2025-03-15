@@ -1,0 +1,111 @@
+@import "./sass/colors";
+@import "./sass/fonts";
+
+.search-container {
+  padding: 40px;
+  padding-bottom: 140px;
+  background-color: $-brown
+}
+
+.search-bar {
+  background-color: $-dark-green;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  .search-icon {
+    color: $-tan;
+    font-size: 24px;
+  }
+
+  input {
+    flex: 1;
+    background-color: transparent;
+    border: none;
+    color: $-tan;
+    font-family: "Open Sans", sans-serif;
+    font-size: 20px;
+    outline: none;
+
+    &::placeholder {
+      color: rgba($-tan, 0.7);
+      font-size: 18px;
+    }
+  }
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.book-card {
+  background-color: $-dark-green;
+  border-radius: 8px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: start;
+  position: relative;
+}
+
+.book-cover {
+  background-color: white;
+  width: 200px; 
+  aspect-ratio: 2/3;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.book-title {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 800;
+  color: $-tan;
+  margin: 0;
+  font-size: 26px; 
+}
+
+.book-author {
+  font-family: "Open Sans", sans-serif;
+  color: $-tan;
+  margin: 0;
+  font-size: 20px; 
+  font-style: italic;
+}
+
+.book-description {
+  font-family: "Open Sans", sans-serif;
+  color: $-tan;
+  margin: 8px 0 0;
+  font-size: 36px; 
+  line-height: 1.8; 
+}
+
+.add-button {
+  background-color: $-brown;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px; 
+  height: 45px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+
+  &:hover {
+    background-color: $-rust-brown;
+  }
+}

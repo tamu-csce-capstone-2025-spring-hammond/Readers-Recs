@@ -2,9 +2,9 @@ name: Python Application
 
 on:
   push:
-    branches: [ "testing-and-github-actions" ]
+    branches: [ "development" ]
   pull_request:
-    branches: [ "testing-and-github-actions" ]
+    branches: [ "development" ]
 
 permissions:
   contents: read
