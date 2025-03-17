@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
+import BookPopUp from '../components/discussion';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBook, setSelectedBook] = useState(null);
   
   // Placeholder book data
   const books = [
@@ -13,7 +15,19 @@ const SearchBooks = () => {
       title: "The Great Gatsby",
       author: "F. Scott Fitzgerald",
       year: "1925",
-      description: "A novel set in the Roaring Twenties that explores themes of wealth, excess, and the American Dream."
+      description: "A novel set in the Roaring Twenties that explores themes of wealth, excess, and the American Dream.",
+      posts: [
+        {
+          username: "Happy Reader",
+          title: "Great Read!",
+          content: "I really enjoyed reading this book. The plot was gripping, and the characters were well-developed. Highly recommend!",
+        },
+        {
+          username: "Grumbly Reader",
+          title: "Not Bad",
+          content: "It was an okay read. The story was decent, but I feel like it could have been more exciting.",
+        },
+      ],
     },
     {
       id: 2,
@@ -70,6 +84,15 @@ const SearchBooks = () => {
     setSearchQuery(e.target.value);
   };
 
+  const openPopup = (book) => {
+    console.log("Opening popup for:", book);
+    setSelectedBook(book);
+  };
+
+  const closePopup = () => {
+    setSelectedBook(null);
+  };
+
   return (
     <div className="search-container">
       <div className="search-bar">
@@ -84,7 +107,7 @@ const SearchBooks = () => {
 
       <div className="search-results">
         {books.map(book => (
-          <div key={book.id} className="book-card">
+          <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
             <div className="book-cover"></div>
             <div className="book-info">
               <h2 className="book-title">{book.title}</h2>
@@ -98,6 +121,7 @@ const SearchBooks = () => {
         ))}
       </div>
       <Navbar/>
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
     </div>
   );
 };
