@@ -1,21 +1,10 @@
 # backend/app.py
-from backend.database import open_connection, close_connection
+from backend.models.books import read_book_by_identifier
+from backend.database import collections, db, close_connection
 
 
 def main():
     print("Starting the application...")
-
-    client = open_connection()
-    db = client["Readers-Recs"]
-
-    collections = {
-        "Books": db["Books"],
-        "Chat_Messages": db["Chat_Messages"],
-        "Comments": db["Comments"],
-        "Posts": db["Posts"],
-        "User_Bookshelf": db["User_Bookshelf"],
-        "Users": db["Users"],
-    }
 
     print("Available collections:")
     for name in collections.keys():
@@ -23,15 +12,16 @@ def main():
 
     print("Collections in the database:", db.list_collection_names())
 
-    run_application_logic(collections)
+    run_application_logic()
 
     print("Closing the application.")
-    close_connection(client)
+    close_connection()
 
 
-def run_application_logic(collections):
+def run_application_logic():
     # Application logic goes here
     print("Running application logic.")
+    print(read_book_by_identifier("60f1e1b7b1f6b1b4b3f1b1b4", "title"))
 
 
 if __name__ == "__main__":

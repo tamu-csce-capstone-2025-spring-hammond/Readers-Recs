@@ -5,15 +5,23 @@ from dotenv import load_dotenv
 import os
 
 
-def open_connection():
-    load_dotenv(override=True)
-    uri = os.getenv("MONGO_URI")
-    if not uri:
-        raise ValueError("MONGO_URI is not set")
+load_dotenv(override=True)
+uri = os.getenv("MONGO_URI")
+if not uri:
+    raise ValueError("MONGO_URI is not set")
 
-    client = MongoClient(uri, server_api=ServerApi("1"))
-    return client
+client = MongoClient(uri, server_api=ServerApi("1"))
+db = client["Readers-Recs"]
+
+collections = {
+    "Books": db["Books"],
+    "Chat_Messages": db["Chat_Messages"],
+    "Comments": db["Comments"],
+    "Posts": db["Posts"],
+    "User_Bookshelf": db["User_Bookshelf"],
+    "Users": db["Users"],
+}
 
 
-def close_connection(client):
+def close_connection():
     client.close()
