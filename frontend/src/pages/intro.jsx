@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import '../style/intro.scss';
+import '../style/style.css';
 import { useNavigate } from 'react-router-dom';
 import { Home, Search, MessageCircle, User, BookOpen, UserPlus, BookMarked, ChevronDown, Target, Users, ListChecks, Scale, MessageSquare, Quote, LayoutGrid, Info, Mail, HelpCircle, Shield } from 'lucide-react';
 import logo from '../assets/logo.png'; 

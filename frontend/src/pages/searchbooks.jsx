@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus } from 'lucide-react';
-import '../style/searchBooks.scss';
+import '../style/style.css';
 import Navbar from '../components/navbar';
 
 const SearchBooks = () => {
