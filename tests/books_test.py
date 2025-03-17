@@ -28,6 +28,28 @@ from backend.models.books import (
 
 books_collection = collections["Books"]
 
+# Additional tests to write:
+#  - read_book_by_identifier ValidationError
+#  - update_book_details invalid book_id
+#  - update_book_details ValidationError
+#  - update_book_details ValueError
+#  - add_book_author invalid book_id
+#  - add_book_author invalid author
+#  - add_book_author duplicate author
+#  - add_book_tag invalid book_id
+#  - add_book_tag invalid tag
+#  - add_book_tag duplicate tag
+#  - remove_book_author invalid book_id
+#  - remove_book_author invalid author
+#  - remove_book_author author not found
+#  - remove_book_tag invalid book_id
+#  - remove_book_tag invalid tag
+#  - remove_book_tag tag not found
+#  - delete_book invalid book_id
+#  - delete_book book not found
+#  - delete_book book has comments
+#  - delete_book book is in bookshelves
+
 
 def test_read_book_field_valid():
     book_id = "67c2bf84443c76002b50a956"

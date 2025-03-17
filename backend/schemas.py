@@ -6,11 +6,6 @@ from datetime import datetime, date
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 
-# from collections import defaultdict
-# import numpy as np
-
-
-# Custom ObjectId validator for MongoDB
 
 class PyObjectId(ObjectId):
     @classmethod
