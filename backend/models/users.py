@@ -1,3 +1,4 @@
+# database/models/users.py
 from pymongo import errors
 from bson.objectid import ObjectId
 from pydantic import ValidationError
@@ -7,9 +8,9 @@ from backend.database import collections
 users_collection = collections["Users"]
 
 # require username, email address, and refresh tokens to be unique
-users_collection.create_index("username", unique=True)
-users_collection.create_index("email_address", unique=True)
-users_collection.create_index("refresh_token", unique=True)
+# users_collection.create_index("username", unique=True)
+# users_collection.create_index("email_address", unique=True)
+# users_collection.create_index("refresh_token", unique=True)
 
 
 def create_user(

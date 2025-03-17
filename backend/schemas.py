@@ -1,3 +1,4 @@
+# backend/schemas.py
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List
 from bson import ObjectId

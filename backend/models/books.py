@@ -1,3 +1,4 @@
+# database/models/books.py
 from bson.objectid import ObjectId
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
@@ -9,8 +10,8 @@ from pymongo.errors import PyMongoError
 books_collection = collections["Books"]
 
 # isbn and isbn13 need to be unique
-books_collection.create_index("isbn", unique=True)
-books_collection.create_index("isbn13", unique=True)
+# books_collection.create_index("isbn", unique=True)
+# books_collection.create_index("isbn13", unique=True)
 
 
 def create_book(

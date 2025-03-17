@@ -1,3 +1,4 @@
+# database/models/comments.py
 # from datetime import datetime
 from bson.objectid import ObjectId
 from pymongo.errors import DuplicateKeyError
@@ -24,8 +25,15 @@ def is_valid_object_id(
     :param obj_id: The ObjectId to be checked.
     :return: True if the ObjectId exists, False otherwise.
     """
-    collection = collections[collection_name]
-    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
+
+    if collection_name not in collections:
+        return False
+    elif collection_name == "Users" or collection_name == "User_Bookshelf":
+        collection = collections[collection_name]
+        return collection.find_one({"_id": obj_id}) is not None
+    else:
+        collection = collections[collection_name]
+        return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 def create_comment(post_id, user_id, comment_text, parent_comment_id=0):

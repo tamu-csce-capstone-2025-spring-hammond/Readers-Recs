@@ -1,7 +1,23 @@
+# backend/book-rec-model.py
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
+
+# imports from the middle of the file
+from books import read_book_field
+from pymongo import MongoClient
+
+# from bson.objectid import ObjectId
+
+
+from users import (
+    read_user,
+    update_genre_weights,
+    retrieve_genre_weights,
+    update_embedding,
+    retrieve_embedding,
+)
 
 
 class BookRecommenderNoDB:
@@ -239,19 +255,7 @@ if __name__ == "__main__":
         recommendations = recommender.recommend_books(user_id, top_n=5)
         print(f"Recommended books for {user_id}: {recommendations}")
 
-
-from books import read_book_field
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-
-
-from users import (
-    read_user,
-    update_genre_weights,
-    retrieve_genre_weights,
-    update_embedding,
-    retrieve_embedding,
-)
+# moved imports from here to top of for linting purposes
 
 
 class BookRecommender:
