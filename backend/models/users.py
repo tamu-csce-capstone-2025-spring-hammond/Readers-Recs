@@ -39,7 +39,9 @@ def create_user(
             oauth=oauth_data,
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
-            demographics=(demographics if isinstance(demographics, list) else [demographics]),
+            demographics=(
+                demographics if isinstance(demographics, list) else [demographics]
+            ),
             genre_weights={},
             embedding=[],
         )

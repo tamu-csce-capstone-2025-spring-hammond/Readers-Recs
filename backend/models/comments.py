@@ -44,7 +44,9 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
         # Ensure parent_comment_id exists (if it's not 0, meaning it's a reply to an existing comment)
-        if parent_comment_id != 0 and not is_valid_object_id("Comments", parent_comment_id):
+        if parent_comment_id != 0 and not is_valid_object_id(
+            "Comments", parent_comment_id
+        ):
             return "Error: Invalid parent_comment_id."
 
         # Prepare comment data using CommentSchema
@@ -58,7 +60,7 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
         data = comment_data.model_dump(by_alias=True)
         if not data.get("_id"):
             data.pop("_id", None)
-            
+
         result = comments_collection.insert_one(data)
         return str(result.inserted_id)
 
@@ -68,7 +70,6 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
         return "Error: Duplicate comment!"
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 
 # Read a comment by its ID
