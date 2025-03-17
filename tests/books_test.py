@@ -51,8 +51,8 @@ def test_read_book_field_invalid_id():
 
 
 def test_read_book_by_identifier():
-    identifier = "title"
-    value = "Animal Farm"
+    identifier = "isbn"
+    value = "452284244"
     print(read_book_by_identifier(value, identifier))
 
     assert read_book_by_identifier(value, identifier) != "Book not found."

@@ -3,23 +3,32 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List
 from bson import ObjectId
 from datetime import datetime, date
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
 
 # from collections import defaultdict
 # import numpy as np
 
 
 # Custom ObjectId validator for MongoDB
-class PyObjectId(str):
+
+class PyObjectId(ObjectId):
     @classmethod
-    def __get_pydantic_core_schema__(cls, source, handler=None):
-        from pydantic_core.core_schema import no_info_plain_validator_function
+    def __get_pydantic_core_schema__(cls, _source, handler: GetCoreSchemaHandler):
+        # Use a plain validator function that calls our custom validate method.
+        return core_schema.no_info_plain_validator_function(cls.validate)
 
-        def validate(v, info):
-            if not ObjectId.is_valid(v):
-                raise ValueError(f"Invalid ObjectId: {v}")
-            return str(v)
+    @classmethod
+    def validate(cls, v):
+        if isinstance(v, ObjectId):
+            return v
+        if isinstance(v, str) and ObjectId.is_valid(v):
+            return ObjectId(v)
+        raise ValueError("Invalid ObjectId")
 
-        return no_info_plain_validator_function(validate)
+    @classmethod
+    def __get_pydantic_json_schema__(cls, _schema):
+        return {"type": "string"}
 
 
 # -----------------------------------------------
