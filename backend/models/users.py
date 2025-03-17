@@ -2,7 +2,7 @@
 from pymongo import errors
 from bson.objectid import ObjectId
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema
+from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
 
 users_collection = collections["Users"]
@@ -28,9 +28,9 @@ def create_user(
         oauth_data = OAuthSchema(**oauth)
 
         # Validate demographics
-        demographics = OAuthSchema(**demographics)
+        demographics = DemographicSchema(**demographics)
 
-        # Validate UserSchema
+        # Validate and create user data using UserSchema
         user_data = UserSchema(
             first_name=first_name,
             last_name=last_name,
@@ -39,18 +39,18 @@ def create_user(
             oauth=oauth_data,
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
-            demographics=(
-                demographics if isinstance(demographics, list) else [demographics]
-            ),
-            # ADDED EMPTY GENRE WEIGHTS & EMBEDDING TO INITIALIZE
+            demographics=(demographics if isinstance(demographics, list) else [demographics]),
             genre_weights={},
             embedding=[],
         )
 
-        # Insert
-        return str(
-            users_collection.insert_one(user_data.model_dump(by_alias=True)).inserted_id
-        )
+        # Dump the model to a dict using aliases
+        data = user_data.model_dump(by_alias=True)
+        # Remove _id if it's empty so MongoDB auto-generates one
+        if not data.get("_id"):
+            data.pop("_id", None)
+        result = users_collection.insert_one(data)
+        return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"

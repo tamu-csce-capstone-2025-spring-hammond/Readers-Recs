@@ -39,11 +39,10 @@ def create_post(user_id, book_id, title, post_text, tags):
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
-        # Prepare post data
+        # Prepare post data using PostSchema
         post_data = PostSchema(
             user_id=user_id,
             book_id=book_id,
@@ -52,14 +51,16 @@ def create_post(user_id, book_id, title, post_text, tags):
             tags=tags if isinstance(tags, list) else [tags],
         )
 
-        # Insert into MongoDB
-        result = posts_collection.insert_one(post_data.dict(by_alias=True))
+        data = post_data.model_dump(by_alias=True)
+        if not data.get("_id"):
+            data.pop("_id", None)
+        result = posts_collection.insert_one(data)
         return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except DuplicateKeyError:
-        return "Error: Duplicate post!"
+    # except DuplicateKeyError:
+    #     return "Error: Duplicate post!"
     except Exception as e:
         return f"Error: {str(e)}"
 
