@@ -3,7 +3,8 @@
 from bson.objectid import ObjectId
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import CommentSchema  # , BookSchema, UserSchema, PostSchema
+from backend.schemas import CommentSchema
+from backend.mongo_id_utils import is_valid_object_id
 from backend.database import collections
 
 books_collection = collections["Books"]
@@ -14,26 +15,6 @@ comments_collection = collections["Comments"]
 # user_id and book_id need to be verified
 # post_id needs to be verified
 # parent_comment_id only needs to be verified if not None
-
-
-def is_valid_object_id(
-    collection_name, obj_id
-):  # TODO: put in one file and just import it
-    """
-    Check if the given ObjectId exists in the specified collection.
-    :param collection_name: The MongoDB collection name.
-    :param obj_id: The ObjectId to be checked.
-    :return: True if the ObjectId exists, False otherwise.
-    """
-
-    if collection_name not in collections:
-        return False
-    elif collection_name == "Users" or collection_name == "User_Bookshelf":
-        collection = collections[collection_name]
-        return collection.find_one({"_id": obj_id}) is not None
-    else:
-        collection = collections[collection_name]
-        return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
@@ -146,3 +127,38 @@ def delete_comment(comment_id):
             return "Comment not found."
     except ValueError:
         return "Error: Invalid ObjectId format."
+
+
+def delete_comments_by_post(post_id):
+    try:
+        # Validate post_id
+        if not is_valid_object_id("Posts", post_id):
+            return "Error: Invalid post_id."
+
+        result = comments_collection.delete_many({"post_id": ObjectId(post_id)})
+        if result.deleted_count:
+            return f"{result.deleted_count} comments deleted."
+        else:
+            return "No comments found for this post."
+
+    except ValueError:
+        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_all_comments_for_post(post_id):
+    try:
+        # Validate post_id
+        if not is_valid_object_id("Posts", post_id):
+            return "Error: Invalid post_id."
+
+        comments = comments_collection.find({"post_id": ObjectId(post_id)})
+        return [
+            CommentSchema(**comment).model_dump(by_alias=True) for comment in comments
+        ]
+
+    except ValueError:
+        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
