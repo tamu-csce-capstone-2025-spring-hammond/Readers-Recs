@@ -21,7 +21,7 @@ def main():
 def run_application_logic():
     # Application logic goes here
     print("Running application logic.")
-    print(read_book_by_identifier("60f1e1b7b1f6b1b4b3f1b1b4", "title"))
+    print(read_book_by_identifier("517149257", "isbn"))
 
 
 if __name__ == "__main__":
