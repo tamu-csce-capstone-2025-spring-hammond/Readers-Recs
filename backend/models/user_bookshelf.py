@@ -1,27 +1,16 @@
-from bson.objectid import ObjectId
-
+# database/models/user_bookshelf.py
 # from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from backend.database import collections
-from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from backend.schemas import UserBookshelfSchema
+from backend.mongo_id_utils import is_valid_object_id
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
 user_bookshelf_collection = collections["UserBookshelf"]
 
 user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
-
-
-def is_valid_object_id(collection_name, obj_id):
-    """
-    Check if the given ObjectId exists in the specified collection.
-    :param collection_name: The MongoDB collection name.
-    :param obj_id: The ObjectId to be checked.
-    :return: True if the ObjectId exists, False otherwise.
-    """
-    collection = collections[collection_name]
-    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 # user_id and book_id need to be verified
@@ -38,11 +27,10 @@ def create_user_bookshelf(
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
-        # Prepare data
+        # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
             user_id=user_id,
             book_id=book_id,
@@ -53,10 +41,12 @@ def create_user_bookshelf(
             rating=rating,
         )
 
+        data = user_bookshelf_data.model_dump(by_alias=True)
+        if not data.get("_id"):
+            data.pop("_id", None)
+
         # Insert into MongoDB
-        result = user_bookshelf_collection.insert_one(
-            user_bookshelf_data.dict(by_alias=True)
-        )
+        result = user_bookshelf_collection.insert_one(data)
         return str(result.inserted_id)
 
     except ValidationError as e:

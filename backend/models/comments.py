@@ -1,8 +1,11 @@
-# from datetime import datetime
+# database/models/comments.py
+from datetime import datetime
 from bson.objectid import ObjectId
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import CommentSchema  # , BookSchema, UserSchema, PostSchema
+from zoneinfo import ZoneInfo
+from backend.schemas import CommentSchema
+from backend.mongo_id_utils import is_valid_object_id
 from backend.database import collections
 
 books_collection = collections["Books"]
@@ -15,35 +18,18 @@ comments_collection = collections["Comments"]
 # parent_comment_id only needs to be verified if not None
 
 
-def is_valid_object_id(
-    collection_name, obj_id
-):  # TODO: put in one file and just import it
-    """
-    Check if the given ObjectId exists in the specified collection.
-    :param collection_name: The MongoDB collection name.
-    :param obj_id: The ObjectId to be checked.
-    :return: True if the ObjectId exists, False otherwise.
-    """
-    collection = collections[collection_name]
-    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
-
-
-def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
+def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
     try:
         # Validate post_id, user_id, and parent_comment_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
-
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-
-        # Ensure parent_comment_id exists (if it's not 0, meaning it's a reply to an existing comment)
-        if parent_comment_id != 0 and not is_valid_object_id(
-            "Comments", parent_comment_id
-        ):
+        # Ensure parent_comment_id exists (if it's not None, it's a reply to an existing comment)
+        if parent_comment_id and not is_valid_object_id("Comments", parent_comment_id):
             return "Error: Invalid parent_comment_id."
 
-        # Prepare comment data
+        # Prepare comment data using CommentSchema
         comment_data = CommentSchema(
             post_id=post_id,
             user_id=user_id,
@@ -51,8 +37,11 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
             parent_comment_id=parent_comment_id,
         )
 
-        # Insert into MongoDB
-        result = comments_collection.insert_one(comment_data.dict(by_alias=True))
+        data = comment_data.model_dump(by_alias=True)
+        if not data.get("_id"):
+            data.pop("_id", None)
+
+        result = comments_collection.insert_one(data)
         return str(result.inserted_id)
 
     except ValidationError as e:
@@ -61,6 +50,20 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=0):
         return "Error: Duplicate comment!"
     except Exception as e:
         return f"Error: {str(e)}"
+
+
+def create_initial_comment(post_id, user_id, comment_text):
+    """
+    Creates a top-level comment (i.e. not a reply).
+    """
+    return create_comment(post_id, user_id, comment_text, parent_comment_id=None)
+
+
+def reply_to_comment(post_id, user_id, comment_text, parent_comment_id):
+    """
+    Creates a reply to an existing comment.
+    """
+    return create_comment(post_id, user_id, comment_text, parent_comment_id)
 
 
 # Read a comment by its ID
@@ -93,7 +96,11 @@ def read_comment_field(comment_id, field):
         comment = comments_collection.find_one(
             {"_id": ObjectId(comment_id)}, {field: 1, "_id": 0}
         )
-        return comment[field] if comment else "Comment not found."
+
+        if field in comment:
+            return comment[field]
+        else:
+            return f"Field '{field}' not found in comment."
 
     except ValueError:
         return "Error: Invalid ObjectId format."
@@ -107,8 +114,11 @@ def update_comment(comment_id, comment_text):
         if not is_valid_object_id("Comments", comment_id):
             return "Error: Invalid comment_id."
 
-        # Prepare update data
-        update_data = {"comment_text": comment_text}
+        # Prepare update data including the date_edited field
+        update_data = {
+            "comment_text": comment_text,
+            "date_edited": datetime.now(ZoneInfo("America/Chicago")),
+        }
 
         # Update the comment
         result = comments_collection.update_one(
@@ -119,7 +129,6 @@ def update_comment(comment_id, comment_text):
             return "Comment updated successfully."
         else:
             return "Comment not found."
-
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -137,3 +146,39 @@ def delete_comment(comment_id):
             return "Comment not found."
     except ValueError:
         return "Error: Invalid ObjectId format."
+
+
+# Used to delete all comments associated with a post when the post is deleted
+def delete_comments_by_post(post_id):
+    try:
+        # Validate post_id
+        if not is_valid_object_id("Posts", post_id):
+            return "Error: Invalid post_id."
+
+        result = comments_collection.delete_many({"post_id": ObjectId(post_id)})
+        if result.deleted_count:
+            return f"{result.deleted_count} comments deleted."
+        else:
+            return "No comments found for this post."
+
+    except ValueError:
+        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_all_comments_for_post(post_id):
+    try:
+        # Validate post_id
+        if not is_valid_object_id("Posts", post_id):
+            return "Error: Invalid post_id."
+
+        comments = comments_collection.find({"post_id": ObjectId(post_id)})
+        return [
+            CommentSchema(**comment).model_dump(by_alias=True) for comment in comments
+        ]
+
+    except ValueError:
+        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
