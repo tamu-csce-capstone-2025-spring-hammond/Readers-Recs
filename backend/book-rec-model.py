@@ -29,7 +29,7 @@ class BookRecommenderNoDB:
                 "read_books": {},
             }
         )
-        # self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
+        self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
         self.valid_ratings = ["pos", "neg", "mid"]
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
 

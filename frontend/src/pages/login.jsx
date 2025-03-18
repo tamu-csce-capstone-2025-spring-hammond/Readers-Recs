@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import '../style/login.scss';
+import '../style/style.css';
 import { useNavigate } from 'react-router-dom';
 
 
