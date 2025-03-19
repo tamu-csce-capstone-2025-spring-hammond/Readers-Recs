@@ -136,12 +136,10 @@ class BookRecommender:
 
     def process_reading_history(self, user_id):
         books_read = retrieve_user_bookshelf(user_id)
-        print(books_read)
+    
         for book in books_read:
             book_id = book['book_id']
             rating = book['rating']
-            print("book id:", book_id)
-            print("rating:", rating)
             self.process_user_rating(user_id, book_id, rating)
 
 
@@ -166,9 +164,12 @@ class BookRecommender:
 
     def process_user_rating(self, user_id, book_id, rating):
         """Handles user book interactions and updates preferences."""
+        if not rating:
+            print("Book read but not rated by user.")
+            return
         if rating not in self.valid_ratings:
-            print("Rating:",  rating)
-            print("NOT A VALID RATING")
+            # print("Rating:",  rating)
+            print("Invalid rating.")
             return
 
         # Fetch or create user
@@ -208,6 +209,7 @@ class BookRecommender:
             # Compute new embedding
             new_embedding = (user_embedding + book_embedding) / 2
             update_embedding(user_id, new_embedding.tolist())
+
 
     # def process_user_rating(self, user_id, book_id, rating):
     #     """Handles user book interactions and updates preferences."""
@@ -290,6 +292,9 @@ class BookRecommender:
 
         # Retrieve user embedding and ensure it's a NumPy array
         user_vector = np.array(retrieve_embedding(user_id))  # Ensure it's a numpy array
+        if not user_vector:
+            print("USER HAS NO READING HISTORY or NaN in user embedding")
+            return []
         if user_vector.ndim == 1:  # If it's a 1D array, check for NaN or empty
             if user_vector.size == 0 or np.any(np.isnan(user_vector)):  # Check for NaN or empty user_vector
                 print("USER HAS NO READING HISTORY or NaN in user embedding")
@@ -341,17 +346,6 @@ class BookRecommender:
 #############################################################
 # MAIN ######################################################
 
-books_collection = collections["Books"]
-users_collection = collections["Users"]
-user_bookshelf_collection = collections["User_Bookshelf"]
-recommender = BookRecommender()
-
-# Katelyn's user ID = 67c64c27835dd5190e9d458b
-id = '67c64c27835dd5190e9d458b'
-
-recommender.process_reading_history(id)
-recs = recommender.recommend_books(id)
-print(f"Recommended books: {recs}")
 
 if __name__ == "__main__":
     # recommender = BookRecommenderNoDB()
@@ -499,7 +493,7 @@ if __name__ == "__main__":
 
     books_collection = collections["Books"]
     users_collection = collections["Users"]
-    user_bookshelf_collection = collections["UserBookshelf"]
+    user_bookshelf_collection = collections["User_Bookshelf"]
     recommender = BookRecommender()
 
     # Katelyn's user ID = 67c64c27835dd5190e9d458b
