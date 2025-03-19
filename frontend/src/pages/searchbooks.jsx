@@ -93,34 +93,46 @@ const SearchBooks = () => {
     setSelectedBook(null);
   };
 
+  /** Search Functionality */
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    book.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="search-container">
       <div className="search-bar">
         <Search className="search-icon" size={20} />
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Search by title, author, or description..."
           value={searchQuery}
           onChange={handleSearchChange}
         />
       </div>
 
       <div className="search-results">
-        {books.map(book => (
-          <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
-            <div className="book-cover"></div>
-            <div className="book-info">
-              <h2 className="book-title">{book.title}</h2>
-              <p className="book-author">{book.author}, {book.year}</p>
-              <p className="book-description">{book.description}</p>
+        {filteredBooks.length > 0 ? (
+          filteredBooks.map(book => (
+            <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
+              <div className="book-cover"></div>
+              <div className="book-info">
+                <h2 className="book-title">{book.title}</h2>
+                <p className="book-author">{book.author}, {book.year}</p>
+                <p className="book-description">{book.description}</p>
+              </div>
+              <button className="add-button">
+                <Plus size={20} />
+              </button>
             </div>
-            <button className="add-button">
-              <Plus size={20} />
-            </button>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="no-results">No books found.</p>
+        )}
       </div>
-      <Navbar/>
+
+      <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
     </div>
   );
