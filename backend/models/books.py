@@ -1,3 +1,4 @@
+# database/models/books.py
 from bson.objectid import ObjectId
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
@@ -10,8 +11,8 @@ import numpy as np
 books_collection = collections["Books"]
 
 # isbn and isbn13 need to be unique
-books_collection.create_index("isbn", unique=True)
-books_collection.create_index("isbn13", unique=True)
+# books_collection.create_index("isbn", unique=True)
+# books_collection.create_index("isbn13", unique=True)
 
 
 def create_book(
@@ -57,8 +58,11 @@ def create_book(
             embedding=[],
         )
 
-        # Insert into MongoDB
-        result = books_collection.insert_one(book_data.model_dump(by_alias=True))
+        data = book_data.model_dump(by_alias=True)
+        if not data.get("_id"):
+            data.pop("_id", None)
+        result = books_collection.insert_one(data)
+
         return str(result.inserted_id)
 
     except ValidationError as e:
@@ -70,14 +74,22 @@ def create_book(
 
 
 def read_book_field(book_id, field):
-    book = books_collection.find_one({"_id": ObjectId(book_id)}, {field: 1, "_id": 0})
+    try:
+        obj_id = ObjectId(book_id)
+    except Exception:
+        return "Invalid book ID format"
+
+    book = books_collection.find_one({"_id": obj_id})
     if book:
-        return book.get(field, "Field not found")
+        if field in book:
+            return book[field]
+        else:
+            return "Field not found"
     else:
         return "Book not found"
 
 
-def read_book_by_identifier(identifier, value):
+def read_book_by_identifier(value, identifier):
     # value can be isbn, isbn13, or title
     if identifier not in ["title", "isbn", "isbn13"]:
         return "Error: Invalid identifier. Use 'title', 'isbn', or 'isbn13'."
@@ -88,7 +100,7 @@ def read_book_by_identifier(identifier, value):
         return "Book not found."
 
     try:
-        return BookSchema(**book).model_dump(by_alias=True)  # ✅ Use model_dump()
+        return BookSchema(**book).model_dump(by_alias=True)
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
 

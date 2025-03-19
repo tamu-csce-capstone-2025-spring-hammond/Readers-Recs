@@ -1,5 +1,4 @@
-from bson.objectid import ObjectId
-
+# database/models/user_bookshelf.py
 # from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
@@ -38,11 +37,10 @@ def create_user_bookshelf(
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
-        # Prepare data
+        # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
             user_id=user_id,
             book_id=book_id,
@@ -53,10 +51,12 @@ def create_user_bookshelf(
             rating=rating,
         )
 
+        data = user_bookshelf_data.model_dump(by_alias=True)
+        if not data.get("_id"):
+            data.pop("_id", None)
+
         # Insert into MongoDB
-        result = user_bookshelf_collection.insert_one(
-            user_bookshelf_data.dict(by_alias=True)
-        )
+        result = user_bookshelf_collection.insert_one(data)
         return str(result.inserted_id)
 
     except ValidationError as e:
