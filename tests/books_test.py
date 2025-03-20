@@ -1,3 +1,4 @@
+import pytest
 from bson import ObjectId
 from datetime import datetime
 from backend.database import collections
@@ -231,6 +232,7 @@ def test_create_update_and_delete_book():
     assert result == "Book and related records deleted successfully."
 
 
+# Also implicitly tests create_book and remove_book
 def test_add_and_remove_book_author():
     # create the book
     title = "Test Book"
@@ -238,9 +240,9 @@ def test_add_and_remove_book_author():
     page_count = 100
     genre = "Test Genre"
     tags = ["test", "book"]
-    publication_date = "2025-03-17"
-    isbn = "111111111"
-    isbn13 = "1111111111111"
+    publication_date = "2025-01-01"
+    isbn = "2222222222"
+    isbn13 = "222222222222"
     cover_image = "http://example.com/test.jpg"
     language = "eng"
     publisher = "Test Publisher"
@@ -284,9 +286,9 @@ def test_add_and_remove_book_tag():
     page_count = 100
     genre = "Test Genre"
     tags = ["test", "book"]
-    publication_date = "2025-03-17"
-    isbn = "111111111"
-    isbn13 = "1111111111111"
+    publication_date = "2025-01-01"
+    isbn = "3333333333"
+    isbn13 = "3333333333333"
     cover_image = "http://example.com/test.jpg"
     language = "eng"
     publisher = "Test Publisher"
@@ -321,3 +323,11 @@ def test_add_and_remove_book_tag():
 
     # delete the book
     delete_book(book_id)
+
+
+@pytest.fixture(autouse=True)
+def cleanup_test_books():
+    yield
+    books_collection.delete_many(
+        {"isbn": {"$in": ["111111111", "2222222222", "3333333333"]}}
+    )
