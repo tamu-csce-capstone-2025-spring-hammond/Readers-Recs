@@ -2,8 +2,8 @@
 # from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from database import collections
-from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from backend.database import collections
+from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]

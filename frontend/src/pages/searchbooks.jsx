@@ -29,23 +29,24 @@ const SearchBooks = () => {
       setBooks([]);
       return;
     }
-  
+
     setLoading(true);
     setError('');
     console.log("Fetching books from API with query:", searchQuery, "and filter:", filterType);
-  
+    
     try {
       const response = await fetch(
         `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
-  
+
       console.log("API Response Status:", response.status);
-  
+
+
       const data = await response.json(); // Only parse once
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch books');
       }
-  
+
       console.log("Books Fetched:", data);
       setBooks(data);
     } catch (err) {
@@ -56,7 +57,7 @@ const SearchBooks = () => {
       setLoading(false);
     }
   }, [searchQuery, filterType]);
-  
+
 
   // Call fetchBooks when searchQuery or filterType changes
   useEffect(() => {
@@ -65,15 +66,17 @@ const SearchBooks = () => {
       setBooks([]);
       return;
     }
-  
+
     const timerId = setTimeout(() => {
       console.log("Calling fetchBooks...");
       fetchBooks();
     }, 500);
-  
+
+
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
-  
+
+
   const openPopup = (book) => {
     setSelectedBook(book);
   };
@@ -91,27 +94,6 @@ const SearchBooks = () => {
 //     setAddPopupBook(null);
 //   };
 
-//   const filteredBooks = books.filter((book) => {
-//     const query = searchQuery.toLowerCase();
-
-//     switch (filterType) {
-//       case 'title':
-//         return book.title?.toLowerCase().includes(query) || false;
-//       case 'author':
-//         return book.author?.toLowerCase().includes(query) || false;
-//       case 'isbn':
-//         return book.isbn?.includes(query) || false; // ISBN is numeric, so no `.toLowerCase()`
-//       case 'any':
-//       default:
-//         return (
-//           book.title?.toLowerCase().includes(query) ||
-//           book.author?.toLowerCase().includes(query) ||
-//           book.isbn?.includes(query) ||
-//           book.description?.toLowerCase().includes(query) ||
-//           false
-//         );
-//     }
-//   });
 
   return (
     <div className="search-container">
@@ -158,13 +140,11 @@ const SearchBooks = () => {
         ) : (
           !loading && <p className="no-results">No books found.</p>
         )}
-      </div>
-
       <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
       {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
     </div>
+    </div>
   );
 };
-
 export default SearchBooks;
