@@ -3,7 +3,6 @@ from backend.api.books import books_bp
 
 app = Flask(__name__)
 
-
 # Register the books API Blueprint
 app.register_blueprint(books_bp, url_prefix="/api")
 

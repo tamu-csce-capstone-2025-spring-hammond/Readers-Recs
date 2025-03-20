@@ -33,13 +33,14 @@ const SearchBooks = () => {
     setLoading(true);
     setError('');
     console.log("Fetching books from API with query:", searchQuery, "and filter:", filterType);
-
+    
     try {
       const response = await fetch(
         `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
 
       console.log("API Response Status:", response.status);
+
 
       const data = await response.json(); // Only parse once
       if (!response.ok) {
@@ -71,8 +72,10 @@ const SearchBooks = () => {
       fetchBooks();
     }, 500);
 
+
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
+
 
   const openPopup = (book) => {
     setSelectedBook(book);
@@ -87,9 +90,10 @@ const SearchBooks = () => {
     setAddPopupBook(book);
   };
 
-  const closeAddPopup = () => {
-    setAddPopupBook(null);
-  };
+//   const closeAddPopup = () => {
+//     setAddPopupBook(null);
+//   };
+
 
   return (
     <div className="search-container">
@@ -112,8 +116,8 @@ const SearchBooks = () => {
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <div className="search-results"></div>
-      {books.length > 0 ? (
+      <div className="search-results">
+        {books.length > 0 ? (
           books.map((book) => (
             <div key={book.id || book._id} className="book-card" onClick={() => openPopup(book)}>
               <div className="book-cover">
@@ -139,6 +143,7 @@ const SearchBooks = () => {
       <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
       {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
+    </div>
     </div>
   );
 };
