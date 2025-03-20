@@ -2,22 +2,32 @@
 # from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.database import collections
-from backend.schemas import UserBookshelfSchema
-from backend.mongo_id_utils import is_valid_object_id
+from database import collections
+from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
-user_bookshelf_collection = collections["UserBookshelf"]
+user_bookshelf_collection = collections["User_Bookshelf"]
 
-user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
+# user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
+
+
+def is_valid_object_id(collection_name, obj_id):
+    """
+    Check if the given ObjectId exists in the specified collection.
+    :param collection_name: The MongoDB collection name.
+    :param obj_id: The ObjectId to be checked.
+    :return: True if the ObjectId exists, False otherwise.
+    """
+    collection = collections[collection_name]
+    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 # user_id and book_id need to be verified
 def create_user_bookshelf(
     user_id,
     book_id,
-    status="To Read",
+    status="to read",
     page_number=0,
     date_started=None,
     date_finished=None,
@@ -67,7 +77,7 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
             return "Error: Invalid book_id."
 
         # Validate new_status
-        if new_status not in ["To Read", "Currently Reading", "Read"]:
+        if new_status not in ["to read", "currently reading", "read"]:
             return "Error: Invalid status value."
 
         # Update the status
@@ -82,6 +92,20 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+
+## GET BOOKSHELF TO PROCESS EXISTING HISTORY
+def retrieve_user_bookshelf(user_id):
+    # if not is_valid_object_id("Users", user_id):
+    #         return "Error: Invalid user_id."
+    
+    books = list(
+        user_bookshelf_collection.find(
+            {"user_id": user_id, "status": "read"}
+        )
+    )
+    return books     # returns list of books
+
 
 
 def rate_book(user_id, book_id, new_rating):

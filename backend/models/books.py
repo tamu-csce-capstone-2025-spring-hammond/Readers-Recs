@@ -3,9 +3,10 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import BookSchema
-from backend.database import collections
+from schemas import BookSchema
+from database import collections
 from pymongo.errors import PyMongoError
+import numpy as np
 
 books_collection = collections["Books"]
 
@@ -220,6 +221,31 @@ def add_book_tag(book_id, new_tag):
         return f"An error occurred: {str(e)}"
 
 
+# I ADDED FOR ML MODEL
+def update_book_embedding(book_id, new_embedding):
+    """Update the embedding attribute for a book."""
+    if not ObjectId.is_valid(book_id):
+        return "Invalid book ID."
+
+    if not isinstance(new_embedding, (list, np.ndarray)):
+        return "Embedding must be a list or NumPy array."
+
+    try:
+        # Convert NumPy array to list if needed
+        if isinstance(new_embedding, np.ndarray):
+            new_embedding = new_embedding.tolist()
+
+        result = books_collection.update_one(
+            {"_id": ObjectId(book_id)}, {"$set": {"embedding": new_embedding}}
+        )
+
+        if result.modified_count > 0:
+            return "Embedding updated successfully."
+        else:
+            return "Book not found or embedding unchanged."
+    except PyMongoError as e:
+        return f"An error occurred: {str(e)}"
+    
 def remove_book_author(book_id, author_to_remove):
     if not ObjectId.is_valid(book_id):
         return "Invalid book ID."
