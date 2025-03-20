@@ -7,18 +7,20 @@ export default function BookPopup({ book, onClose }) {
         <div className="popup-container">
             <button className="popup-close" onClick={onClose}> × </button>
             <div className="popup-content">
-                <div className="popup-image"></div>
+                <div className="popup-image">
+                    <img src={book.cover_image} alt={book.title} className="cover-img" />
+                </div>
                 <div className="popup-details">
                     <h2 className="popup-title">{book.title}</h2>
-                    <p className="popup-author">{book.author}, {book.year}</p>
-                    <p className="popup-info">Page Count: {book.pageCount}</p>
-                    <p className="popup-info">Genre: {book.genre}</p>
+                    <p className="popup-author">{book.author}, {book.publication_date ? new Date(book.publication_date).getFullYear() : book.year}</p>
+                    <p className="popup-info">Page Count: {book.page_count}</p>
+                    <p className="popup-info">Genre: {book.genre_tags[0]}</p>
                     <p className="popup-info">Publisher: {book.publisher}</p>
-                    <p className="popup-info">Publication Date: {book.publicationDate}</p>
+                    <p className="popup-info">Publication Date: {book.publication_date}</p>
                     <p className="popup-info">ISBN: {book.isbn}</p>
                 </div>
             </div>
-            <p className="popup-description">{book.description}</p>
+            <p className="popup-description">{book.summary}</p>
             <div className="popup-discussion">
                 {book.posts && book.posts.length > 0 ? (
                     book.posts.map((post, index) => (

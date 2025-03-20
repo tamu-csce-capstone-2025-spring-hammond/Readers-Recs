@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Plus } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
@@ -7,95 +7,74 @@ import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('any'); // Default to 'any'
+  const [filterType, setFilterType] = useState('any'); // options: any, title, author, isbn
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
-  
-  // Placeholder book data
-  const books = [
-    {
-      id: 1,
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      year: "1925",
-      isbn: "9780743273565",
-      description: "A novel set in the Roaring Twenties that explores themes of wealth, excess, and the American Dream.",
-      posts: [
-        {
-          username: "Happy Reader",
-          title: "Great Read!",
-          content: "I really enjoyed reading this book. The plot was gripping, and the characters were well-developed. Highly recommend!",
-        },
-        {
-          username: "Grumbly Reader",
-          title: "Not Bad",
-          content: "It was an okay read. The story was decent, but I feel like it could have been more exciting.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      year: "1960",
-      isbn: "9780061120084",
-      description: "A story of racial injustice and childhood innocence in the Deep South, seen through the eyes of Scout Finch."
-    },
-    {
-      id: 3,
-      title: "1984",
-      author: "George Orwell",
-      year: "1949",
-      description: "A dystopian novel about a totalitarian regime that uses surveillance and mind control to oppress its citizens."
-    },
-    {
-      id: 4,
-      title: "Pride and Prejudice",
-      author: "Jane Austen",
-      year: "1813",
-      description: "A romantic novel that critiques the British class system and explores themes of love and social expectations."
-    },
-    {
-      id: 5,
-      title: "Moby-Dick",
-      author: "Herman Melville",
-      year: "1851",
-      description: "A whaling voyage turns into an obsession as Captain Ahab hunts the elusive white whale, Moby-Dick."
-    },
-    {
-      id: 6,
-      title: "The Catcher in the Rye",
-      author: "J.D. Salinger",
-      year: "1951",
-      description: "A rebellious teenager, Holden Caulfield, navigates the challenges of growing up and finding meaning in life."
-    },
-    {
-      id: 7,
-      title: "Brave New World",
-      author: "Aldous Huxley",
-      year: "1932",
-      description: "A dystopian vision of a future society controlled by technology, pleasure, and social conditioning."
-    },
-    {
-      id: 8,
-      title: "Frankenstein",
-      author: "Mary Shelley",
-      year: "1818",
-      description: "A scientist's ambition leads to the creation of a monstrous being, raising ethical questions about science and humanity."
-    }
-  ];
 
+  // Update search query as user types
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Handle filter change
+  // Update filter type (any, title, author, isbn)
   const handleFilterChange = (e) => {
     setFilterType(e.target.value);
   };
 
+  const fetchBooks = useCallback(async () => {
+    if (!searchQuery) {
+      setBooks([]);
+      return;
+    }
+  
+    setLoading(true);
+    setError('');
+    console.log("Fetching books from API with query:", searchQuery, "and filter:", filterType);
+  
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
+      );
+  
+      console.log("API Response Status:", response.status);
+  
+      const data = await response.json(); // Only parse once
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch books');
+      }
+  
+      console.log("Books Fetched:", data);
+      setBooks(data);
+    } catch (err) {
+      console.error("Error fetching books:", err.message);
+      setError(err.message);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, filterType]);
+  
+
+  // Call fetchBooks when searchQuery or filterType changes
+  useEffect(() => {
+    console.log("useEffect triggered. Search query:", searchQuery, "Filter type:", filterType);
+    if (searchQuery.trim() === '') {
+      setBooks([]);
+      return;
+    }
+  
+    const timerId = setTimeout(() => {
+      console.log("Calling fetchBooks...");
+      fetchBooks();
+    }, 500);
+  
+    return () => clearTimeout(timerId);
+  }, [fetchBooks]);
+  
   const openPopup = (book) => {
-    console.log("Opening popup for:", book);
     setSelectedBook(book);
   };
 
@@ -108,46 +87,42 @@ const SearchBooks = () => {
     setAddPopupBook(book);
   };
 
-  const closeAddPopup = () => {
-    setAddPopupBook(null);
-  };
+//   const closeAddPopup = () => {
+//     setAddPopupBook(null);
+//   };
 
-  const filteredBooks = books.filter((book) => {
-    const query = searchQuery.toLowerCase();
+//   const filteredBooks = books.filter((book) => {
+//     const query = searchQuery.toLowerCase();
 
-    switch (filterType) {
-      case 'title':
-        return book.title?.toLowerCase().includes(query) || false;
-      case 'author':
-        return book.author?.toLowerCase().includes(query) || false;
-      case 'isbn':
-        return book.isbn?.includes(query) || false; // ISBN is numeric, so no `.toLowerCase()`
-      case 'any':
-      default:
-        return (
-          book.title?.toLowerCase().includes(query) ||
-          book.author?.toLowerCase().includes(query) ||
-          book.isbn?.includes(query) ||
-          book.description?.toLowerCase().includes(query) ||
-          false
-        );
-    }
-  });
+//     switch (filterType) {
+//       case 'title':
+//         return book.title?.toLowerCase().includes(query) || false;
+//       case 'author':
+//         return book.author?.toLowerCase().includes(query) || false;
+//       case 'isbn':
+//         return book.isbn?.includes(query) || false; // ISBN is numeric, so no `.toLowerCase()`
+//       case 'any':
+//       default:
+//         return (
+//           book.title?.toLowerCase().includes(query) ||
+//           book.author?.toLowerCase().includes(query) ||
+//           book.isbn?.includes(query) ||
+//           book.description?.toLowerCase().includes(query) ||
+//           false
+//         );
+//     }
+//   });
 
   return (
     <div className="search-container">
       <div className="search-bar">
         <Search className="search-icon" size={20} />
-
-        {/* Search Input */}
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Search books..."
           value={searchQuery}
           onChange={handleSearchChange}
         />
-
-        {/* Dropdown Filter */}
         <select className="filter-dropdown" value={filterType} onChange={handleFilterChange}>
           <option value="any">Any Keyword</option>
           <option value="title">Title</option>
@@ -156,16 +131,24 @@ const SearchBooks = () => {
         </select>
       </div>
 
-      {/* Display Filtered Books */}
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <div className="search-results">
-        {filteredBooks.length > 0 ? (
-          filteredBooks.map((book) => (
-            <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
-              <div className="book-cover"></div>
+        {books.length > 0 ? (
+          books.map((book) => (
+            <div key={book.id || book._id} className="book-card" onClick={() => openPopup(book)}>
+              <div className="book-cover">
+                <img src={book.cover_image} alt={book.title} className="cover-img" />
+              </div>
               <div className="book-info">
                 <h2 className="book-title">{book.title}</h2>
-                <p className="book-author">{book.author}, {book.year}</p>
-                <p className="book-description">{book.description}</p>
+                <p className="book-author">
+                  {Array.isArray(book.author) ? book.author.join(', ') : book.author}
+                  {', '}
+                  {book.publication_date ? new Date(book.publication_date).getFullYear() : book.year}
+                </p>
+                <p className="book-description">{book.summary}</p>
               </div>
               <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
                 <Plus size={20} />
@@ -173,7 +156,7 @@ const SearchBooks = () => {
             </div>
           ))
         ) : (
-          <p className="no-results">No books found.</p>
+          !loading && <p className="no-results">No books found.</p>
         )}
       </div>
 
