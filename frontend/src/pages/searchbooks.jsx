@@ -3,10 +3,12 @@ import { Search, Plus } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
+import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState(null);
+  const [addPopupBook, setAddPopupBook] = useState(null);
   
   // Placeholder book data
   const books = [
@@ -93,6 +95,15 @@ const SearchBooks = () => {
     setSelectedBook(null);
   };
 
+  const openAddPopup = (book, event) => {
+    event.stopPropagation();
+    setAddPopupBook(book);
+  };
+
+  const closeAddPopup = () => {
+    setAddPopupBook(null);
+  };
+
   return (
     <div className="search-container">
       <div className="search-bar">
@@ -114,7 +125,7 @@ const SearchBooks = () => {
               <p className="book-author">{book.author}, {book.year}</p>
               <p className="book-description">{book.description}</p>
             </div>
-            <button className="add-button">
+            <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
               <Plus size={20} />
             </button>
           </div>
@@ -122,6 +133,7 @@ const SearchBooks = () => {
       </div>
       <Navbar/>
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
     </div>
   );
 };

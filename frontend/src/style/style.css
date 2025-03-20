@@ -1428,7 +1428,7 @@ footer {
 }
 
 .add-button {
-  background-color: #796855;
+  background-color: #7e4f34;
   color: white;
   border: none;
   border-radius: 50%;
@@ -1440,8 +1440,8 @@ footer {
   cursor: pointer;
   font-size: 20px;
 }
-.add-button:hover {
-  background-color: #7e4f34;
+.add-button:hover, .add-button:focus {
+  background-color: #582f17;
 }
 
 .popup-overlay {
