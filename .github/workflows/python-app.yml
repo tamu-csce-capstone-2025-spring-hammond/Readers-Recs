@@ -2,7 +2,7 @@ name: Python Application
 
 on:
   push:
-    branches: [ "development", "ci_testing" ]
+    branches: [ "development" ]
   pull_request:
     branches: [ "development" ]
 
