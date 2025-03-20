@@ -90,7 +90,7 @@
 }
 
 .add-button {
-  background-color: $-brown;
+  background-color: $-rust-brown;
   color: white;
   border: none;
   border-radius: 50%;
@@ -102,7 +102,7 @@
   cursor: pointer;
   font-size: 20px;
 
-  &:hover {
-    background-color: $-rust-brown;
+  &:hover, &:focus {
+    background-color: $-rust-brown-hover;
   }
 }
