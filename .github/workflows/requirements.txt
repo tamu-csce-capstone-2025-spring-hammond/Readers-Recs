@@ -5,6 +5,7 @@ flake8>=7.1.2
 black >= 25.1.0
 pytest-cov>=6.0.0
 email_validator>=2.2.0
+python-dotenv>=1.0.1
 
 certifi>=2025.1.31
 charset-normalizer>=3.4.1
