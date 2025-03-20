@@ -7,6 +7,7 @@ import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('any'); // Default to 'any'
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
   
@@ -17,6 +18,7 @@ const SearchBooks = () => {
       title: "The Great Gatsby",
       author: "F. Scott Fitzgerald",
       year: "1925",
+      isbn: "9780743273565",
       description: "A novel set in the Roaring Twenties that explores themes of wealth, excess, and the American Dream.",
       posts: [
         {
@@ -36,6 +38,7 @@ const SearchBooks = () => {
       title: "To Kill a Mockingbird",
       author: "Harper Lee",
       year: "1960",
+      isbn: "9780061120084",
       description: "A story of racial injustice and childhood innocence in the Deep South, seen through the eyes of Scout Finch."
     },
     {
@@ -86,6 +89,11 @@ const SearchBooks = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    setFilterType(e.target.value);
+  };
+
   const openPopup = (book) => {
     console.log("Opening popup for:", book);
     setSelectedBook(book);
@@ -104,34 +112,72 @@ const SearchBooks = () => {
     setAddPopupBook(null);
   };
 
+  const filteredBooks = books.filter((book) => {
+    const query = searchQuery.toLowerCase();
+
+    switch (filterType) {
+      case 'title':
+        return book.title?.toLowerCase().includes(query) || false;
+      case 'author':
+        return book.author?.toLowerCase().includes(query) || false;
+      case 'isbn':
+        return book.isbn?.includes(query) || false; // ISBN is numeric, so no `.toLowerCase()`
+      case 'any':
+      default:
+        return (
+          book.title?.toLowerCase().includes(query) ||
+          book.author?.toLowerCase().includes(query) ||
+          book.isbn?.includes(query) ||
+          book.description?.toLowerCase().includes(query) ||
+          false
+        );
+    }
+  });
+
   return (
     <div className="search-container">
       <div className="search-bar">
         <Search className="search-icon" size={20} />
+
+        {/* Search Input */}
         <input
           type="text"
           placeholder="Search"
           value={searchQuery}
           onChange={handleSearchChange}
         />
+
+        {/* Dropdown Filter */}
+        <select className="filter-dropdown" value={filterType} onChange={handleFilterChange}>
+          <option value="any">Any Keyword</option>
+          <option value="title">Title</option>
+          <option value="author">Author</option>
+          <option value="isbn">ISBN</option>
+        </select>
       </div>
 
+      {/* Display Filtered Books */}
       <div className="search-results">
-        {books.map(book => (
-          <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
-            <div className="book-cover"></div>
-            <div className="book-info">
-              <h2 className="book-title">{book.title}</h2>
-              <p className="book-author">{book.author}, {book.year}</p>
-              <p className="book-description">{book.description}</p>
+        {filteredBooks.length > 0 ? (
+          filteredBooks.map((book) => (
+            <div key={book.id} className="book-card" onClick={() => openPopup(book)}>
+              <div className="book-cover"></div>
+              <div className="book-info">
+                <h2 className="book-title">{book.title}</h2>
+                <p className="book-author">{book.author}, {book.year}</p>
+                <p className="book-description">{book.description}</p>
+              </div>
+              <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
+                <Plus size={20} />
+              </button>
             </div>
-            <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
-              <Plus size={20} />
-            </button>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="no-results">No books found.</p>
+        )}
       </div>
-      <Navbar/>
+
+      <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
       {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
     </div>

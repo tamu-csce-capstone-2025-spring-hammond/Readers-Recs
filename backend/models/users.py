@@ -1,15 +1,16 @@
+# database/models/users.py
 from pymongo import errors
 from bson.objectid import ObjectId
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema
+from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
 
 users_collection = collections["Users"]
 
 # require username, email address, and refresh tokens to be unique
-users_collection.create_index("username", unique=True)
-users_collection.create_index("email_address", unique=True)
-users_collection.create_index("refresh_token", unique=True)
+# users_collection.create_index("username", unique=True)
+# users_collection.create_index("email_address", unique=True)
+# users_collection.create_index("refresh_token", unique=True)
 
 
 def create_user(
@@ -27,9 +28,9 @@ def create_user(
         oauth_data = OAuthSchema(**oauth)
 
         # Validate demographics
-        demographics = OAuthSchema(**demographics)
+        demographics = DemographicSchema(**demographics)
 
-        # Validate UserSchema
+        # Validate and create user data using UserSchema
         user_data = UserSchema(
             first_name=first_name,
             last_name=last_name,
@@ -41,15 +42,17 @@ def create_user(
             demographics=(
                 demographics if isinstance(demographics, list) else [demographics]
             ),
-            # ADDED EMPTY GENRE WEIGHTS & EMBEDDING TO INITIALIZE
             genre_weights={},
             embedding=[],
         )
 
-        # Insert
-        return str(
-            users_collection.insert_one(user_data.model_dump(by_alias=True)).inserted_id
-        )
+        # Dump the model to a dict using aliases
+        data = user_data.model_dump(by_alias=True)
+        # Remove _id if it's empty so MongoDB auto-generates one
+        if not data.get("_id"):
+            data.pop("_id", None)
+        result = users_collection.insert_one(data)
+        return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
@@ -175,17 +178,27 @@ def update_embedding(user_id, new_embedding):
     ):
         return "Error: Embedding must be a list of numerical values."
 
-    return users_collection.update_one(
+    result = users_collection.update_one(
         {"_id": ObjectId(user_id)}, {"$set": {"embedding": new_embedding}}
     )
+
+    if result.modified_count == 0:
+        print("Warning: Embedding was already up-to-date.")
+    print("Success. Updated user embedding.")
+    return result
+
 
 
 def retrieve_embedding(user_id):
     """
     Retrieve the embedding vector for a user.
     """
-    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"embedding": 1})
-    return user.get("embedding", []) if user else "Error: User not found."
+    user = users_collection.find_one({"_id": user_id})
+    if user and "embedding" in user and user["embedding"]:  # Check if "embedding" exists and is not empty
+        return user["embedding"]
+    else:
+        return None
+
 
 
 ### End of new update/retrieval functions
