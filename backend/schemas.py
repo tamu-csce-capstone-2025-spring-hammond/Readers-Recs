@@ -76,7 +76,7 @@ class UserSchema(BaseModel):
     interests: List[str] = Field(default_factory=list)
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
-    genre_weights: dict[str, float] = Field(default_factory=dict)
+    genre_weights: List[dict[str, float]] = Field(default_factory=list)
     embedding: List[float] = Field(default_factory=list)
     genre_tags: List[str] = Field(default_factory=list)
 

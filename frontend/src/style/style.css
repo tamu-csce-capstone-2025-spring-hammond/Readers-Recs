@@ -1372,6 +1372,30 @@ footer {
   font-size: 18px;
 }
 
+.filter-dropdown {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #0e3523;
+  background-color: #EBE8E1;
+  border: 2px solid #2A664D;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-dropdown:hover, .filter-dropdown:focus {
+  border-color: #7e4f34;
+  box-shadow: 0 0 5px rgba(126, 79, 52, 0.4);
+}
+
+.filter-dropdown option {
+  font-size: 14px;
+  background-color: #EBE8E1;
+  color: #0e3523;
+}
+
 .search-results {
   display: flex;
   flex-direction: column;
@@ -1423,12 +1447,12 @@ footer {
   font-family: "Open Sans", sans-serif;
   color: #EBE8E1;
   margin: 8px 0 0;
-  font-size: 36px;
+  font-size: 14px;
   line-height: 1.8;
 }
 
 .add-button {
-  background-color: #796855;
+  background-color: #7e4f34;
   color: white;
   border: none;
   border-radius: 50%;
@@ -1440,8 +1464,8 @@ footer {
   cursor: pointer;
   font-size: 20px;
 }
-.add-button:hover {
-  background-color: #7e4f34;
+.add-button:hover, .add-button:focus {
+  background-color: #582f17;
 }
 
 .popup-overlay {
