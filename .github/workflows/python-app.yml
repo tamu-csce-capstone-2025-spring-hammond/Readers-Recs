@@ -40,5 +40,7 @@ jobs:
           flake8 tests/ backend/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest and generate coverage report
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           pytest --cov=. --cov-report=term-missing tests/
