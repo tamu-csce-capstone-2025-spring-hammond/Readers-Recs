@@ -9,6 +9,8 @@ Enhancing Book Discovery & Interaction with ML-Driven Recommendations
     - [JavaScript](#javascript)
 - [Running Locally](#running-locally)
   - [Backend](#backend)
+   - [ML Model](#ml-model)
+   - [Database Calls](#database-calls)
   - [Frontend](#frontend)
 - [Deploying](#deploying)
 
@@ -41,9 +43,14 @@ npm install react react-router-dom
 
 # Running Locally
 ## Backend
+### ML Model
 ```
 cd backend
 python .\book-rec-model.py
+```
+### Database Calls
+```
+python -m backend.main
 ```
 
 ## Frontend
