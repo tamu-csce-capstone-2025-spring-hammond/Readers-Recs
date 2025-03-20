@@ -1372,7 +1372,6 @@ footer {
   font-size: 18px;
 }
 
-/* dropdown styling */
 .filter-dropdown {
   font-family: "Open Sans", sans-serif;
   font-size: 16px;
@@ -1386,14 +1385,11 @@ footer {
   transition: all 0.3s ease;
 }
 
-/* Dropdown hover & focus effects */
-.filter-dropdown:hover,
-.filter-dropdown:focus {
+.filter-dropdown:hover, .filter-dropdown:focus {
   border-color: #7e4f34;
   box-shadow: 0 0 5px rgba(126, 79, 52, 0.4);
 }
 
-/* Dropdown options styling */
 .filter-dropdown option {
   font-size: 14px;
   background-color: #EBE8E1;
