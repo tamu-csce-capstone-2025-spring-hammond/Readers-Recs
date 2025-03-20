@@ -105,7 +105,9 @@ const SearchBooks = () => {
         {books.length > 0 ? (
           books.map((book) => (
             <div key={book.id || book._id} className="book-card" onClick={() => openPopup(book)}>
-              <div className="book-cover"></div>
+              <div className="book-cover">
+                <img src={book.cover_image} alt={book.title} className="cover-img" />
+              </div>
               <div className="book-info">
                 <h2 className="book-title">{book.title}</h2>
                 <p className="book-author">
@@ -113,7 +115,7 @@ const SearchBooks = () => {
                   {', '}
                   {book.publication_date ? new Date(book.publication_date).getFullYear() : book.year}
                 </p>
-                <p className="book-description">{book.description}</p>
+                <p className="book-description">{book.summary}</p>
               </div>
               <button className="add-button">
                 <Plus size={20} />
