@@ -90,9 +90,9 @@ const SearchBooks = () => {
     setAddPopupBook(book);
   };
 
-//   const closeAddPopup = () => {
-//     setAddPopupBook(null);
-//   };
+  const closeAddPopup = () => {
+    setAddPopupBook(null);
+  };
 
 
   return (
