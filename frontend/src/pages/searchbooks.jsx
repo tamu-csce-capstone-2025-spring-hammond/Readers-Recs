@@ -3,6 +3,7 @@ import { Search, Plus } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
+import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,6 +12,7 @@ const SearchBooks = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedBook, setSelectedBook] = useState(null);
+  const [addPopupBook, setAddPopupBook] = useState(null);
 
   // Update search query as user types
   const handleSearchChange = (e) => {
@@ -80,6 +82,37 @@ const SearchBooks = () => {
     setSelectedBook(null);
   };
 
+  const openAddPopup = (book, event) => {
+    event.stopPropagation();
+    setAddPopupBook(book);
+  };
+
+//   const closeAddPopup = () => {
+//     setAddPopupBook(null);
+//   };
+
+//   const filteredBooks = books.filter((book) => {
+//     const query = searchQuery.toLowerCase();
+
+//     switch (filterType) {
+//       case 'title':
+//         return book.title?.toLowerCase().includes(query) || false;
+//       case 'author':
+//         return book.author?.toLowerCase().includes(query) || false;
+//       case 'isbn':
+//         return book.isbn?.includes(query) || false; // ISBN is numeric, so no `.toLowerCase()`
+//       case 'any':
+//       default:
+//         return (
+//           book.title?.toLowerCase().includes(query) ||
+//           book.author?.toLowerCase().includes(query) ||
+//           book.isbn?.includes(query) ||
+//           book.description?.toLowerCase().includes(query) ||
+//           false
+//         );
+//     }
+//   });
+
   return (
     <div className="search-container">
       <div className="search-bar">
@@ -117,7 +150,7 @@ const SearchBooks = () => {
                 </p>
                 <p className="book-description">{book.summary}</p>
               </div>
-              <button className="add-button">
+              <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
                 <Plus size={20} />
               </button>
             </div>
@@ -129,6 +162,7 @@ const SearchBooks = () => {
 
       <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
     </div>
   );
 };
