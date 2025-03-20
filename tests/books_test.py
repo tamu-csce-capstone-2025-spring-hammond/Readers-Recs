@@ -1,5 +1,4 @@
-from pymongo import bson
-from bson.objectid import ObjectId
+from bson import ObjectId
 from datetime import datetime
 from backend.database import collections
 from backend.models.books import (
