@@ -81,6 +81,15 @@
   aspect-ratio: 2/3;
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .book-info {

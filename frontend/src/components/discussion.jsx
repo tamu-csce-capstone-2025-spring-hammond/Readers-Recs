@@ -14,9 +14,20 @@ export default function BookPopup({ book, onClose }) {
                     <h2 className="popup-title">{book.title}</h2>
                     <p className="popup-author">{book.author}, {book.publication_date ? new Date(book.publication_date).getFullYear() : book.year}</p>
                     <p className="popup-info">Page Count: {book.page_count}</p>
-                    <p className="popup-info">Genre: {book.genre_tags[0]}</p>
+                    <p className="popup-info">
+                        Genre: {book.genre_tags[0]
+                        .split(" ")
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(" ")}
+                    </p>
                     <p className="popup-info">Publisher: {book.publisher}</p>
-                    <p className="popup-info">Publication Date: {book.publication_date}</p>
+                    <p className="popup-info">
+                        Publication Date: {new Date(book.publication_date).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        })}
+                    </p>
                     <p className="popup-info">ISBN: {book.isbn}</p>
                 </div>
             </div>

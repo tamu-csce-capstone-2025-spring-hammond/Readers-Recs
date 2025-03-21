@@ -1,9 +1,18 @@
 import { useState } from "react";
 import "../style/style.css";
 
-export default function AddPopup({ book, onClose, addToRead, addShelf, addCurrent }) {
+export default function AddPopup({ book, onClose, addToRead, addShelf, addCurrent, position }) {
     return (
-        <div className="add-box">
+        <div
+            className="add-box"
+            style={{
+                position: "absolute",
+                top: position?.top + "px",
+                left: position?.left + "px",
+                transform: "translate(-100%, 0)",
+                zIndex: 1000,
+            }}
+        >
             <button className="add-popup-close" onClick={onClose}> × </button>
             <div className="things-to-add-to">
                 <div className="add-current">

@@ -87,8 +87,11 @@ const SearchBooks = () => {
 
   const openAddPopup = (book, event) => {
     event.stopPropagation();
-    setAddPopupBook(book);
+  
+    const rect = event.currentTarget.getBoundingClientRect();
+    setAddPopupBook({ book, position: { top: rect.top, left: rect.right } });
   };
+  
 
   const closeAddPopup = () => {
     setAddPopupBook(null);
@@ -142,7 +145,9 @@ const SearchBooks = () => {
         )}
       <Navbar />
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
-      {addPopupBook && <AddPopUp book={addPopupBook} onClose={closeAddPopup} />}
+      {addPopupBook && (
+        <AddPopUp book={addPopupBook.book} onClose={closeAddPopup} position={addPopupBook.position} />
+      )}
     </div>
     </div>
   );
