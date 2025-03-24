@@ -132,6 +132,15 @@ def test_read_user():
     assert "Error: Invalid ObjectId format." not in user
 
 
+def test_read_user_invalid():
+    user_id = "111111111111111111111111"
+    result = read_user(user_id)
+    assert result == "User not found."
+
+    user_id = "1111111111111111111"
+    result = read_user(user_id)
+    assert result == "Error: Invalid ObjectId format."
+
 def test_read_user_by_username():
     create_user(
         first_name="John",
@@ -232,7 +241,12 @@ def test_add_update_remove_demographics():
         oauth={"access_token": "123450", "refresh_token": "543210"},
         profile_image="https://example.com/image.jpg",
         interests=["Reading", "Writing"],
-        demographics={"age": 21},
+        demographics={
+            "age": 21,
+            "country": "Canada",
+            "birthday": "2003-05-14",
+            "gender": "F",
+        },
     )
 
     # Add a new demographic field: set country to "USA"
@@ -252,6 +266,101 @@ def test_add_update_remove_demographics():
     assert result.modified_count == 1
     user = read_user(user_id)
     assert user["demographics"]["age"] == 0
+
+    # remove demographic for country
+    result = remove_demographic(user_id, "country")
+    assert result.modified_count == 1
+    user = read_user(user_id)
+    assert user["demographics"]["country"] == ""
+
+    # remove demographic for birthday
+    result = remove_demographic(user_id, "birthday")
+    assert result.modified_count == 1
+    user = read_user(user_id)
+    assert user["demographics"]["birthday"] == None
+
+
+def test_add_demographics_invalid_type():
+    user_id = create_user(
+        first_name="John",
+        last_name="Doe",
+        username="johndoe",
+        email_address="test_user_1@gmail.com",
+        oauth={"access_token": "123450", "refresh_token": "543210"},
+        profile_image="https://example.com/image.jpg",
+        interests=["Reading", "Writing"],
+        demographics={"age": 21},
+    )
+
+    # not provided as a dictionary
+    result = add_demographic(user_id, "age")
+    assert result == "Error: Demographics must be provided as a dictionary."
+
+    # empty input
+    result = add_demographic(user_id, {})
+    assert result == "Error: Demographics update cannot be empty."
+
+    # not an approved demographic field
+    result = add_demographic(user_id, {"height": 5})
+    assert (
+        result
+        == "Error: Demographics must contain only age, country, birthday, and/or gender."
+    )
+
+
+def test_update_demographics_invalid_type():
+    user_id = create_user(
+        first_name="John",
+        last_name="Doe",
+        username="johndoe",
+        email_address="test_user_1@gmail.com",
+        oauth={"access_token": "123450", "refresh_token": "543210"},
+        profile_image="https://example.com/image.jpg",
+        interests=["Reading", "Writing"],
+        demographics={"age": 21},
+    )
+
+    # not provided as a dictionary
+    result = update_demographics(user_id, "age")
+    assert result == "Error: Demographics must be provided as a dictionary."
+
+    # empty input
+    result = update_demographics(user_id, {})
+    assert result == "Error: Demographics update cannot be empty."
+
+    # not an approved demographic field
+    result = update_demographics(user_id, {"height": 5})
+    assert (
+        result
+        == "Error: Demographics must contain only age, country, birthday, and/or gender."
+    )
+
+
+def test_remove_demographics_invalid_type():
+    user_id = create_user(
+        first_name="John",
+        last_name="Doe",
+        username="johndoe",
+        email_address="test_user_1@gmail.com",
+        oauth={"access_token": "123450", "refresh_token": "543210"},
+        profile_image="https://example.com/image.jpg",
+        interests=["Reading", "Writing"],
+        demographics={"age": 21},
+    )
+
+    # includes invalid demographic field
+    result = remove_demographic(user_id, "height")
+    assert result == "Error: height is not a valid demographic field."
+
+
+def test_delete_user_doesnt_exist():
+    result = delete_user("54f0e5aa313f5d824680d6c9")
+    assert result == "Error: User not found."
+
+
+def test_delete_user_invalid_objectid():
+    result = delete_user("1111111111111111111111")
+    assert result == "Error: Invalid ObjectId format."
 
 
 @pytest.fixture(autouse=True)

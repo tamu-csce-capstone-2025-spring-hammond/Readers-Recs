@@ -1,6 +1,8 @@
 # database/models/users.py
 from pymongo import errors
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
+from datetime import datetime, date
 from pydantic import ValidationError
 from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
@@ -58,6 +60,17 @@ def create_user(
         # Dump the model to a dict using aliases
         data = user_data.model_dump(by_alias=True)
         # Remove _id if it's empty so MongoDB auto-generates one
+        if (
+            "demographics" in data
+            and "birthday" in data["demographics"]
+            and data["demographics"]["birthday"] is not None
+        ):
+            bday = data["demographics"]["birthday"]
+            # if it's a date but not a datetime, convert it:
+            if isinstance(bday, date) and not isinstance(bday, datetime):
+                data["demographics"]["birthday"] = datetime.combine(
+                    bday, datetime.min.time()
+                )
         if not data.get("_id"):
             data.pop("_id", None)
         result = users_collection.insert_one(data)
@@ -65,8 +78,6 @@ def create_user(
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except errors.DuplicateKeyError:
-        return "Error: Username, Email Address, or Refresh Token must be unique!"
 
 
 def read_user(user_id):
@@ -75,9 +86,7 @@ def read_user(user_id):
         return (
             UserSchema(**user).model_dump(by_alias=True) if user else "User not found."
         )
-    except ValidationError as e:
-        return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
 
 
@@ -309,5 +318,5 @@ def delete_user(user_id):
         users_collection.delete_one({"_id": user_id})
         return "User and related records deleted successfully."
 
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
