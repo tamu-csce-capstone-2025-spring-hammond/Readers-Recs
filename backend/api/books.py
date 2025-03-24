@@ -7,11 +7,12 @@ from bson import ObjectId
 books_bp = Blueprint("books", __name__)
 CORS(books_bp)
 
+
 @books_bp.route("/books", methods=["GET"])
 def search_books():
     """
     Search for books in the database.
-    
+
     - `query`: The search term (Required).
     - `type`: Search by "title", "author", "isbn", or "any" (Optional, default: "any").
     """
@@ -30,13 +31,11 @@ def search_books():
         filters.append({"author": {"$regex": search_term, "$options": "i"}})
     if search_type in ["isbn", "any"]:
         filters.append({"isbn": {"$regex": search_term, "$options": "i"}})
-    
+
     query_filter = {"$or": filters} if filters else {}
 
     books_cursor = collections["Books"].find(query_filter).limit(50)
-    books = [
-        {**book, "_id": str(book["_id"])} for book in books_cursor
-    ]
+    books = [{**book, "_id": str(book["_id"])} for book in books_cursor]
 
     if not books:
         return jsonify({"error": "No books found"}), 404

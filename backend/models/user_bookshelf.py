@@ -4,6 +4,7 @@ from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from backend.database import collections
 from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from bson import ObjectId
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
@@ -98,14 +99,9 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 def retrieve_user_bookshelf(user_id):
     # if not is_valid_object_id("Users", user_id):
     #         return "Error: Invalid user_id."
-    
-    books = list(
-        user_bookshelf_collection.find(
-            {"user_id": user_id, "status": "read"}
-        )
-    )
-    return books     # returns list of books
 
+    books = list(user_bookshelf_collection.find({"user_id": user_id, "status": "read"}))
+    return books  # returns list of books
 
 
 def rate_book(user_id, book_id, new_rating):

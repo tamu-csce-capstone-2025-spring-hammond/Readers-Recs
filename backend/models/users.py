@@ -188,17 +188,17 @@ def update_embedding(user_id, new_embedding):
     return result
 
 
-
 def retrieve_embedding(user_id):
     """
     Retrieve the embedding vector for a user.
     """
     user = users_collection.find_one({"_id": user_id})
-    if user and "embedding" in user and user["embedding"]:  # Check if "embedding" exists and is not empty
+    if (
+        user and "embedding" in user and user["embedding"]
+    ):  # Check if "embedding" exists and is not empty
         return user["embedding"]
     else:
         return None
-
 
 
 ### End of new update/retrieval functions
