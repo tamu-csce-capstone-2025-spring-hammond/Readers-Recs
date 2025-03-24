@@ -30,6 +30,17 @@ def create_user(
         # Validate demographics
         demographics = DemographicSchema(**demographics)
 
+        if users_collection.find_one(
+            {
+                "$or": [
+                    {"username": username},
+                    {"email_address": email_address},
+                    {"oauth.refresh_token": oauth_data.refresh_token},
+                ]
+            }
+        ):
+            return "Error: Username, Email Address, or Refresh Token must be unique!"
+
         # Validate and create user data using UserSchema
         user_data = UserSchema(
             first_name=first_name,
@@ -39,10 +50,8 @@ def create_user(
             oauth=oauth_data,
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
-            demographics=(
-                demographics if isinstance(demographics, list) else [demographics]
-            ),
-            genre_weights={},
+            demographics=demographics,
+            genre_weights=[],
             embedding=[],
         )
 
@@ -204,18 +213,6 @@ def retrieve_embedding(user_id):
 ### End of new update/retrieval functions
 
 
-def update_username(user_id, new_username):  # TODO: ask if this is necessary
-    return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"username": new_username}}
-    )
-
-
-def update_email(user_id, new_email):  # TODO: ask if this is necessary
-    return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"email_address": new_email}}
-    )
-
-
 def update_profile_image(user_id, new_image):
     return users_collection.update_one(
         {"_id": ObjectId(user_id)}, {"$set": {"profile_image": new_image}}
@@ -234,27 +231,65 @@ def remove_interest(user_id, interest):
     )
 
 
-def add_demographic(user_id, new_demographic):
+def add_demographic(user_id, new_demographics):
+    allowed = {"age", "country", "birthday", "gender"}
+
+    if not isinstance(new_demographics, dict):
+        return "Error: Demographics must be provided as a dictionary."
+
+    if not new_demographics:
+        return "Error: Demographics update cannot be empty."
+
+    # Verify that every key in the update is allowed.
+    if not all(key in allowed for key in new_demographics.keys()):
+        return "Error: Demographics must contain only age, country, birthday, and/or gender."
+
+    update_fields = {
+        f"demographics.{key}": value for key, value in new_demographics.items()
+    }
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$addToSet": {"demographics": new_demographic}}
+        {"_id": ObjectId(user_id)}, {"$set": update_fields}
     )
 
 
 def update_demographics(user_id, new_demographics):
-    if not isinstance(new_demographics, list):
-        return "Error: Demographics must be a list of strings."
+    allowed = {"age", "country", "birthday", "gender"}
 
-    if not all(isinstance(d, str) for d in new_demographics):
-        return "Error: Each demographic must be a string."
+    if not isinstance(new_demographics, dict):
+        return "Error: Demographics must be provided as a dictionary."
+
+    if not new_demographics:
+        return "Error: Demographics update cannot be empty."
+
+    # Verify that every key in the update is allowed.
+    if not all(key in allowed for key in new_demographics.keys()):
+        return "Error: Demographics must contain only age, country, birthday, and/or gender."
+
+    update_fields = {
+        f"demographics.{key}": value for key, value in new_demographics.items()
+    }
 
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"demographics": new_demographics}}
+        {"_id": ObjectId(user_id)}, {"$set": update_fields}
     )
 
 
-def remove_demographic(user_id, demographic_to_remove):
+def remove_demographic(user_id, demographic_field):
+    allowed = {"age", "country", "birthday", "gender"}
+    if demographic_field not in allowed:
+        return f"Error: {demographic_field} is not a valid demographic field."
+
+    if demographic_field == "age":
+        default_value = 0
+    elif demographic_field in ["country", "gender"]:
+        default_value = ""
+    elif demographic_field == "birthday":
+        default_value = None
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$pull": {"demographics": demographic_to_remove}}
+        {"_id": ObjectId(user_id)},
+        {"$set": {f"demographics.{demographic_field}": default_value}},
     )
 
 
