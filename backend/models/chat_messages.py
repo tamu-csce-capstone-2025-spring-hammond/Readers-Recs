@@ -16,13 +16,13 @@ def create_chat_message(book_id, user_id, message_text):
             return "Error: Invalid book_id."
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
+        if not message_text or not message_text.strip():
+            return "Error: Chat message must contain text."
 
-        # Create and validate using the schema; defaults (like date_posted) will be applied.
         chat_message = ChatMessageSchema(
             book_id=book_id, user_id=user_id, message_text=message_text
         )
         data = chat_message.model_dump(by_alias=True)
-        # Remove _id if present so MongoDB can generate a new one.
         data.pop("_id", None)
         result = chat_messages_collection.insert_one(data)
         return str(result.inserted_id)
@@ -37,7 +37,7 @@ def create_chat_message(book_id, user_id, message_text):
 
 def read_chat_message(message_id):
     try:
-        if not is_valid_object_id("ChatMessages", message_id):
+        if not is_valid_object_id("Chat_Messages", message_id):
             return "Error: Invalid message_id."
 
         document = chat_messages_collection.find_one({"_id": ObjectId(message_id)})
@@ -51,10 +51,28 @@ def read_chat_message(message_id):
         return f"Error: {str(e)}"
 
 
+def read_chat_message_text(message_id):
+    try:
+        if not is_valid_object_id("Chat_Messages", message_id):
+            return "Error: Invalid message_id."
+
+        document = chat_messages_collection.find_one({"_id": ObjectId(message_id)})
+        if document:
+            chat_message = ChatMessageSchema(**document)
+            return chat_message.message_text
+        else:
+            return "Message not found."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 def update_chat_message(message_id, message_text):
     try:
-        if not is_valid_object_id("ChatMessages", message_id):
+        if not is_valid_object_id("Chat_Messages", message_id):
             return "Error: Invalid message_id."
+        if not message_text or not message_text.strip():
+            return "Error: Chat message must contain text."
 
         update_data = {
             "message_text": message_text,
@@ -79,7 +97,7 @@ def update_chat_message(message_id, message_text):
 
 def delete_chat_message(message_id):
     try:
-        if not is_valid_object_id("ChatMessages", message_id):
+        if not is_valid_object_id("Chat_Messages", message_id):
             return "Error: Invalid message_id."
 
         result = chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
@@ -97,7 +115,7 @@ def get_all_chat_messages_for_book(book_id):
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
-        # Find all messages for the book and sort chronologiclaly by date_posted
+        # Find all messages for the book and sort chronologically by date_posted
         cursor = chat_messages_collection.find({"book_id": ObjectId(book_id)}).sort(
             "date_posted", 1
         )
