@@ -104,6 +104,57 @@ def retrieve_user_bookshelf(user_id):
     return books  # returns list of books
 
 
+def get_read_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find({"user_id": user_id, "status": "read"})
+        )
+        return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_unread_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find({"user_id": user_id, "status": "to-read"})
+        )
+        return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_currently_reading_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find(
+                {"user_id": user_id, "status": "currently-reading"}
+            )
+        )
+        if books:
+            return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 def rate_book(user_id, book_id, new_rating):
     # TODO: add check that book has been completed
     try:
