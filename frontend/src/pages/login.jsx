@@ -14,7 +14,7 @@ const Login = () => {
     // localStorage.setItem("userToken", response.credential);
 
     // Redirect to the home page ("/")
-    navigate("/");
+    navigate("/home");
   };
 
   // Failure handler for Google Login
