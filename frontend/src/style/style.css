@@ -1861,6 +1861,12 @@ footer {
   font-size: 14px;
 }
 
+.book-cover {
+  border: none;
+  margin-bottom: 0px;
+  border-radius: 0px;
+}
+
 .add-box {
   background: #7e4f34;
   color: #EBE8E1;
