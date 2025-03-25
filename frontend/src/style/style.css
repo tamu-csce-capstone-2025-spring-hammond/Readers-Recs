@@ -844,6 +844,10 @@ body {
   padding-bottom: calc(60px + 2rem);
 }
 
+.current-section .section-title, .finished-section .section-title {
+  font-size: 24px;
+}
+
 * {
   margin: 0;
   padding: 0;
