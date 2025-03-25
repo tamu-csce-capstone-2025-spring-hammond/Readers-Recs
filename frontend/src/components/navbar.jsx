@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import "../style/style.css";
 import logo from "../assets/logo.png";
 import { Search, MessageSquare, User } from "lucide-react";
