@@ -2,8 +2,9 @@
 # from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from database import collections
-from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from backend.database import collections
+from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from bson import ObjectId
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
@@ -98,14 +99,60 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 def retrieve_user_bookshelf(user_id):
     # if not is_valid_object_id("Users", user_id):
     #         return "Error: Invalid user_id."
-    
-    books = list(
-        user_bookshelf_collection.find(
-            {"user_id": user_id, "status": "read"}
-        )
-    )
-    return books     # returns list of books
 
+    books = list(user_bookshelf_collection.find({"user_id": user_id, "status": "read"}))
+    return books  # returns list of books
+
+
+def get_read_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find({"user_id": user_id, "status": "read"})
+        )
+        return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_unread_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find({"user_id": user_id, "status": "to-read"})
+        )
+        return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_currently_reading_books(user_id):
+    try:
+        # Validate user_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+
+        # Get all books read by the user
+        books = list(
+            user_bookshelf_collection.find(
+                {"user_id": user_id, "status": "currently-reading"}
+            )
+        )
+        if books:
+            return books
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def rate_book(user_id, book_id, new_rating):

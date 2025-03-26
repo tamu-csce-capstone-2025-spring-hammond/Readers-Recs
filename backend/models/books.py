@@ -1,10 +1,10 @@
 # database/models/books.py
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from schemas import BookSchema
-from database import collections
+from backend.schemas import BookSchema
+from backend.database import collections
 from pymongo.errors import PyMongoError
 import numpy as np
 
@@ -38,7 +38,10 @@ def create_book(
             tags = [tags]
 
         # Convert 'publication_date' to datetime
-        publication_date = datetime.strptime(publication_date, "%Y-%m-%d")
+        if isinstance(publication_date, str):
+            # Parse string to date first
+            publication_date = datetime.strptime(publication_date, "%Y-%m-%d").date()
+        mongo_pub_date = datetime.combine(publication_date, datetime.min.time())
 
         # Validate data using BookSchema
         book_data = BookSchema(
@@ -61,6 +64,9 @@ def create_book(
         data = book_data.model_dump(by_alias=True)
         if not data.get("_id"):
             data.pop("_id", None)
+
+        # Mongo can't handle date() directly, so convert it to datetime before insert
+        data["publication_date"] = mongo_pub_date
         result = books_collection.insert_one(data)
 
         return str(result.inserted_id)
@@ -172,6 +178,15 @@ def update_book_details(book_id: str, **kwargs):
         # Validate and serialize the updated data
         validated_data = BookSchema(**updated_data).model_dump(by_alias=True)
 
+        # Convert publication_date to datetime if needed
+        if "publication_date" in validated_data:
+            pub_date = validated_data["publication_date"]
+
+            if isinstance(pub_date, date) and not isinstance(pub_date, datetime):
+                validated_data["publication_date"] = datetime.combine(
+                    pub_date, datetime.min.time()
+                )
+
         # Update the book in MongoDB
         books_collection.update_one({"_id": book_id}, {"$set": validated_data})
         return "Book updated successfully."
@@ -245,7 +260,8 @@ def update_book_embedding(book_id, new_embedding):
             return "Book not found or embedding unchanged."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
-    
+
+
 def remove_book_author(book_id, author_to_remove):
     if not ObjectId.is_valid(book_id):
         return "Invalid book ID."

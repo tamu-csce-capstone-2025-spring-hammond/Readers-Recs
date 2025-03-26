@@ -5,6 +5,7 @@ from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 #############################################################
 # WITHOUT DB ################################################
 class BookRecommenderNoDB:
@@ -16,7 +17,9 @@ class BookRecommenderNoDB:
                 "read_books": {},
             }
         )
-        self.book_data = {}  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
+        self.book_data = (
+            {}
+        )  # Stores book metadata {book_id: {"genres": [...], "embedding": np.array, "summary": str, "summary_embedding": np.array}}
         self.valid_ratings = ["pos", "neg", "mid"]
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -95,12 +98,11 @@ class BookRecommenderNoDB:
         return [book[0] for book in book_scores[:top_n]]
 
 
-
-
 #############################################################
 # WITH DB CONNECTION ########################################
 from models.user_bookshelf import retrieve_user_bookshelf
 from database import collections
+
 # from pymongo import MongoClient
 # from bson.objectid import ObjectId
 from models.books import books_collection, update_book_embedding, read_book_field
@@ -139,11 +141,9 @@ class BookRecommender:
         print("Books read:", books_read)
     
         for book in books_read:
-            book_id = book['book_id']
-            rating = book['rating']
+            book_id = book["book_id"]
+            rating = book["rating"]
             self.process_user_rating(user_id, book_id, rating)
-
-
 
     # MAY NOT BE NEEDED: ADD BOOK FUNCTION
 
@@ -218,7 +218,6 @@ class BookRecommender:
             new_embedding = (user_embedding + book_embedding) / 2
             update_embedding(user_id, new_embedding.tolist())
 
-
     # def process_user_rating(self, user_id, book_id, rating):
     #     """Handles user book interactions and updates preferences."""
     #     if rating not in self.valid_ratings:
@@ -281,7 +280,7 @@ class BookRecommender:
     #         if not book_embedding:
     #             self.update_book_embedding_in_db(book_id, book["summary"])
     #             if not book_embedding:
-    #                 pass 
+    #                 pass
     #         if isinstance(user_embedding, str):  # Convert if stored as a string
     #             user_embedding = np.array(json.loads(user_embedding), dtype=np.float64)
     #         elif user_embedding is None or len(user_embedding) == 0:  # Handle missing embeddings
@@ -305,7 +304,9 @@ class BookRecommender:
                 print("User embedding is empty.")
                 return []
         if user_vector.ndim == 1:  # If it's a 1D array, check for NaN or empty
-            if user_vector.size == 0 or np.any(np.isnan(user_vector)):  # Check for NaN or empty user_vector
+            if user_vector.size == 0 or np.any(
+                np.isnan(user_vector)
+            ):  # Check for NaN or empty user_vector
                 print("USER HAS NO READING HISTORY or NaN in user embedding")
                 return []
 
@@ -324,7 +325,9 @@ class BookRecommender:
             
             # Retrieve and validate summary embedding
             summary_embedding = read_book_field(book_id, "embedding")
-            if summary_embedding is None or len(summary_embedding) == 0:  # Handle missing or empty embedding
+            if (
+                summary_embedding is None or len(summary_embedding) == 0
+            ):  # Handle missing or empty embedding
                 print(f"Book {book_id} has no embedding, attempting to update.")
                 self.update_book_embedding_in_db(book_id)
             summary_embedding = read_book_field(book_id, "embedding")
@@ -338,8 +341,12 @@ class BookRecommender:
             summary_embedding = np.array(summary_embedding)
       
             # Ensure user_vector and summary_embedding are 2D before similarity calculation
-            user_vector = np.nan_to_num(user_vector)  # Replace NaN in user_vector with zeros
-            summary_embedding = np.nan_to_num(summary_embedding)  # Replace NaN in book embedding with zeros
+            user_vector = np.nan_to_num(
+                user_vector
+            )  # Replace NaN in user_vector with zeros
+            summary_embedding = np.nan_to_num(
+                summary_embedding
+            )  # Replace NaN in book embedding with zeros
 
             # Compute cosine similarity
             
@@ -359,6 +366,7 @@ class BookRecommender:
 
         book_scores.sort(key=lambda x: x[1], reverse=True)
         return [book[0] for book in book_scores[:top_n]]
+
 
 #############################################################
 # MAIN ######################################################
@@ -507,7 +515,6 @@ if __name__ == "__main__":
     #     for book_id, rating in ratings:
     #         recommender.process_user_rating(user_id, book_id, rating)
 
-
     books_collection = collections["Books"]
     users_collection = collections["Users"]
     user_bookshelf_collection = collections["User_Bookshelf"]
@@ -518,7 +525,6 @@ if __name__ == "__main__":
     recommender.process_reading_history(id)
     recs = recommender.recommend_books(id)
     print(f"Recommended books: {recs}")
-
 
     # for user_id in users.keys():
     #     recommendations = recommender.recommend_books(user_id, top_n=5)
