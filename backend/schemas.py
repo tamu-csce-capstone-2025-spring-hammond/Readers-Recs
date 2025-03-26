@@ -59,11 +59,11 @@ class OAuthSchema(BaseModel):
     access_token: str = Field(default="default_access_token")
 
 
-class DemographicSchema(BaseModel):  # TODO: update based on demographics decisions
-    gender: str = Field(default="Not Specified")
+class DemographicSchema(BaseModel):
+    gender: str = Field(default="")
     age: int = Field(default=0)
-    country: str = Field(default="Not Specified")
-    birthday: date = Field(default_factory=date.today)
+    country: str = Field(default="")
+    birthday: Optional[date] = Field(default=None)
 
 
 class UserSchema(BaseModel):
@@ -78,7 +78,7 @@ class UserSchema(BaseModel):
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
     genre_weights: List[dict[str, float]] = Field(default_factory=list)
     embedding: List[float] = Field(default_factory=list)
-    genre_tags: List[str] = Field(default_factory=list)
+    # genre_tags: List[str] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
 
