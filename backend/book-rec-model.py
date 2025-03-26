@@ -136,6 +136,7 @@ class BookRecommender:
 
     def process_reading_history(self, user_id):
         books_read = retrieve_user_bookshelf(user_id)
+        print("Books read:", books_read)
     
         for book in books_read:
             book_id = book['book_id']
@@ -194,17 +195,24 @@ class BookRecommender:
             genre_weights[genre] = genre_weights.get(genre, 0) + weight_change
 
         update_genre_weights(user_id, genre_weights)
-
+        print("User new genre weights:", retrieve_genre_weights(user_id))
         # Embedding update
         if rating == "pos":
             user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
             book_embedding = np.array(book["embedding"], dtype=np.float64)
+            
 
-            if isinstance(user_embedding, np.ndarray):
+            if isinstance  (user_embedding, np.ndarray):
                 pass  # Already a NumPy array, no conversion needed
-           
+
+
             if user_embedding is None or len(user_embedding) == 0:
+                print("empty user embedding")
                 user_embedding = np.zeros_like(book_embedding)  # Handle missing embeddings
+            
+            if book_embedding is None or len(book_embedding) == 0:
+                self.update_book_embedding_in_db(book_id)
+           
 
             # Compute new embedding
             new_embedding = (user_embedding + book_embedding) / 2
@@ -292,9 +300,10 @@ class BookRecommender:
 
         # Retrieve user embedding and ensure it's a NumPy array
         user_vector = np.array(retrieve_embedding(user_id))  # Ensure it's a numpy array
-        if not user_vector:
-            print("USER HAS NO READING HISTORY or NaN in user embedding")
-            return []
+        print("User vector: ", user_vector)
+        if user_vector.size == 0:
+                print("User embedding is empty.")
+                return []
         if user_vector.ndim == 1:  # If it's a 1D array, check for NaN or empty
             if user_vector.size == 0 or np.any(np.isnan(user_vector)):  # Check for NaN or empty user_vector
                 print("USER HAS NO READING HISTORY or NaN in user embedding")
@@ -306,33 +315,41 @@ class BookRecommender:
         genre_weights = retrieve_genre_weights(user_id)
         if isinstance(genre_weights, str):
             genre_weights = {}  # Handle error case
-
+        
+        books_read = retrieve_user_bookshelf(user_id)
         for book in books:
             book_id = book["_id"]
+            if book in books_read:
+                continue
             
             # Retrieve and validate summary embedding
             summary_embedding = read_book_field(book_id, "embedding")
             if summary_embedding is None or len(summary_embedding) == 0:  # Handle missing or empty embedding
                 print(f"Book {book_id} has no embedding, attempting to update.")
                 self.update_book_embedding_in_db(book_id)
-                
+            summary_embedding = read_book_field(book_id, "embedding")
             if summary_embedding is None or len(summary_embedding) == 0:  # Handle missing or empty embedding
                 print(f"Book {book_id} still has no embedding, skipping.")
+                continue
+            else:
+                print("Successfully updated")
+            
             # Convert summary_embedding to numpy array and check for NaN
             summary_embedding = np.array(summary_embedding)
-            if np.any(np.isnan(summary_embedding)):  # Check for NaN in book embedding
-                
-                print(f"Book {book_id} has NaN in embedding, replacing with zeros.")
-                summary_embedding = np.zeros_like(user_vector)  # Replace with zeros
-
+      
             # Ensure user_vector and summary_embedding are 2D before similarity calculation
             user_vector = np.nan_to_num(user_vector)  # Replace NaN in user_vector with zeros
             summary_embedding = np.nan_to_num(summary_embedding)  # Replace NaN in book embedding with zeros
 
             # Compute cosine similarity
-            similarity = cosine_similarity(
-                user_vector.reshape(1, -1), summary_embedding.reshape(1, -1)
-            )[0][0]
+            
+            try:
+                similarity = cosine_similarity(
+                    user_vector.reshape(1, -1), summary_embedding.reshape(1, -1)
+                )[0][0]
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                similarity = 0  # Assign a default value or handle accordingly
 
             genres = read_book_field(book_id, "genres")
             genre_score = sum(genre_weights.get(g, 0) for g in genres)
@@ -496,7 +513,7 @@ if __name__ == "__main__":
     user_bookshelf_collection = collections["User_Bookshelf"]
     recommender = BookRecommender()
 
-    # Katelyn's user ID = 67c64c27835dd5190e9d458b
+    # Kaitlyn's user ID = 67c64c27835dd5190e9d458b
     id = "67c64c27835dd5190e9d458b"
     recommender.process_reading_history(id)
     recs = recommender.recommend_books(id)
