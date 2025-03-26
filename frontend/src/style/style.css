@@ -1431,7 +1431,7 @@ footer {
   z-index: 1;
 }
 
-.floating-books {
+.loginpage-floating-books {
   position: fixed;
   width: 100%;
   height: 100%;
@@ -1442,18 +1442,18 @@ footer {
   opacity: 0.5;
 }
 
-.book {
+.loginpage-book {
   position: absolute;
   width: 60px;
   height: 80px;
   background-color: #7e4f34;
   border-radius: 5px;
   transform: rotate(10deg);
-  animation: float 15s linear infinite;
+  animation: loginpage-float 15s linear infinite;
   opacity: 0.5;
 }
 
-@keyframes float {
+@keyframes loginpage-float {
   0% {
     transform: translateY(100vh) translateX(0) rotate(10deg);
     opacity: 0.3;
@@ -1463,57 +1463,57 @@ footer {
     opacity: 1;
   }
 }
-.book:nth-child(1) {
+.loginpage-book:nth-child(1) {
   left: 10%;
   background-color: #796855;
   animation-duration: 18s;
-  rotate: 10deg;
+  transform: rotate(10deg);
   animation-delay: 0.2s;
 }
 
-.book:nth-child(2) {
+.loginpage-book:nth-child(2) {
   left: 25%;
   background-color: #0e3523;
   animation-duration: 22s;
-  rotate: -6deg;
+  transform: rotate(-6deg);
 }
 
-.book:nth-child(3) {
+.loginpage-book:nth-child(3) {
   left: 40%;
   background-color: #0e3523;
   animation-duration: 19s;
-  rotate: 12deg;
+  transform: rotate(12deg);
   animation-delay: 0.3s;
 }
 
-.book:nth-child(4) {
+.loginpage-book:nth-child(4) {
   left: 55%;
   background-color: #7e4f34;
   animation-duration: 21s;
-  rotate: 17deg;
+  transform: rotate(17deg);
 }
 
-.book:nth-child(5) {
+.loginpage-book:nth-child(5) {
   left: 70%;
   background-color: #2A664D;
   animation-duration: 25s;
-  rotate: 14deg;
+  transform: rotate(14deg);
   animation-delay: 3s;
 }
 
-.book:nth-child(6) {
+.loginpage-book:nth-child(6) {
   left: 85%;
-  background-color: #0e3523;
+  background-color: #7e4f34;
   animation-duration: 20s;
-  rotate: -23deg;
+  transform: rotate(-23deg);
   animation-delay: 2s;
 }
 
-.book:nth-child(7) {
+.loginpage-book:nth-child(7) {
   left: 95%;
-  background-color: #7e4f34;
+  background-color: #0e3523;
   animation-duration: 22s;
-  rotate: 14deg;
+  transform: rotate(14deg);
   animation-delay: 10s;
 }
 

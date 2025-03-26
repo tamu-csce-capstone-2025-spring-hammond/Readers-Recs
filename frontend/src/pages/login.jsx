@@ -25,15 +25,15 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <div className="floating-books">
-        <div className="book"></div>
-        <div className="book"></div>
-        <div className="book"></div>
-        <div className="book"></div>
-        <div className="book"></div>
-        <div className="book"></div>
-        <div className="book"></div>
-      </div>
+      <div className="loginpage-floating-books">
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+      <div className="loginpage-book"></div>
+    </div>
       <div className="login-container">
         <div className="login-header">
           <h1>Welcome Back</h1>
