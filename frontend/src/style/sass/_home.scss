@@ -454,3 +454,9 @@ $white-color: #ffffff;
 body {
   padding-bottom: calc(60px + 2rem);
 }
+
+.current-section, .finished-section {
+  .section-title {
+    font-size: 24px;
+  }
+}
