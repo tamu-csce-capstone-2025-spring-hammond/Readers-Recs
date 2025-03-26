@@ -260,7 +260,8 @@ def update_book_embedding(book_id, new_embedding):
             return "Book not found or embedding unchanged."
     except PyMongoError as e:
         return f"An error occurred: {str(e)}"
-    
+
+
 def remove_book_author(book_id, author_to_remove):
     if not ObjectId.is_valid(book_id):
         return "Invalid book ID."
