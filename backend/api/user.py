@@ -37,9 +37,11 @@ def get_user_profile():
     user = read_user_by_email(email=token_info["email"])
     if not user:
         return jsonify({f"error": "{token_info}"}), 404
-
+    
+    print(user)
     if isinstance(user, str):  # User not found, create a new user
         # Create user from Google profile data
+        print("Im here")
         new_user_data = {
             "first_name": token_info.get("given_name", ""),
             "last_name": token_info.get("family_name", ""),
