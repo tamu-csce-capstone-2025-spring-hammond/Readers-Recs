@@ -1,12 +1,10 @@
 from datetime import datetime
-from models.books import read_book_by_bookId
+from backend.models.books import read_book_by_bookId
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from database import collections
 from bson import ObjectId
-import requests
 
-from models.user_bookshelf import (
+from backend.models.user_bookshelf import (
     create_user_bookshelf,
     delete_user_bookshelf,
     get_currently_reading_books,

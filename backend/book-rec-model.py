@@ -1,9 +1,19 @@
 import collections
-import json
+# import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
+from models.user_bookshelf import retrieve_user_bookshelf
+# from database import collections
+from models.books import books_collection, update_book_embedding, read_book_field
+from models.users import (
+    read_user,
+    update_genre_weights,
+    retrieve_genre_weights,
+    update_embedding,
+    retrieve_embedding,
+)
 
 
 #############################################################
@@ -100,21 +110,6 @@ class BookRecommenderNoDB:
 
 #############################################################
 # WITH DB CONNECTION ########################################
-from models.user_bookshelf import retrieve_user_bookshelf
-from database import collections
-
-# from pymongo import MongoClient
-# from bson.objectid import ObjectId
-from models.books import books_collection, update_book_embedding, read_book_field
-
-
-from models.users import (
-    read_user,
-    update_genre_weights,
-    retrieve_genre_weights,
-    update_embedding,
-    retrieve_embedding,
-)
 
 
 class BookRecommender:
@@ -516,7 +511,7 @@ if __name__ == "__main__":
     #     for book_id, rating in ratings:
     #         recommender.process_user_rating(user_id, book_id, rating)
 
-    books_collection = collections["Books"]
+    # books_collection = collections["Books"]
     users_collection = collections["Users"]
     user_bookshelf_collection = collections["User_Bookshelf"]
     recommender = BookRecommender()

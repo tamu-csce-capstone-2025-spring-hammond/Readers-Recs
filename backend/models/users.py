@@ -1,11 +1,11 @@
 # database/models/users.py
-from pymongo import errors
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, date
 from pydantic import ValidationError
-from schemas import UserSchema, OAuthSchema, DemographicSchema
-from database import collections
+from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
+from backend.database import collections
+# from pymongo import errors
 
 users_collection = collections["Users"]
 
