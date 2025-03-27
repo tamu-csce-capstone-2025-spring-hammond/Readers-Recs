@@ -1,3 +1,4 @@
+# backend/userbookshelf_data/script.py
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
@@ -10,6 +11,7 @@ from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional
 import re
 
+
 def parseinput(csv_string: str):
     parts = [p.strip() for p in csv_string.split(",")]
     if len(parts) < 4:
@@ -20,40 +22,45 @@ def parseinput(csv_string: str):
     shelf_url = parts[3]
     return user_url, gender, age, shelf_url
 
+
 def get_favorite_genres(url):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
     }
-    
+
     response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
+    soup = BeautifulSoup(response.text, "html.parser")
+
     genres_section = soup.find("div", class_="stacked clearFloats bigBox")
     if not genres_section:
         print("Genres section not found.")
         return []
-    
+
     genres_div = genres_section.find("div", class_="bigBoxBody")
     if not genres_div:
         print("No genres found.")
         return []
-    
+
     genres = [a.text.strip() for a in genres_div.find_all("a", href=True)]
     return genres
+
 
 def get_rating(row):
     rating_div = row.find("td", class_="field rating")
     if not rating_div:
         return 0
-    
+
     star_elements = rating_div.find_all("span", class_="staticStar p10")
     return len(star_elements)
 
+
 def clean_isbn(text):
-    return re.sub(r'[^0-9]', '', text)
+    return re.sub(r"[^0-9]", "", text)
+
 
 def clean_isbn13(text):
-    return re.sub(r'[^0-9]', '', text).lstrip('13')
+    return re.sub(r"[^0-9]", "", text).lstrip("13")
+
 
 def clean_title(title_field):
     if title_field:
@@ -61,6 +68,7 @@ def clean_title(title_field):
         if title_link:
             return title_link.text.strip()
     return ""
+
 
 def create_user(users_collection, favorite_genres, i, g, a):
     user_data = {
@@ -70,6 +78,7 @@ def create_user(users_collection, favorite_genres, i, g, a):
         "username": f'username{i}',
         "email_address": f'user{i}@email.com',
         "interests": favorite_genres,
+
         "demographics": {
             "gender": g,
             "age": a,
@@ -82,17 +91,22 @@ def create_user(users_collection, favorite_genres, i, g, a):
     users_collection.insert_one(user_data)
     return user_data["_id"]
 
+
 def find_book_in_db(books_collection, isbn13, isbn, title):
     book_entry = books_collection.find_one({"isbn13": isbn13})
-    if not book_entry: 
+    if not book_entry:
         book_entry = books_collection.find_one({"isbn": isbn})
     if not book_entry:
-        book_entry = books_collection.find_one({"title": {"$regex": title, "$options": "i"}})
+        book_entry = books_collection.find_one(
+            {"title": {"$regex": title, "$options": "i"}}
+        )
     if not book_entry:
         if isinstance(title, str):
             regex_pattern = f"^.*{re.escape(title)}.*$"
-            book_entry = books_collection.find_one({"title": {"$regex": regex_pattern, "$options": "i"}})
-    
+            book_entry = books_collection.find_one(
+                {"title": {"$regex": regex_pattern, "$options": "i"}}
+            )
+
     return book_entry
 
 def add_book_to_db(books_collection, isbn):
@@ -101,6 +115,7 @@ def add_book_to_db(books_collection, isbn):
     })
     if existing_book:
         return existing_book
+
 
 
     class PyObjectId(ObjectId):
@@ -297,6 +312,7 @@ def scrape_and_store(filepath: str, start_index: int):
     users_collection = db["Users"]
     shelf_collection = db["User_Bookshelf"]
 
+
     current_index = start_index
 
     with open(filepath, "r") as file:
@@ -416,3 +432,4 @@ if __name__ == '__main__':
     start_idx = int(sys.argv[2])
 
     scrape_and_store(file_path, start_idx)
+

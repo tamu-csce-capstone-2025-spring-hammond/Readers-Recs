@@ -1,10 +1,11 @@
+# backend/database.py
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
 
+load_dotenv(override=True)
 uri = os.getenv("MONGO_URI")
 if not uri:
     raise ValueError("MONGO_URI is not set")
@@ -20,3 +21,7 @@ collections = {
     "User_Bookshelf": db["User_Bookshelf"],
     "Users": db["Users"],
 }
+
+
+def close_connection():
+    client.close()

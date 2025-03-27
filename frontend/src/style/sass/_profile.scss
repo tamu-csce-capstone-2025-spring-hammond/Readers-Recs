@@ -1,0 +1,176 @@
+.profile-container {
+  padding: 25px 40px 15px 40px;
+  background-color: $-brown;
+}
+
+.profile-inner {
+  padding: 40px 60px 20px 60px;
+  margin-bottom: 150px;
+  background-color: $-dark-green;
+  border-radius: 5px;
+  display: grid;
+  grid-template-rows: 30% 70%;
+  gap: 20px;
+}
+
+.profile-top {
+  display: flex;
+  gap: 40px;
+  color: $-tan;
+
+  .profile-picture {
+    background-color: $-tan;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+  .profile-info {
+    flex: 1;
+    .profile-name {
+      font-size: 48px;
+      margin-bottom: -10px;
+    }
+    .profile-member-since {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 400;
+      margin-top: 5px;
+    }
+    .edit-profile-button {
+      background-color: $-rust-brown;
+      color: $-tan;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      padding: 10px 25px;
+      border-radius: 5px;
+      margin-top: 15px;
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+      &:hover, &:focus {
+        background-color: $-rust-brown-hover;
+      }
+    }
+  }
+}
+
+.profile-bottom {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+
+  .section-title.current-read-title{
+    color: $-green;
+    font-family: 'Virust', sans-serif;
+    font-size: 40px;
+    line-height: 85%;
+  }
+  .section-title.shelves {
+    color: $-green;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: left;
+  }
+  .current-read-section {
+    background-color: $-tan;
+    width: 330px;
+    height: 420px;
+    padding: 30px;
+    border-radius: 5px;
+  }
+  .current-book {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: row;
+  }
+  .progress-bar {
+    width: 15px;
+    height: 230px;
+    background-color: white;
+    border: 1px solid $-green;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 50px;
+    
+    .progress-indicator {
+      width: 100%;
+      background-color: $-brown;
+      position: absolute;
+      bottom: 0;
+      border-radius: 8px;
+    }
+  }
+  .profile-bottom-right {
+    flex: 1;
+    background-color: $-tan;
+    padding: 30px;
+    border-radius: 5px;
+    height: 420px;
+    .books-grid {
+      display: flex;
+      gap: 20px;
+      // OVERFLOW NOT WORKING AS EXPECTED
+      // overflow-x: auto;
+      // padding: 10px 0;
+      // max-width: 100%;
+      // white-space: nowrap;
+      // position: relative;
+      // -ms-overflow-style: none;
+      // scrollbar-width: none;
+      // overflow: hidden;
+    }
+  }
+}
+
+.bookshelf-section {
+  position: relative;
+}
+.books-grid::-webkit-scrollbar {
+  display: none;
+}
+.scroll-button {
+  background: $-rust-brown;
+  color: $-tan;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  &:hover, &:focus {
+    background: $-rust-brown-hover;
+  }
+}
+.scroll-button.left {
+  left: -10px;
+}
+.scroll-button.right {
+  right: -10px;
+}
+
+.book-cover-profile {
+  height: 120px;
+  width: 90px;
+  background-color: white;
+  box-shadow: 5px 0 10px rgba(4, 53, 35, 0.3);
+  margin-top: -40px;
+  margin-bottom: 30px;
+}
+.book-cover-profile.current {
+  height: 230px;
+  width: 180px;
+  margin-top: -20px;
+  margin-bottom: 30px;
+}
