@@ -155,6 +155,9 @@ $white-color: #ffffff;
       overflow: hidden;
       transition: all 0.3s ease;
       width: 185px;
+      background-size: cover; 
+      background-position: center;
+      background-repeat: no-repeat;
     }
   }
 }
@@ -165,6 +168,9 @@ $white-color: #ffffff;
   overflow: hidden;
   transition: all 0.3s ease;
   max-width: 350px; // book cover size
+  background-size: cover; 
+  background-position: center;
+  background-repeat: no-repeat;
   
   &.featured-cover {
     width: 100%;
@@ -214,15 +220,21 @@ $white-color: #ffffff;
       font-weight: 600;
       color: $-tan;
       margin: 5px 0px;
-      white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      word-wrap: break-word;
+      display: block;
+      max-width: 100%;
     }
     
     .book-author {
       font-size: 14px;
       color: $-tan;
       margin: 0 0 6px;
+      white-space: normal;
+      word-wrap: break-word;
+      display: block;
+      max-width: 100%;
     }
   }
 }
@@ -369,6 +381,9 @@ $white-color: #ffffff;
     background-color: none;
     animation: fadeIn 0.6s ease forwards;
     transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
     &:hover {
       transform: translateY(-5px) rotateZ(0.5deg);
     }
