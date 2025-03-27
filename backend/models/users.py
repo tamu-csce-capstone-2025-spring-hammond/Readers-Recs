@@ -1,15 +1,19 @@
-from pymongo import errors
+# database/models/users.py
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
+from datetime import datetime, date
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema
+from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
+
+# from pymongo import errors
 
 users_collection = collections["Users"]
 
 # require username, email address, and refresh tokens to be unique
-users_collection.create_index("username", unique=True)
-users_collection.create_index("email_address", unique=True)
-users_collection.create_index("refresh_token", unique=True)
+# users_collection.create_index("username", unique=True)
+# users_collection.create_index("email_address", unique=True)
+# users_collection.create_index("refresh_token", unique=True)
 
 
 def create_user(
@@ -27,9 +31,20 @@ def create_user(
         oauth_data = OAuthSchema(**oauth)
 
         # Validate demographics
-        demographics = OAuthSchema(**demographics)
+        demographics = DemographicSchema(**demographics)
 
-        # Validate UserSchema
+        if users_collection.find_one(
+            {
+                "$or": [
+                    {"username": username},
+                    {"email_address": email_address},
+                    {"oauth.access_token": oauth_data.access_token},
+                ]
+            }
+        ):
+            return "Error: Username, Email Address, or Access Token must be unique!"
+
+        # Validate and create user data using UserSchema
         user_data = UserSchema(
             first_name=first_name,
             last_name=last_name,
@@ -38,23 +53,32 @@ def create_user(
             oauth=oauth_data,
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
-            demographics=(
-                demographics if isinstance(demographics, list) else [demographics]
-            ),
-            # ADDED EMPTY GENRE WEIGHTS & EMBEDDING TO INITIALIZE
-            genre_weights={},
+            demographics=demographics,
+            genre_weights=[],
             embedding=[],
         )
 
-        # Insert
-        return str(
-            users_collection.insert_one(user_data.model_dump(by_alias=True)).inserted_id
-        )
+        # Dump the model to a dict using aliases
+        data = user_data.model_dump(by_alias=True)
+        # Remove _id if it's empty so MongoDB auto-generates one
+        if (
+            "demographics" in data
+            and "birthday" in data["demographics"]
+            and data["demographics"]["birthday"] is not None
+        ):
+            bday = data["demographics"]["birthday"]
+            # if it's a date but not a datetime, convert it:
+            if isinstance(bday, date) and not isinstance(bday, datetime):
+                data["demographics"]["birthday"] = datetime.combine(
+                    bday, datetime.min.time()
+                )
+        if not data.get("_id"):
+            data.pop("_id", None)
+        result = users_collection.insert_one(data)
+        return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except errors.DuplicateKeyError:
-        return "Error: Username, Email Address, or Refresh Token must be unique!"
 
 
 def read_user(user_id):
@@ -63,9 +87,7 @@ def read_user(user_id):
         return (
             UserSchema(**user).model_dump(by_alias=True) if user else "User not found."
         )
-    except ValidationError as e:
-        return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
 
 
@@ -153,7 +175,7 @@ def update_genre_weights(user_id, new_genre_weights):
         return "Error: Genre keys must be strings and weights must be numerical values."
 
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"genre_weights": new_genre_weights}}
+        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}}
     )
 
 
@@ -161,7 +183,7 @@ def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"genre_weights": 1})
+    user = users_collection.find_one({"_id": user_id}, {"genre_weights": 1})
     return user.get("genre_weights", {}) if user else "Error: User not found."
 
 
@@ -175,32 +197,30 @@ def update_embedding(user_id, new_embedding):
     ):
         return "Error: Embedding must be a list of numerical values."
 
-    return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"embedding": new_embedding}}
+    result = users_collection.update_one(
+        {"_id": user_id}, {"$set": {"embedding": new_embedding}}
     )
+
+    if result.modified_count == 0:
+        print("Warning: embedding was not updated.")
+    print("Success. Updated user embedding.")
+    return result
 
 
 def retrieve_embedding(user_id):
     """
     Retrieve the embedding vector for a user.
     """
-    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"embedding": 1})
-    return user.get("embedding", []) if user else "Error: User not found."
+    user = users_collection.find_one({"_id": user_id})
+    if (
+        user and "embedding" in user and user["embedding"]
+    ):  # Check if "embedding" exists and is not empty
+        return user["embedding"]
+    else:
+        return None
 
 
 ### End of new update/retrieval functions
-
-
-def update_username(user_id, new_username):  # TODO: ask if this is necessary
-    return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"username": new_username}}
-    )
-
-
-def update_email(user_id, new_email):  # TODO: ask if this is necessary
-    return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"email_address": new_email}}
-    )
 
 
 def update_profile_image(user_id, new_image):
@@ -221,27 +241,65 @@ def remove_interest(user_id, interest):
     )
 
 
-def add_demographic(user_id, new_demographic):
+def add_demographic(user_id, new_demographics):
+    allowed = {"age", "country", "birthday", "gender"}
+
+    if not isinstance(new_demographics, dict):
+        return "Error: Demographics must be provided as a dictionary."
+
+    if not new_demographics:
+        return "Error: Demographics update cannot be empty."
+
+    # Verify that every key in the update is allowed.
+    if not all(key in allowed for key in new_demographics.keys()):
+        return "Error: Demographics must contain only age, country, birthday, and/or gender."
+
+    update_fields = {
+        f"demographics.{key}": value for key, value in new_demographics.items()
+    }
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$addToSet": {"demographics": new_demographic}}
+        {"_id": ObjectId(user_id)}, {"$set": update_fields}
     )
 
 
 def update_demographics(user_id, new_demographics):
-    if not isinstance(new_demographics, list):
-        return "Error: Demographics must be a list of strings."
+    allowed = {"age", "country", "birthday", "gender"}
 
-    if not all(isinstance(d, str) for d in new_demographics):
-        return "Error: Each demographic must be a string."
+    if not isinstance(new_demographics, dict):
+        return "Error: Demographics must be provided as a dictionary."
+
+    if not new_demographics:
+        return "Error: Demographics update cannot be empty."
+
+    # Verify that every key in the update is allowed.
+    if not all(key in allowed for key in new_demographics.keys()):
+        return "Error: Demographics must contain only age, country, birthday, and/or gender."
+
+    update_fields = {
+        f"demographics.{key}": value for key, value in new_demographics.items()
+    }
 
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"demographics": new_demographics}}
+        {"_id": ObjectId(user_id)}, {"$set": update_fields}
     )
 
 
-def remove_demographic(user_id, demographic_to_remove):
+def remove_demographic(user_id, demographic_field):
+    allowed = {"age", "country", "birthday", "gender"}
+    if demographic_field not in allowed:
+        return f"Error: {demographic_field} is not a valid demographic field."
+
+    if demographic_field == "age":
+        default_value = 0
+    elif demographic_field in ["country", "gender"]:
+        default_value = ""
+    elif demographic_field == "birthday":
+        default_value = None
+
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$pull": {"demographics": demographic_to_remove}}
+        {"_id": ObjectId(user_id)},
+        {"$set": {f"demographics.{demographic_field}": default_value}},
     )
 
 
@@ -261,5 +319,5 @@ def delete_user(user_id):
         users_collection.delete_one({"_id": user_id})
         return "User and related records deleted successfully."
 
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."

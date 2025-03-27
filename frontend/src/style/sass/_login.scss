@@ -1,0 +1,152 @@
+.login-page {
+  font-family: 'Open Sans', sans-serif;
+  background: url('../assets/libpic.jpg') center/cover no-repeat fixed;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1;
+}
+
+.loginpage-floating-books {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+.loginpage-book {
+  position: absolute;
+  width: 60px;
+  height: 80px;
+  background-color: $-rust-brown;
+  border-radius: 5px;
+  transform: rotate(10deg);
+  animation: loginpage-float 15s linear infinite;
+  opacity: 0.5;
+}
+
+@keyframes loginpage-float {
+  0% {
+    transform: translateY(100vh) translateX(0) rotate(10deg);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100px) translateX(0) rotate(10deg);
+    opacity: 1;
+  }
+}
+
+.loginpage-book:nth-child(1) { 
+  left: 10%; 
+  background-color: $-brown; 
+  animation-duration: 18s; 
+  transform: rotate(10deg); 
+  animation-delay: 0.2s;
+}
+
+.loginpage-book:nth-child(2) { 
+  left: 25%; 
+  background-color:$-dark-green; 
+  animation-duration: 22s; 
+  transform: rotate(-6deg); 
+}
+
+.loginpage-book:nth-child(3) { 
+  left: 40%; 
+  background-color: $-dark-green;
+  animation-duration: 19s;
+  transform: rotate(12deg); 
+  animation-delay: 0.3s;
+}
+
+.loginpage-book:nth-child(4) { 
+  left: 55%; 
+  background-color: $-rust-brown;
+  animation-duration: 21s; 
+  transform: rotate(17deg);
+}
+
+.loginpage-book:nth-child(5) { 
+  left: 70%; 
+  background-color: $-green; 
+  animation-duration: 25s; 
+  transform: rotate(14deg); 
+  animation-delay: 3s;
+}
+
+.loginpage-book:nth-child(6) { 
+  left: 85%; 
+  background-color: $-rust-brown; 
+  animation-duration: 20s; 
+  transform: rotate(-23deg); 
+  animation-delay: 2s;
+}
+
+.loginpage-book:nth-child(7) { 
+  left: 95%; 
+  background-color: $-dark-green; 
+  animation-duration: 22s; 
+  transform: rotate(14deg); 
+  animation-delay: 10s; 
+}
+
+.login-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+  z-index: 2;
+  position: relative;
+}
+
+.login-header {
+  background-color: $-green;
+  color: white;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.login-header h1 {
+  font-family: 'Virust', 'Open Sans', sans-serif;
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.login-header p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.login-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.google-login-wrapper {
+  width: 100%;
+  max-width: 350px;
+}

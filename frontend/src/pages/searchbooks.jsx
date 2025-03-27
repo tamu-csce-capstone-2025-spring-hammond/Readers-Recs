@@ -1,73 +1,123 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Plus } from 'lucide-react';
-import '../style/searchBooks.scss';
+import '../style/style.css';
 import Navbar from '../components/navbar';
+import BookPopUp from '../components/discussion';
+import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Placeholder book data
-  const books = [
-    {
-      id: 1,
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      year: "1925",
-      description: "A novel set in the Roaring Twenties that explores themes of wealth, excess, and the American Dream."
-    },
-    {
-      id: 2,
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      year: "1960",
-      description: "A story of racial injustice and childhood innocence in the Deep South, seen through the eyes of Scout Finch."
-    },
-    {
-      id: 3,
-      title: "1984",
-      author: "George Orwell",
-      year: "1949",
-      description: "A dystopian novel about a totalitarian regime that uses surveillance and mind control to oppress its citizens."
-    },
-    {
-      id: 4,
-      title: "Pride and Prejudice",
-      author: "Jane Austen",
-      year: "1813",
-      description: "A romantic novel that critiques the British class system and explores themes of love and social expectations."
-    },
-    {
-      id: 5,
-      title: "Moby-Dick",
-      author: "Herman Melville",
-      year: "1851",
-      description: "A whaling voyage turns into an obsession as Captain Ahab hunts the elusive white whale, Moby-Dick."
-    },
-    {
-      id: 6,
-      title: "The Catcher in the Rye",
-      author: "J.D. Salinger",
-      year: "1951",
-      description: "A rebellious teenager, Holden Caulfield, navigates the challenges of growing up and finding meaning in life."
-    },
-    {
-      id: 7,
-      title: "Brave New World",
-      author: "Aldous Huxley",
-      year: "1932",
-      description: "A dystopian vision of a future society controlled by technology, pleasure, and social conditioning."
-    },
-    {
-      id: 8,
-      title: "Frankenstein",
-      author: "Mary Shelley",
-      year: "1818",
-      description: "A scientist's ambition leads to the creation of a monstrous being, raising ethical questions about science and humanity."
-    }
-  ];
+  const [filterType, setFilterType] = useState('any'); // options: any, title, author, isbn
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [addPopupBook, setAddPopupBook] = useState(null);
+  const [userId, setUserId] = useState(null);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleFilterChange = (e) => setFilterType(e.target.value);
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      console.error("No access token found.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/user/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const data = await response.json();
+
+      setUserId(data.id); // Extract and set the user ID
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
+  fetchUserProfile();
+
+  const fetchBooks = useCallback(async () => {
+    if (!searchQuery) {
+      setBooks([]);
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch books');
+      }
+
+      setBooks(data);
+    } catch (err) {
+      setError(err.message);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, filterType]);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setBooks([]);
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      fetchBooks();
+    }, 500);
+
+    return () => clearTimeout(timerId);
+  }, [fetchBooks]);
+
+  const openPopup = (book) => setSelectedBook(book);
+  const closePopup = () => setSelectedBook(null);
+
+  const openAddPopup = (book, event) => {
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setAddPopupBook({ book, position: { top: rect.top, left: rect.right } });
+  };
+
+  const closeAddPopup = () => setAddPopupBook(null);
+
+  const updateBookshelf = async (book, status) => {
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          book_id: book.id || book._id,
+          status: status,
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error(`Error updating bookshelf (${status}):`, error);
+      return { ok: false };
+    }
   };
 
   return (
@@ -76,28 +126,58 @@ const SearchBooks = () => {
         <Search className="search-icon" size={20} />
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Search books..."
           value={searchQuery}
           onChange={handleSearchChange}
         />
+        <select className="filter-dropdown" value={filterType} onChange={handleFilterChange}>
+          <option value="any">Any Keyword</option>
+          <option value="title">Title</option>
+          <option value="author">Author</option>
+          <option value="isbn">ISBN</option>
+        </select>
       </div>
 
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <div className="search-results">
-        {books.map(book => (
-          <div key={book.id} className="book-card">
-            <div className="book-cover"></div>
-            <div className="book-info">
-              <h2 className="book-title">{book.title}</h2>
-              <p className="book-author">{book.author}, {book.year}</p>
-              <p className="book-description">{book.description}</p>
+        {books.length > 0 ? (
+          books.map((book) => (
+            <div key={book.id || book._id} className="book-card" onClick={() => openPopup(book)}>
+              <div className="book-cover">
+                <img src={book.cover_image} alt={book.title} className="cover-img" />
+              </div>
+              <div className="book-info">
+                <h2 className="book-title">{book.title}</h2>
+                <p className="book-author">
+                  {Array.isArray(book.author) ? book.author.join(', ') : book.author}
+                  {', '}
+                  {book.publication_date ? new Date(book.publication_date).getFullYear() : book.year}
+                </p>
+                <p className="book-description">{book.summary}</p>
+              </div>
+              <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
+                <Plus size={20} />
+              </button>
             </div>
-            <button className="add-button">
-              <Plus size={20} />
-            </button>
-          </div>
-        ))}
+          ))
+        ) : (
+          !loading && <p className="no-results">No books found.</p>
+        )}
       </div>
-      <Navbar/>
+
+      <Navbar />
+
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {addPopupBook && (
+        <AddPopUp
+          book={addPopupBook.book}
+          onClose={closeAddPopup}
+          updateBookshelf={updateBookshelf}
+          position={addPopupBook.position}
+        />
+      )}
     </div>
   );
 };

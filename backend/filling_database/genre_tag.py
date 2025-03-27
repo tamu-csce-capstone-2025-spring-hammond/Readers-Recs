@@ -1,10 +1,8 @@
+# backend/filling_database/genre_tag.py
 import re
-
 from backend.database import collections
 
 books_collection = collections["Books"]
-
-print("✅ Connected to MongoDB successfully!")
 
 dag_mapping = {
     "fiction": [],

@@ -2,8 +2,12 @@
 Enhancing Book Discovery & Interaction with ML-Driven Recommendations
 
 # Table of Contents
+- [Reader's Recs](#readers-recs)
+- [Table of Contents](#table-of-contents)
 - [Dev Setup](#dev-setup)
-  - [Making a Development Branch](#making-a-dev-branch)
+  - [Making a dev branch](#making-a-dev-branch)
+  - [Running the Linter](#running-the-linter)
+  - [Entering the virtual environment](#entering-the-virtual-environment)
   - [Dependencies](#dependencies)
     - [Python](#python)
     - [JavaScript](#javascript)
@@ -25,6 +29,20 @@ git pull origin development
 Then run either `git checkout -b <feature>-dev` or `git checkout -b <name>-dev`.
 
 Pull requests should first go through `development`, then they will be merged to `main` all together.
+
+## Running the Linter
+To lint the code, run the commands below.
+```
+flake8 .
+black .
+```
+
+## Entering the virtual environment
+From the project directory, run:
+```
+source backend/book_recommender_env/bin/activate
+```
+
 
 ## Dependencies
 To run both the frontend and backend of the application, your system will need to have Python, Node.js, and npm installed.

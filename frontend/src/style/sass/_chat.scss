@@ -1,0 +1,201 @@
+.chat-page-container {
+  // background-color: $-brown;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 120px; // Space for the navbar
+}
+
+.chat-content {
+  display: flex;
+  height: calc(100vh - 100px); // Full height minus navbar
+}
+
+// Left section - Book info
+.book-section {
+  width: 30%;
+  padding: 20px;
+  border-right: 1px solid rgba($-tan, 0.2);
+  background-color: $-brown;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative; 
+  z-index: 2; 
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3); 
+}
+
+.book-cover {
+  background-color: white;
+  width: 330px;
+  aspect-ratio: 3/4;
+  border-radius: 3px;
+  border: 20px solid $-dark-green;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+}
+
+.book-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.book-title {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  color: $-tan;
+  margin: 0;
+  font-size: 36px;
+}
+
+.book-author {
+  font-family: "Open Sans", sans-serif;
+  color: $-tan;
+  margin: 0;
+  font-size: 26px;
+  font-style: italic;
+}
+
+.book-description {
+  font-family: "Open Sans", sans-serif;
+  color: $-tan;
+  margin: 5px 0 0;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+// Right section - Chat
+.chat-section {
+  width: 70%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: $-dark-green;
+}
+
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.message-container {
+  display: flex;
+  margin-bottom: 10px;
+  padding-top: 20px;
+  
+  &.mine {
+    justify-content: flex-end;
+    
+    .message {
+      background-color: $-brown;
+      border: 2px solid darken($-brown, 5%);
+    }
+  }
+  
+  &.other {
+    justify-content: flex-start;
+    
+    .message {
+      background-color: $-rust-brown;
+      border: 2px solid darken($-rust-brown, 5%);
+    }
+  }
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 10px;
+  max-width: 70%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  
+  .message-text {
+    color: white;
+    font-family: "Open Sans", sans-serif;
+    margin: 0;
+    font-size: 22px;
+  }
+  
+  .message-username {
+    color: rgba(white, 0.8);
+    font-family: "Open Sans", sans-serif;
+    font-size: 16px;
+    margin: 5px 0 0;
+  }
+}
+
+.message-input-form {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding: 10px 0;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 25px;
+  border: none;
+  background-color: $-tan;
+  font-family: "Open Sans", sans-serif;
+  font-size: 22px;
+  outline: none;
+  color: $-dark-green;
+  min-height: 40px;
+  
+  &::placeholder {
+    color: rgba($-dark-green, 0.7);
+  }
+}
+
+.send-button {
+  background-color: $-green;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  svg {
+    color: white;
+  }
+  
+  &:hover {
+    background-color: darken($-green, 5%);
+  }
+}
+
+
+
+// Add media query for mobile responsiveness
+@media (max-width: 768px) {
+  .chat-content {
+    flex-direction: column;
+  }
+  
+  .book-section, 
+  .chat-section {
+    width: 100%;
+  }
+  
+  .book-section {
+    max-height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba($-tan, 0.2);
+  }
+  
+  .chat-section {
+    height: 70%;
+  }
+}
