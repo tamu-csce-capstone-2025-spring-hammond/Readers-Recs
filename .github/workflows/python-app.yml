@@ -53,7 +53,5 @@ jobs:
           pip install -r .github/workflows/requirements.txt
 
       - name: Test with pytest and generate coverage report
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           pytest --cov=. --cov-report=term-missing tests/

@@ -46,7 +46,7 @@ def test_create_update_and_delete_user():
 
     assert isinstance(result, str)
     assert (
-        "Error: Username, Email Address, or Refresh Token must be unique!" not in result
+        "Error: Username, Email Address, or Access Token must be unique!" not in result
     )
     assert "Schema Validation Error" not in result
 
@@ -83,7 +83,7 @@ def test_create_user_invalid_email():
         interests=["Cooking"],
         demographics={"age": 21},
     )
-    assert result == "Error: Username, Email Address, or Refresh Token must be unique!"
+    assert result == "Error: Username, Email Address, or Access Token must be unique!"
 
 
 def test_create_user_invalid_schema():
@@ -112,7 +112,7 @@ def test_create_user_invalid_schema():
         interests=["Adventure"],
         demographics={"age": 21},
     )
-    assert result == "Error: Username, Email Address, or Refresh Token must be unique!"
+    assert result == "Error: Username, Email Address, or Access Token must be unique!"
 
 
 def test_read_user():

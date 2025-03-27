@@ -80,5 +80,5 @@ def addMissingData():
             print(f"Error fetching data for ISBN13: {isbn13}. Status code: {resp.status_code}")
 
 
-if __name__ == '__main__':=
+if __name__ == '__main__':
     addMissingData()
