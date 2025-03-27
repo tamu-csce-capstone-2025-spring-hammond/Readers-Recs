@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from database import collections
+from backend.database import collections
 from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email
+from backend.models.users import create_user, read_user_by_email
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)

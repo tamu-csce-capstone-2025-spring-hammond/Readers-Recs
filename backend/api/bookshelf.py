@@ -1,11 +1,11 @@
-from models.books import read_book_by_bookId
+from backend.models.books import read_book_by_bookId
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from database import collections
+from backend.database import collections
 from bson import ObjectId
 import requests
 
-from models.user_bookshelf import create_user_bookshelf, delete_user_bookshelf, get_currently_reading_books, get_read_books, get_unread_books, rate_book, update_user_bookshelf_status
+from backend.models.user_bookshelf import create_user_bookshelf, delete_user_bookshelf, get_currently_reading_books, get_read_books, get_unread_books, rate_book, update_user_bookshelf_status
 
 shelf_bp = Blueprint("shelf", __name__)
 CORS(shelf_bp)

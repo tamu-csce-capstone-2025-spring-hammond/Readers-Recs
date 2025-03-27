@@ -200,14 +200,15 @@ h3 {
   gap: 20px;
 }
 .profile-bottom .current-book-title {
-  font-size: 24px;
+  font-size: 20px;
   text-align: center;
   color: #7e4f34;
-  font-family: "Virust", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: 600;
   max-width: 100%;
   word-wrap: break-word;
   line-height: 1.5;
+  margin-top: -20px;
 }
 .profile-bottom .progress-bar {
   width: 15px;
@@ -282,7 +283,7 @@ h3 {
   height: 180px;
   width: 135px;
   background-color: white;
-  border-radius: 5px;
+  border-radius: 0px;
   box-shadow: 0 4px 10px rgba(4, 53, 35, 0.2);
   overflow: hidden;
   transition: all 0.3s ease;
