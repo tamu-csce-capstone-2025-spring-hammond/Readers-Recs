@@ -72,21 +72,15 @@ def clean_title(title_field):
 
 def create_user(users_collection, favorite_genres, i, g, a):
     user_data = {
-        "_id": str(ObjectId()), 
-        "first_name": f'user{i}',
+        "_id": str(ObjectId()),
+        "first_name": f"user{i}",
         "last_name": "db",
-        "username": f'username{i}',
-        "email_address": f'user{i}@email.com',
+        "username": f"username{i}",
+        "email_address": f"user{i}@email.com",
         "interests": favorite_genres,
-
-        "demographics": {
-            "gender": g,
-            "age": a,
-            "country": "",
-            "birthday": ""
-        },
+        "demographics": {"gender": g, "age": a, "country": "", "birthday": ""},
         "embedding": [],
-        "genre_weights": []
+        "genre_weights": [],
     }
     users_collection.insert_one(user_data)
     return user_data["_id"]
@@ -109,14 +103,13 @@ def find_book_in_db(books_collection, isbn13, isbn, title):
 
     return book_entry
 
+
 def add_book_to_db(books_collection, isbn):
-    existing_book = books_collection.find_one({
-        "$or": [{"isbn": isbn}, {"isbn13": isbn}]
-    })
+    existing_book = books_collection.find_one(
+        {"$or": [{"isbn": isbn}, {"isbn13": isbn}]}
+    )
     if existing_book:
         return existing_book
-
-
 
     class PyObjectId(ObjectId):
         @classmethod
@@ -150,7 +143,7 @@ def add_book_to_db(books_collection, isbn):
             allow_population_by_field_name = True
 
     def get_book_data_google(isbn_value: str) -> dict:
-        GOOGLE_BOOKS_API_KEY = "ADD KEY HERE" 
+        GOOGLE_BOOKS_API_KEY = "ADD KEY HERE"
         url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn_value}&key={GOOGLE_BOOKS_API_KEY}"
         try:
             response = requests.get(url, timeout=10)
@@ -166,7 +159,9 @@ def add_book_to_db(books_collection, isbn):
                         "page_count": volume_info.get("pageCount"),
                         "language": volume_info.get("language"),
                         "genre": volume_info.get("categories", [None])[0],
-                        "cover_image": volume_info.get("imageLinks", {}).get("thumbnail"),
+                        "cover_image": volume_info.get("imageLinks", {}).get(
+                            "thumbnail"
+                        ),
                         "summary": volume_info.get("description"),
                     }
         except Exception as e:
@@ -185,12 +180,22 @@ def add_book_to_db(books_collection, isbn):
                     description = book.get("description", "")
                     if isinstance(description, dict):
                         description = description.get("value", "")
-                    authors = [a.get("name") for a in book.get("authors", []) if a.get("name")]
-                    tags = [subject.get("name") for subject in book.get("subjects", []) if subject.get("name")]
+                    authors = [
+                        a.get("name") for a in book.get("authors", []) if a.get("name")
+                    ]
+                    tags = [
+                        subject.get("name")
+                        for subject in book.get("subjects", [])
+                        if subject.get("name")
+                    ]
                     return {
                         "title": book.get("title"),
                         "author": authors,
-                        "publisher": book.get("publishers", [{}])[0].get("name") if book.get("publishers") else None,
+                        "publisher": (
+                            book.get("publishers", [{}])[0].get("name")
+                            if book.get("publishers")
+                            else None
+                        ),
                         "publication_date": book.get("publish_date"),
                         "page_count": book.get("number_of_pages"),
                         "cover_image": book.get("cover", {}).get("medium"),
@@ -211,9 +216,9 @@ def add_book_to_db(books_collection, isbn):
                 continue
         return datetime.now()
 
-    existing_book = books_collection.find_one({
-        "$or": [{"isbn": isbn}, {"isbn13": isbn}]
-    })
+    existing_book = books_collection.find_one(
+        {"$or": [{"isbn": isbn}, {"isbn13": isbn}]}
+    )
     if existing_book:
         return existing_book
 
@@ -223,19 +228,28 @@ def add_book_to_db(books_collection, isbn):
 
     title = google_data.get("title") or openlib_data.get("title") or "Unknown Title"
     authors = google_data.get("author") or openlib_data.get("author") or []
-    publisher = google_data.get("publisher") or openlib_data.get("publisher") or "Unknown Publisher"
-    pub_date_str = google_data.get("publication_date") or openlib_data.get("publication_date")
+    publisher = (
+        google_data.get("publisher")
+        or openlib_data.get("publisher")
+        or "Unknown Publisher"
+    )
+    pub_date_str = google_data.get("publication_date") or openlib_data.get(
+        "publication_date"
+    )
     publication_date = parse_date(pub_date_str)
     page_count = google_data.get("page_count") or openlib_data.get("page_count") or 0
     language = google_data.get("language") or "eng"
     genre = google_data.get("genre") or "Unknown Genre"
-    cover_image = google_data.get("cover_image") or openlib_data.get("cover_image") or "default_cover_image.jpg"
+    cover_image = (
+        google_data.get("cover_image")
+        or openlib_data.get("cover_image")
+        or "default_cover_image.jpg"
+    )
     summary = google_data.get("summary") or openlib_data.get("summary") or ""
     tags = openlib_data.get("tags") or []
-    
+
     if page_count == 0 or summary == "":
         addMissingData(isbn)
-     
 
     try:
         new_book = BookSchema(
@@ -250,7 +264,7 @@ def add_book_to_db(books_collection, isbn):
             genre=genre,
             cover_image=cover_image,
             summary=summary,
-            tags=tags
+            tags=tags,
         )
     except ValidationError as ve:
         print("Validation error creating book schema:", ve)
@@ -258,20 +272,24 @@ def add_book_to_db(books_collection, isbn):
 
     result = books_collection.insert_one(new_book.dict(by_alias=True))
     if result.inserted_id:
-        print(f"✅ Book with ISBN '{isbn}' added successfully with _id: {result.inserted_id}")
+        print(
+            f"✅ Book with ISBN '{isbn}' added successfully with _id: {result.inserted_id}"
+        )
         return books_collection.find_one({"_id": result.inserted_id})
     else:
         print("❌ An error occurred while inserting the book.")
         return None
-    
+
+
 def cleanSynopsisText(synopsis: str) -> str:
-    cleaned = re.sub(r"<[^>]*>", " ", synopsis) 
+    cleaned = re.sub(r"<[^>]*>", " ", synopsis)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
     return cleaned
 
+
 def addMissingData(isbn13):
-    h = {'Authorization': '<ADD AUTH HERE>'}
+    h = {"Authorization": "<ADD AUTH HERE>"}
     url = f"https://api2.isbndb.com/book/{isbn13}"
     resp = req.get(url, headers=h)
     client = MongoClient("<ADD AUTH HERE>")
@@ -283,35 +301,33 @@ def addMissingData(isbn13):
 
         book_data = response_data.get("book", {})
         if book_data:
-                
+
             synopsis = book_data.get("synopsis", "")
             page_count = book_data.get("pages", 0)
-                
+
             cleaned_synopsis = cleanSynopsisText(synopsis)
 
             update_result = books_collection.update_one(
                 {"isbn13": isbn13},
-                {
-                    "$set": {
-                        "summary": cleaned_synopsis,
-                        "page_count": page_count
-                    }
-                }
+                {"$set": {"summary": cleaned_synopsis, "page_count": page_count}},
             )
-            print(f"Updated book {isbn13}: matched={update_result.matched_count}, modified={update_result.modified_count}")
+            print(
+                f"Updated book {isbn13}: matched={update_result.matched_count}, modified={update_result.modified_count}"
+            )
         else:
             print(f"No 'book' field in response for {isbn13}:", response_data)
     else:
-        print(f"Error fetching data for ISBN13: {isbn13}. Status code: {resp.status_code}")
-    
-    
+        print(
+            f"Error fetching data for ISBN13: {isbn13}. Status code: {resp.status_code}"
+        )
+
+
 def scrape_and_store(filepath: str, start_index: int):
     client = MongoClient("<ADD AUTH HERE>")
     db = client["Readers-Recs"]
     books_collection = db["Books"]
     users_collection = db["Users"]
     shelf_collection = db["User_Bookshelf"]
-
 
     current_index = start_index
 
@@ -326,7 +342,9 @@ def scrape_and_store(filepath: str, start_index: int):
         user_url, gender, age, shelf_base_url = parseinput(line)
         favorite_genres = get_favorite_genres(user_url)
 
-        user_id = create_user(users_collection, favorite_genres, current_index, gender, age)
+        user_id = create_user(
+            users_collection, favorite_genres, current_index, gender, age
+        )
 
         book_urls = [
             f"{shelf_base_url}?shelf=read",
@@ -356,19 +374,19 @@ def scrape_and_store(filepath: str, start_index: int):
                 print(f"Error fetching shelf: {book_url}")
                 continue
 
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            books_body = soup.find('tbody', id='booksBody')
+            soup = BeautifulSoup(resp.text, "html.parser")
+            books_body = soup.find("tbody", id="booksBody")
             if not books_body:
                 print(f"No books found at {book_url}.")
                 continue
 
-            rows = books_body.find_all('tr')
+            rows = books_body.find_all("tr")
             shelf_count = 0
 
             for row in rows:
-                isbn_field = row.find('td', class_='field isbn')
-                isbn13_field = row.find('td', class_='field isbn13')
-                title_field = row.find('td', class_='field title')
+                isbn_field = row.find("td", class_="field isbn")
+                isbn13_field = row.find("td", class_="field isbn13")
+                title_field = row.find("td", class_="field title")
 
                 if not (isbn_field and isbn13_field and title_field):
                     print("ISBN data not found on this row.")
@@ -382,7 +400,9 @@ def scrape_and_store(filepath: str, start_index: int):
                     print("No valid ISBN.")
                     continue
 
-                book_entry = find_book_in_db(books_collection, isbn13_val, isbn_val, title_val)
+                book_entry = find_book_in_db(
+                    books_collection, isbn13_val, isbn_val, title_val
+                )
                 if not book_entry:
                     search_isbn = isbn13_val if isbn13_val else isbn_val
                     book_entry = add_book_to_db(books_collection, search_isbn)
@@ -405,7 +425,7 @@ def scrape_and_store(filepath: str, start_index: int):
                     "user_id": user_id,
                     "book_id": book_entry["_id"],
                     "status": status,
-                    "rating": rating_str
+                    "rating": rating_str,
                 }
                 shelf_collection.insert_one(bookshelfobj)
                 shelf_count += 1
@@ -420,10 +440,11 @@ def scrape_and_store(filepath: str, start_index: int):
 
         current_index += 1
 
-if __name__ == '__main__':
-    #inp = "https://www.goodreads.com/user/show/158454491, F, 23, https://www.goodreads.com/review/list/158454491"
-    #scrape_and_store(inp)
-    
+
+if __name__ == "__main__":
+    # inp = "https://www.goodreads.com/user/show/158454491, F, 23, https://www.goodreads.com/review/list/158454491"
+    # scrape_and_store(inp)
+
     if len(sys.argv) < 3:
         print("Usage: python scrape_script.py <input_file> <start_index>")
         sys.exit(1)
@@ -432,4 +453,3 @@ if __name__ == '__main__':
     start_idx = int(sys.argv[2])
 
     scrape_and_store(file_path, start_idx)
-

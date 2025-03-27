@@ -45,7 +45,9 @@ def create_user_bookshelf(
         # Convert date_added to datetime if it's a datetime.date object
         date_added = datetime.today().date()  # Default to today's date
         if isinstance(date_added, datetime):
-            date_added = datetime.combine(date_added.date(), datetime.min.time())  # Ensure it's datetime, not date
+            date_added = datetime.combine(
+                date_added.date(), datetime.min.time()
+            )  # Ensure it's datetime, not date
 
         # Convert date_started and date_finished if they are datetime.date objects
         if date_started and isinstance(date_started, datetime):
@@ -80,7 +82,6 @@ def create_user_bookshelf(
         return "Error: User and Book combination must be unique!"
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 
 def update_user_bookshelf_status(user_id, book_id, new_status):

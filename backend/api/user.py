@@ -28,23 +28,22 @@ def get_user_profile():
     token_info_response = requests.get(token_info_url)
     token_info = token_info_response.json()
 
-    
     if "email" not in token_info:
         return token_info_response.json()
-    
 
     # Fetch user data from database
     user = read_user_by_email(email=token_info["email"])
     if not user:
         return jsonify({f"error": "{token_info}"}), 404
-    
 
     if isinstance(user, str):  # User not found, create a new user
         # Create user from Google profile data
         new_user_data = {
             "first_name": token_info.get("given_name", ""),
             "last_name": token_info.get("family_name", ""),
-            "username": token_info["email"].split("@")[0],  # You can use the email or generate a unique username
+            "username": token_info["email"].split("@")[
+                0
+            ],  # You can use the email or generate a unique username
             "email_address": token_info["email"],
             "oauth": {
                 "access_token": access_token,
@@ -52,9 +51,9 @@ def get_user_profile():
             },
             "profile_image": token_info.get("picture", ""),
             "interests": [],  # You can add default interests or leave it empty
-            "demographics": {}  # You can fill in demographics data or leave it empty
+            "demographics": {},  # You can fill in demographics data or leave it empty
         }
-        
+
         # Create new user in the database
         new_user_id = create_user(**new_user_data)
         if new_user_id.startswith("Error"):
@@ -66,7 +65,10 @@ def get_user_profile():
 
     # Check if user is found and return profile
     if isinstance(user, str):
-        return jsonify({"error": user}), 404  # If user creation failed or user not found
+        return (
+            jsonify({"error": user}),
+            404,
+        )  # If user creation failed or user not found
 
     # Access user attributes properly
     user_profile = {
