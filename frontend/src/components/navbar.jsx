@@ -7,7 +7,7 @@ import { Search, MessageSquare, User } from "lucide-react";
 const Navbar = () => {
   return (
     <nav className="navbar">
-      <Link to="/" className="logo-button">
+      <Link to="/home" className="logo-button">
         <img src={logo} alt="Reader's Recs Logo" />
       </Link>
       <Link to="/search" className="nav-button">

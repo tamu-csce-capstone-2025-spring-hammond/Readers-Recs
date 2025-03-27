@@ -3,8 +3,8 @@ from bson.objectid import ObjectId
 from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import BookSchema
-from backend.database import collections
+from schemas import BookSchema
+from database import collections
 from pymongo.errors import PyMongoError
 import numpy as np
 
@@ -93,6 +93,23 @@ def read_book_field(book_id, field):
             return "Field not found"
     else:
         return "Book not found"
+
+def read_book_by_bookId(book_id):
+    # value can be isbn, isbn13, or title
+    try:
+        obj_id = ObjectId(book_id)
+    except Exception:
+        return f"Invalid book ID format: {book_id}"
+
+    book = books_collection.find_one({"_id": obj_id})
+
+    if not book:
+        return "Book not found."
+
+    try:
+        return BookSchema(**book).model_dump(by_alias=True)
+    except ValidationError as e:
+        return f"Schema Validation Error: {str(e)}"
 
 
 def read_book_by_identifier(value, identifier):

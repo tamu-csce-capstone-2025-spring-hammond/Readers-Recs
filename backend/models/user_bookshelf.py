@@ -1,9 +1,10 @@
 # database/models/user_bookshelf.py
-# from datetime import datetime
+from datetime import datetime
+
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.database import collections
-from backend.schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from database import collections
+from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 from bson import ObjectId
 
 books_collection = collections["Books"]
@@ -41,12 +42,25 @@ def create_user_bookshelf(
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
+        # Convert date_added to datetime if it's a datetime.date object
+        date_added = datetime.today().date()  # Default to today's date
+        if isinstance(date_added, datetime):
+            date_added = datetime.combine(date_added.date(), datetime.min.time())  # Ensure it's datetime, not date
+
+        # Convert date_started and date_finished if they are datetime.date objects
+        if date_started and isinstance(date_started, datetime):
+            date_started = datetime.combine(date_started.date(), datetime.min.time())
+
+        if date_finished and isinstance(date_finished, datetime):
+            date_finished = datetime.combine(date_finished.date(), datetime.min.time())
+
         # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
             user_id=user_id,
             book_id=book_id,
             status=status,
             page_number=page_number,
+            date_added=date_added,  # Correctly formatted date_added as datetime
             date_started=date_started,
             date_finished=date_finished,
             rating=rating,
@@ -66,6 +80,7 @@ def create_user_bookshelf(
         return "Error: User and Book combination must be unique!"
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 
 def update_user_bookshelf_status(user_id, book_id, new_status):

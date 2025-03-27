@@ -4,17 +4,22 @@ import { useNavigate } from "react-router-dom";
 import '../style/style.css';
 
 const Login = () => {
-  // Initialize useNavigate hook for navigation
   const navigate = useNavigate();
 
   // Success handler for Google Login
   const handleSuccess = (response) => {
     console.log("Google Login Success:", response);
 
-    // You can store user info or token here if needed, e.g., in localStorage or context
-    // localStorage.setItem("userToken", response.credential);
+    // Extract and store the access token
+    const token = response.credential;
+    if (token) {
+      localStorage.setItem("access_token", token);
+      console.log("Stored Access Token:", token);
+    } else {
+      console.error("No token received from Google.");
+    }
 
-    // Redirect to the home page ("/")
+    // Redirect to the home page
     navigate("/home");
   };
 
@@ -26,14 +31,14 @@ const Login = () => {
   return (
     <div className="login-page">
       <div className="loginpage-floating-books">
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-      <div className="loginpage-book"></div>
-    </div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+        <div className="loginpage-book"></div>
+      </div>
       <div className="login-container">
         <div className="login-header">
           <h1>Welcome Back</h1>

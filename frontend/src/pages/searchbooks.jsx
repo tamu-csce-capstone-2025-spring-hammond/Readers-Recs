@@ -13,16 +13,40 @@ const SearchBooks = () => {
   const [error, setError] = useState('');
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
+  const [userId, setUserId] = useState(null);
 
-  // Update search query as user types
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleFilterChange = (e) => setFilterType(e.target.value);
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      console.error("No access token found.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/user/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const data = await response.json();
+
+      setUserId(data.id); // Extract and set the user ID
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
   };
 
-  // Update filter type (any, title, author, isbn)
-  const handleFilterChange = (e) => {
-    setFilterType(e.target.value);
-  };
+  fetchUserProfile();
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -32,25 +56,19 @@ const SearchBooks = () => {
 
     setLoading(true);
     setError('');
-    console.log("Fetching books from API with query:", searchQuery, "and filter:", filterType);
-    
+
     try {
       const response = await fetch(
         `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
 
-      console.log("API Response Status:", response.status);
-
-
-      const data = await response.json(); // Only parse once
+      const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch books');
       }
 
-      console.log("Books Fetched:", data);
       setBooks(data);
     } catch (err) {
-      console.error("Error fetching books:", err.message);
       setError(err.message);
       setBooks([]);
     } finally {
@@ -58,45 +76,54 @@ const SearchBooks = () => {
     }
   }, [searchQuery, filterType]);
 
-
-  // Call fetchBooks when searchQuery or filterType changes
   useEffect(() => {
-    console.log("useEffect triggered. Search query:", searchQuery, "Filter type:", filterType);
     if (searchQuery.trim() === '') {
       setBooks([]);
       return;
     }
 
     const timerId = setTimeout(() => {
-      console.log("Calling fetchBooks...");
       fetchBooks();
     }, 500);
-
 
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
 
-
-  const openPopup = (book) => {
-    setSelectedBook(book);
-  };
-
-  const closePopup = () => {
-    setSelectedBook(null);
-  };
+  const openPopup = (book) => setSelectedBook(book);
+  const closePopup = () => setSelectedBook(null);
 
   const openAddPopup = (book, event) => {
     event.stopPropagation();
-  
     const rect = event.currentTarget.getBoundingClientRect();
     setAddPopupBook({ book, position: { top: rect.top, left: rect.right } });
   };
-  
 
-  const closeAddPopup = () => {
-    setAddPopupBook(null);
+  const closeAddPopup = () => setAddPopupBook(null);
+
+  const updateBookshelf = async (book, status) => {
+    console.log("user:", userId)
+    console.log("json:", JSON.stringify({
+      book_id: book.id || book._id,
+      status: status,
+    }))
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          book_id: book.id || book._id,
+          status: status,
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error(`Error updating bookshelf (${status}):`, error);
+      return { ok: false };
+    }
   };
-
 
   return (
     <div className="search-container">
@@ -143,13 +170,21 @@ const SearchBooks = () => {
         ) : (
           !loading && <p className="no-results">No books found.</p>
         )}
+      </div>
+
       <Navbar />
+
       {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
       {addPopupBook && (
-        <AddPopUp book={addPopupBook.book} onClose={closeAddPopup} position={addPopupBook.position} />
+        <AddPopUp
+          book={addPopupBook.book}
+          onClose={closeAddPopup}
+          updateBookshelf={updateBookshelf}
+          position={addPopupBook.position}
+        />
       )}
-    </div>
     </div>
   );
 };
+
 export default SearchBooks;
