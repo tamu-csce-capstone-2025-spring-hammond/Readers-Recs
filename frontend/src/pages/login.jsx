@@ -14,7 +14,7 @@ const Login = () => {
     const token = response.credential;
     if (token) {
       localStorage.setItem("access_token", token);
-      console.log("Stored Access Token:", token);
+      // console.log("Stored Access Token:", token);
     } else {
       console.error("No token received from Google.");
     }
