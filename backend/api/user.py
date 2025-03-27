@@ -57,6 +57,7 @@ def get_user_profile():
         # Create new user in the database
         new_user_id = create_user(**new_user_data)
         if new_user_id.startswith("Error"):
+            print("error:", new_user_id)
             return jsonify({"error": new_user_id}), 500
 
         # After user creation, fetch the newly created user to return the profile

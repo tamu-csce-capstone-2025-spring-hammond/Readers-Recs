@@ -87,6 +87,11 @@ def add_book_to_bookshelf(user_id):
         data = request.get_json()
         book_id = data['book_id']
         status = data['status']
+        if status == "currently-reading":
+            books = get_currently_reading_books(user_id)
+            print(books)
+            if books:
+                return jsonify({"error": "cannot read more than one book at a time"}), 400
 
         result = create_user_bookshelf(
             user_id=user_id,
@@ -103,7 +108,11 @@ def add_book_to_bookshelf(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
+
+
+####### THESE API FUNCTIONS ARE UNUSED SO FAR
 @shelf_bp.route('/api/user/<user_id>/bookshelf/<book_id>/status', methods=['PUT'])
 def update_bookshelf_status(user_id, book_id):
     """
