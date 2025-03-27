@@ -267,7 +267,7 @@ const Home = () => {
                     >
                       <div
                         className="home-book-cover"
-                        style={{ backgroundImage: `url(${bookshelf.booksRead?.[0]?.cover_image ?? ''})` }}
+                        style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
                       >
                       </div>
                     </div>
