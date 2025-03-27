@@ -21,6 +21,7 @@ const Login = () => {
 
     // Redirect to the profile page
     navigate("/profile");
+    navigate("/home")
   };
 
   // Failure handler for Google Login

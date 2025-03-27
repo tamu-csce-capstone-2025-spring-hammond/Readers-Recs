@@ -44,7 +44,7 @@ def get_user_profile():
         new_user_data = {
             "first_name": token_info.get("given_name", ""),
             "last_name": token_info.get("family_name", ""),
-            "username": token_info["email"],  # You can use the email or generate a unique username
+            "username": token_info["email"].split("@")[0],  # You can use the email or generate a unique username
             "email_address": token_info["email"],
             "oauth": {
                 "access_token": access_token,
