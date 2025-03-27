@@ -13,7 +13,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [bookshelf, setBookshelf] = useState({
     currentRead: null,
-    booksRead: [],
+    lastRead: null,
     toReadShelf: [],
   });
   
@@ -75,7 +75,7 @@ const Home = () => {
       try {
         const endpoints = [
           { key: 'currentRead', url: `books/currently-reading` },
-          { key: 'booksRead', url: `books/read` },
+          { key: 'lastRead', url: `books/lastread` },
           { key: 'toReadShelf', url: `books/to-read` },
         ];
         for (const { key, url } of endpoints) {
@@ -204,15 +204,15 @@ const Home = () => {
               <div className="book-display">
                 <div
                   className="home-book-cover featured-cover"
-                  style={{ backgroundImage: `url(${bookshelf.booksRead?.[0]?.cover_image ?? ''})`  }}
+                  style={{ backgroundImage: `url(${bookshelf.lastRead?.cover_image ?? ''})`  }}
                 >
                   <div className="book-badge">
                     <span>Finished</span>
                   </div>
                 </div>
                 <div className="book-info">
-                  <h3 className="book-title">{bookshelf.booksRead?.[0]?.title ?? 'No books finished'}</h3>
-                  <p className="book-author">{bookshelf.booksRead?.[0]?.author?.[0] ?? 'Unknown author'}</p>
+                  <h3 className="book-title">{bookshelf.lastRead?.title ?? 'No books finished'}</h3>
+                  <p className="book-author">{bookshelf.lastRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="rating-thumbs">
                     <button
                       className={`thumb-btn thumbs-up ${lastFinishedBook.rating === 'thumbsUp' ? 'selected' : ''}`}

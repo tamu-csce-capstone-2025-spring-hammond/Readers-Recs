@@ -97,8 +97,8 @@ class UserBookshelfSchema(BaseModel):
     date_added: datetime = Field(
         default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
     )
-    date_started: Optional[date] = None
-    date_finished: Optional[date] = None
+    date_started: Optional[datetime] = None
+    date_finished: Optional[datetime] = None
     rating: str = Field(default="mid", pattern=r"(?i)^(pos|neg|mid)$")
 
 

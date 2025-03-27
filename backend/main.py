@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from backend.api.books import books_bp
-from backend.api.user import user_bp
-from backend.api.bookshelf import shelf_bp
+from api.books import books_bp
+from api.user import user_bp
+from api.bookshelf import shelf_bp
 
 app = Flask(__name__)
 

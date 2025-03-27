@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from backend.database import collections
+from database import collections
 from bson import ObjectId
 import requests
 
-from backend.models.users import create_user, read_user_by_email
+from models.users import create_user, read_user_by_email
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -38,10 +38,9 @@ def get_user_profile():
     if not user:
         return jsonify({f"error": "{token_info}"}), 404
     
-    print(user)
+
     if isinstance(user, str):  # User not found, create a new user
         # Create user from Google profile data
-        print("Im here")
         new_user_data = {
             "first_name": token_info.get("given_name", ""),
             "last_name": token_info.get("family_name", ""),
