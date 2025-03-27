@@ -4,8 +4,8 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, date
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
-from backend.database import collections
+from schemas import UserSchema, OAuthSchema, DemographicSchema
+from database import collections
 
 users_collection = collections["Users"]
 

@@ -10,6 +10,12 @@ const Home = () => {
   const [activeSection, setActiveSection] = useState(null);
   const [showUpdateProgress, setShowUpdateProgress] = useState(false);
   const [bookProgress, setBookProgress] = useState(67);
+  const [user, setUser] = useState(null);
+  const [bookshelf, setBookshelf] = useState({
+    currentRead: null,
+    lastRead: null,
+    toReadShelf: [],
+  });
   
   // Sample data - replace with your actual data
   const recommendations = Array(6).fill(null).map((_, i) => ({
@@ -43,6 +49,50 @@ const Home = () => {
   // Animate elements on page load
   useEffect(() => {
     setIsLoaded(true);
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No token found');
+        // setLoading(false);
+        return;
+      }
+      try {
+        const profileResponse = await fetch('http://localhost:8000/user/profile', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
+        const profileData = await profileResponse.json();
+        setUser(profileData);
+        fetchBookshelfData(profileData.id, token);
+      } catch (error) {
+        console.error('Error fetching profile or bookshelf data:', error);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    const fetchBookshelfData = async (userId, token) => {
+      try {
+        const endpoints = [
+          { key: 'currentRead', url: `books/currently-reading` },
+          { key: 'lastRead', url: `books/lastread` },
+          { key: 'toReadShelf', url: `books/to-read` },
+        ];
+        for (const { key, url } of endpoints) {
+          const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setBookshelf((prev) => ({ ...prev, [key]: data }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching bookshelf data:', error);
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
   const handleSectionHover = (section) => {
@@ -117,7 +167,7 @@ const Home = () => {
               <div className="book-display">
                 <div
                   className="home-book-cover featured-cover"
-                  style={{ backgroundColor: currentBook.coverColor }}
+                  style={{ backgroundImage: `url(${bookshelf.currentRead?.cover_image ?? ''})`  }}
                 >
                   <div className="reading-progress-container">
                     <div
@@ -127,8 +177,8 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="book-info">
-                  <h3 className="book-title">{currentBook.title}</h3>
-                  <p className="book-author">{currentBook.author}</p>
+                  <h3 className="book-title">{bookshelf.currentRead?.title ?? 'No current book'}</h3>
+                  <p className="book-author">{bookshelf.currentRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="progress-info">
                     <span className="progress-percentage">{currentBook.progress}%</span>
                     <span className="progress-text">completed</span>
@@ -154,15 +204,15 @@ const Home = () => {
               <div className="book-display">
                 <div
                   className="home-book-cover featured-cover"
-                  style={{ backgroundColor: lastFinishedBook.coverColor }}
+                  style={{ backgroundImage: `url(${bookshelf.lastRead?.cover_image ?? ''})`  }}
                 >
                   <div className="book-badge">
                     <span>Finished</span>
                   </div>
                 </div>
                 <div className="book-info">
-                  <h3 className="book-title">{lastFinishedBook.title}</h3>
-                  <p className="book-author">{lastFinishedBook.author}</p>
+                  <h3 className="book-title">{bookshelf.lastRead?.title ?? 'No books finished'}</h3>
+                  <p className="book-author">{bookshelf.lastRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="rating-thumbs">
                     <button
                       className={`thumb-btn thumbs-up ${lastFinishedBook.rating === 'thumbsUp' ? 'selected' : ''}`}
@@ -207,7 +257,7 @@ const Home = () => {
               
               <div className="to-read-shelf">
                 <div className="book-grid to-read-grid">
-                  {toReadShelf.map((book, index) => (
+                  {bookshelf.toReadShelf.map((book, index) => (
                     <div
                       key={`to-read-${index}`}
                       className="wishlist-book"
@@ -217,7 +267,7 @@ const Home = () => {
                     >
                       <div
                         className="home-book-cover"
-                        style={{ backgroundColor: book.coverColor }}
+                        style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
                       >
                       </div>
                     </div>

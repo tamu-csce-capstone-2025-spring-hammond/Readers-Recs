@@ -647,6 +647,9 @@ h3 {
   overflow: hidden;
   transition: all 0.3s ease;
   width: 185px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .home-book-cover {
@@ -655,6 +658,9 @@ h3 {
   overflow: hidden;
   transition: all 0.3s ease;
   max-width: 350px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .home-book-cover.featured-cover {
   width: 100%;
@@ -697,14 +703,20 @@ h3 {
   font-weight: 600;
   color: #EBE8E1;
   margin: 5px 0px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
+  display: block;
+  max-width: 100%;
 }
 .book-display .book-info .book-author {
   font-size: 14px;
   color: #EBE8E1;
   margin: 0 0 6px;
+  white-space: normal;
+  word-wrap: break-word;
+  display: block;
+  max-width: 100%;
 }
 
 .current-book {
@@ -835,6 +847,9 @@ h3 {
   background-color: none;
   animation: fadeIn 0.6s ease forwards;
   transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .to-read-shelf .home-book-cover:hover {
   transform: translateY(-5px) rotateZ(0.5deg);

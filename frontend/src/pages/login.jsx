@@ -19,8 +19,9 @@ const Login = () => {
       console.error("No token received from Google.");
     }
 
-    // Redirect to the home page
-    navigate("/home");
+    // Redirect to the profile page
+    navigate("/profile");
+    navigate("/home")
   };
 
   // Failure handler for Google Login

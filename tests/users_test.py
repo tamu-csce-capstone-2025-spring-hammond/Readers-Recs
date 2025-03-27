@@ -141,6 +141,7 @@ def test_read_user_invalid():
     result = read_user(user_id)
     assert result == "Error: Invalid ObjectId format."
 
+
 def test_read_user_by_username():
     create_user(
         first_name="John",
