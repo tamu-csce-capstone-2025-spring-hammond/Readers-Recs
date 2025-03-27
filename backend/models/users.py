@@ -37,11 +37,11 @@ def create_user(
                 "$or": [
                     {"username": username},
                     {"email_address": email_address},
-                    {"oauth.refresh_token": oauth_data.refresh_token},
+                    {"oauth.access_token": oauth_data.access_token},
                 ]
             }
         ):
-            return "Error: Username, Email Address, or Refresh Token must be unique!"
+            return "Error: Username, Email Address, or Access Token must be unique!"
 
         # Validate and create user data using UserSchema
         user_data = UserSchema(
