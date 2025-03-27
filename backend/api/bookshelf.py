@@ -131,7 +131,6 @@ def add_book_to_bookshelf(user_id):
 
         if status == "currently-reading":
             books = get_currently_reading_books(user_id)
-            print(books[0])
             if books:
                 print(books[0]["book_id"])
                 print(delete_user_bookshelf(user_id, books[0]["book_id"]))
