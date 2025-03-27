@@ -5,6 +5,7 @@ from datetime import datetime, date
 from pydantic import ValidationError
 from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
+
 # from pymongo import errors
 
 users_collection = collections["Users"]

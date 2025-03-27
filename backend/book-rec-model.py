@@ -1,10 +1,12 @@
 import collections
+
 # import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
 from models.user_bookshelf import retrieve_user_bookshelf
+
 # from database import collections
 from models.books import books_collection, update_book_embedding, read_book_field
 from models.users import (

@@ -1,8 +1,10 @@
 import re
 from pymongo.mongo_client import MongoClient
+
 # from pymongo.server_api import ServerApi
 # from dotenv import load_dotenv
 import requests as req
+
 # import os
 
 client = MongoClient("<ADD AUTH HERE>")

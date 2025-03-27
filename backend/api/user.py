@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
+
 # from database import collections
 # from bson import ObjectId
 import requests
