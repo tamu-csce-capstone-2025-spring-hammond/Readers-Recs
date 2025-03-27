@@ -101,11 +101,6 @@ const SearchBooks = () => {
   const closeAddPopup = () => setAddPopupBook(null);
 
   const updateBookshelf = async (book, status) => {
-    console.log("user:", userId)
-    console.log("json:", JSON.stringify({
-      book_id: book.id || book._id,
-      status: status,
-    }))
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
