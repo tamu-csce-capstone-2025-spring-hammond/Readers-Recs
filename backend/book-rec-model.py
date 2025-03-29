@@ -319,8 +319,11 @@ class BookRecommender:
         books_read = retrieve_user_bookshelf(user_id)
         for book in books:
             book_id = book["_id"]
-            if book in books_read:
-                continue
+            for book_read in books_read:
+                # print(book_read["book_id"])
+                # print(book_id)
+                if book_read["book_id"] == book_id:
+                    continue
 
             # Retrieve and validate summary embedding
             summary_embedding = read_book_field(book_id, "embedding")
@@ -335,11 +338,12 @@ class BookRecommender:
             ):  # Handle missing or empty embedding
                 print(f"Book {book_id} still has no embedding, skipping.")
                 continue
-            else:
-                print("Successfully updated")
+            
+                
 
             # Convert summary_embedding to numpy array and check for NaN
             summary_embedding = np.array(summary_embedding)
+            
 
             # Ensure user_vector and summary_embedding are 2D before similarity calculation
             user_vector = np.nan_to_num(

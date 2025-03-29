@@ -139,7 +139,7 @@ const SearchBooks = () => {
       </div>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'black' }}>{error}</p>}
 
       <div className="search-results">
         {books.length > 0 ? (
@@ -163,7 +163,7 @@ const SearchBooks = () => {
             </div>
           ))
         ) : (
-          !loading && <p className="no-results">No books found.</p>
+          !loading && <p className="no-results"></p>
         )}
       </div>
 
