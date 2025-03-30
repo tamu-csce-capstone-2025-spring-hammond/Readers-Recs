@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
+import EditProfile from '../components/edit-profile';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -11,6 +12,7 @@ const Profile = () => {
     toReadShelf: [],
   });
   const [loading, setLoading] = useState(true);
+  const [editProfilePopup, setEditProfilePopup] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -72,6 +74,13 @@ const Profile = () => {
     window.location.href = '/';
   };
 
+  const handleEditProfile = () => {
+    setEditProfilePopup(true);
+  }
+  const handleCloseEditProfile = () => {
+    setEditProfilePopup(false);
+  }
+
   return (
     <div className="profile-container">
       <div className="profile-inner">
@@ -82,7 +91,7 @@ const Profile = () => {
             <h2 className="profile-username">{user.email}</h2>
             <p className="profile-member-since">Member Since 2025</p>
             <div className="profile-buttons">
-              <button className="edit-profile-button">Edit Profile</button>
+              <button className="edit-profile-button" onClick={handleEditProfile}>Edit Profile</button>
               <button className="edit-profile-button" onClick={handleLogout}>Logout</button>
             </div>
           </div>
@@ -125,6 +134,9 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      {editProfilePopup && (
+        <EditProfile user={user} onClose={handleCloseEditProfile} />
+      )}
       <Navbar />
     </div>
   );
