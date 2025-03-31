@@ -1,6 +1,6 @@
-import os
+# import os
 import requests
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from starlette.config import Config
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -9,9 +9,12 @@ config = Config(".env")  # Load from environment variables or .env file
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="your-client-id")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default="your-client-secret")
-GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI", default="http://localhost:8000/auth/callback")
+GOOGLE_REDIRECT_URI = config(
+    "GOOGLE_REDIRECT_URI", default="http://localhost:8000/auth/callback"
+)
 
 router = APIRouter()
+
 
 # Step 1: Redirect user to Google OAuth
 @router.get("/auth/google")

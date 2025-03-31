@@ -87,17 +87,18 @@ class UserSchema(BaseModel):
 # USER_BOOKSHELF SCHEMA (Junction Table)
 # -----------------------------------------------
 class UserBookshelfSchema(BaseModel):
-    user_id: PyObjectId = Field(default_factory=PyObjectId)
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: str = Field(default="userid")
     book_id: PyObjectId = Field(default_factory=PyObjectId)
     status: str = Field(
-        default="To Read", pattern=r"(?i)^(To Read|Currently Reading|Read)$"
+        default="to-read", pattern=r"(?i)^(to-read|currently-reading|read)$"
     )
     page_number: int = Field(default=0)
-    date_added: date = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago")).date()
+    date_added: datetime = Field(
+        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
     )
-    date_started: Optional[date] = None
-    date_finished: Optional[date] = None
+    date_started: Optional[datetime] = None
+    date_finished: Optional[datetime] = None
     rating: str = Field(default="mid", pattern=r"(?i)^(pos|neg|mid)$")
 
 

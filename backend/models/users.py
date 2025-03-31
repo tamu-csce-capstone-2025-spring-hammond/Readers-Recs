@@ -1,11 +1,12 @@
 # database/models/users.py
-from pymongo import errors
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, date
 from pydantic import ValidationError
 from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
 from backend.database import collections
+
+# from pymongo import errors
 
 users_collection = collections["Users"]
 
@@ -37,11 +38,11 @@ def create_user(
                 "$or": [
                     {"username": username},
                     {"email_address": email_address},
-                    {"oauth.refresh_token": oauth_data.refresh_token},
+                    {"oauth.access_token": oauth_data.access_token},
                 ]
             }
         ):
-            return "Error: Username, Email Address, or Refresh Token must be unique!"
+            return "Error: Username, Email Address, or Access Token must be unique!"
 
         # Validate and create user data using UserSchema
         user_data = UserSchema(
@@ -174,7 +175,7 @@ def update_genre_weights(user_id, new_genre_weights):
         return "Error: Genre keys must be strings and weights must be numerical values."
 
     return users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"genre_weights": new_genre_weights}}
+        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}}
     )
 
 
@@ -182,7 +183,7 @@ def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": ObjectId(user_id)}, {"genre_weights": 1})
+    user = users_collection.find_one({"_id": user_id}, {"genre_weights": 1})
     return user.get("genre_weights", {}) if user else "Error: User not found."
 
 
@@ -197,11 +198,11 @@ def update_embedding(user_id, new_embedding):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": ObjectId(user_id)}, {"$set": {"embedding": new_embedding}}
+        {"_id": user_id}, {"$set": {"embedding": new_embedding}}
     )
 
     if result.modified_count == 0:
-        print("Warning: Embedding was already up-to-date.")
+        print("Warning: embedding was not updated.")
     print("Success. Updated user embedding.")
     return result
 

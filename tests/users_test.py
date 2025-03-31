@@ -1,6 +1,5 @@
 import pytest
 from bson import ObjectId
-from datetime import datetime
 from backend.database import collections
 from backend.models.users import (
     create_user,
@@ -16,10 +15,10 @@ from backend.models.users import (
     update_demographics,
     remove_demographic,
     delete_user,
-    update_genre_weights,
-    retrieve_genre_weights,
-    update_embedding,
-    retrieve_embedding,
+    # update_genre_weights,
+    # retrieve_genre_weights,
+    # update_embedding,
+    # retrieve_embedding,
 )
 
 users_collection = collections["Users"]
@@ -46,7 +45,7 @@ def test_create_update_and_delete_user():
 
     assert isinstance(result, str)
     assert (
-        "Error: Username, Email Address, or Refresh Token must be unique!" not in result
+        "Error: Username, Email Address, or Access Token must be unique!" not in result
     )
     assert "Schema Validation Error" not in result
 
@@ -83,7 +82,7 @@ def test_create_user_invalid_email():
         interests=["Cooking"],
         demographics={"age": 21},
     )
-    assert result == "Error: Username, Email Address, or Refresh Token must be unique!"
+    assert result == "Error: Username, Email Address, or Access Token must be unique!"
 
 
 def test_create_user_invalid_schema():
@@ -112,7 +111,7 @@ def test_create_user_invalid_schema():
         interests=["Adventure"],
         demographics={"age": 21},
     )
-    assert result == "Error: Username, Email Address, or Refresh Token must be unique!"
+    assert result == "Error: Username, Email Address, or Access Token must be unique!"
 
 
 def test_read_user():
@@ -140,6 +139,7 @@ def test_read_user_invalid():
     user_id = "1111111111111111111"
     result = read_user(user_id)
     assert result == "Error: Invalid ObjectId format."
+
 
 def test_read_user_by_username():
     create_user(
@@ -277,7 +277,7 @@ def test_add_update_remove_demographics():
     result = remove_demographic(user_id, "birthday")
     assert result.modified_count == 1
     user = read_user(user_id)
-    assert user["demographics"]["birthday"] == None
+    assert user["demographics"]["birthday"] is None
 
 
 def test_add_demographics_invalid_type():
