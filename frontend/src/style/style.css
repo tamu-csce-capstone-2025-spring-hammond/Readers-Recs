@@ -2229,4 +2229,41 @@ input[type=file] {
 .submit-btn:hover, .submit-btn:focus {
   background-color: #EBE8E1;
   color: #2A664D;
+}
+
+.update-progress-container {
+  position: absolute;
+  bottom: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #EBE8E1;
+  padding: 12px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.progress-input {
+  width: 60px;
+  padding: 4px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.update-btn {
+  background-color: #2A664D;
+  color: #EBE8E1;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.update-btn:hover, .update-btn:focus {
+  background-color: #0e3523;
 }/*# sourceMappingURL=style.css.map */

@@ -106,7 +106,7 @@ const Home = () => {
   const handleProgressUpdate = (newProgress) => {
     setBookProgress(newProgress);
     setShowUpdateProgress(false);
-  };
+  };  
 
   const handleRatingClick = (newRating) => {
     setLastFinishedBook((prevBook) => ({
@@ -188,9 +188,12 @@ const Home = () => {
                   </button>
                 </div>
                 {showUpdateProgress && (
-                  <UpdateProgress currentProgress={bookProgress} onUpdate={handleProgressUpdate} />
+                  <UpdateProgress 
+                    currentPage={bookshelf.currentRead?.currentPage || 0}
+                    totalPages={bookshelf.currentRead?.totalPages || 1}
+                    onUpdate={handleProgressUpdate}
+                  />
                 )}
-
               </div>
             </div>
           </div>
