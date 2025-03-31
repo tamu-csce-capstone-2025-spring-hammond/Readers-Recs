@@ -63,11 +63,17 @@ export default function BookPopup({ book, onClose }) {
                     </div>
                     <div className="popup-details">
                         <h2 className="popup-title">{book.title}</h2>
-                        <p className="popup-author">{book.author}</p>
+                        <p className="popup-author">{Array.isArray(book.author) ? book.author.join(", ") : book.author}</p>
                         <p className="popup-info">Page Count: {book.page_count}</p>
-                        <p className="popup-info">Genre: {book.genre_tags && book.genre_tags.length > 0 ? book.genre_tags[0] : "Fiction"}</p>
+                        <p className="popup-info">
+                            Genre: {book.genre_tags && book.genre_tags.length > 0 
+                            ? book.genre_tags[0].split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ") 
+                            : "Fiction"}
+                        </p>
                         <p className="popup-info">Publisher: {book.publisher}</p>
-                        <p className="popup-info">ISBN: {book.isbn}</p>
+                        <p className="popup-info">
+                            ISBN: {Array.isArray(book.isbn) ? book.isbn[0] : book.isbn}
+                        </p>
                     </div>
                 </div>
                 <p className="popup-description">{book.summary}</p>
