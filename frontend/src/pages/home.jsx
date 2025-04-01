@@ -9,7 +9,7 @@ const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const [showUpdateProgress, setShowUpdateProgress] = useState(false);
-  const [bookProgress, setBookProgress] = useState(67);
+  const [bookProgress, setBookProgress] = useState(0);
   const [user, setUser] = useState(null);
   const [bookshelf, setBookshelf] = useState({
     currentRead: null,
@@ -253,9 +253,12 @@ const Home = () => {
                   </button>
                 </div>
                 {showUpdateProgress && (
-                  <UpdateProgress currentProgress={bookProgress} onUpdate={handleProgressUpdate} />
+                  <UpdateProgress 
+                    currentPage={bookshelf.currentRead?.currentPage || 0}
+                    totalPages={bookshelf.currentRead?.totalPages || 1}
+                    onUpdate={handleProgressUpdate}
+                  />
                 )}
-
               </div>
             </div>
           </div>

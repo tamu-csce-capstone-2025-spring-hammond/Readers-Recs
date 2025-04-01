@@ -1,35 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import "../style/style.css";
 
-const UpdateProgress = ({ currentProgress, onUpdate }) => {
-  const [progress, setProgress] = useState(currentProgress);
+const UpdateProgress = ({ currentPage, totalPages, onUpdate }) => {
+  const [pageNumber, setPageNumber] = useState(currentPage || 0);
 
   useEffect(() => {
-    setProgress(currentProgress);
-  }, [currentProgress]);
+    setPageNumber(currentPage || 0);
+  }, [currentPage]);
 
-  const handleChange = (e) => {
-    setProgress(Number(e.target.value));
+  const handlePageChange = (e) => {
+    const newPage = Number(e.target.value);
+    if (newPage >= 0 && newPage <= totalPages) {
+      setPageNumber(newPage);
+    }
   };
 
   const handleSubmit = () => {
-    onUpdate(progress);
+    const newProgress = Math.round((pageNumber / totalPages) * 100);
+    onUpdate(newProgress);
   };
 
   return (
     <div className="update-progress-container">
       <input
-        type="range"
+        type="number"
         min="0"
-        max="100"
-        value={progress}
-        onChange={handleChange}
-        className="progress-slider"
+        max={totalPages}
+        value={pageNumber}
+        onChange={handlePageChange}
+        className="progress-input"
       />
-      <span>{progress}%</span>
+      <span> / {totalPages} pages</span>
       <button onClick={handleSubmit} className="update-btn">Update</button>
     </div>
   );
 };
 
 export default UpdateProgress;
-

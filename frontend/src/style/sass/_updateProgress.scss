@@ -1,0 +1,36 @@
+.update-progress-container {
+    position: absolute;
+    bottom: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: $-tan;
+    padding: 12px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.progress-input {
+    width: 60px;
+    padding: 4px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.update-btn {
+    background-color: $-green;
+    color: $-tan;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    &:hover, &:focus {
+        background-color: $-dark-green;
+    }
+}
