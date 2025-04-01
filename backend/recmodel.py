@@ -6,6 +6,11 @@ from sentence_transformers import SentenceTransformer
 from models.books import books_collection, read_book_by_bookId
 import redis
 import json
+
+import threading
+import time
+
+
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
@@ -14,6 +19,52 @@ from bson import ObjectId
 
 from models.users import read_user, retrieve_embedding, retrieve_genre_weights, update_embedding, update_genre_weights
 from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
+
+class BookCollection:
+    def __init__(self, refresh_interval=24 * 60 * 60):
+        """
+        Initializes the BookCollection and starts a background thread to refresh books.
+        :param refresh_interval: Time in seconds before refreshing (default: 24 hours)
+        """
+        self.books = []
+        self.lock = threading.Lock()
+        self.refresh_interval = refresh_interval
+        
+        # Load books initially
+        self.refresh_books()
+
+        # Start background refresh thread
+        self.refresh_thread = threading.Thread(target=self._refresh_loop, daemon=True)
+        self.refresh_thread.start()
+
+    def refresh_books(self):
+        """Fetches all books from the database and updates the in-memory collection."""
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Refreshing book collection...")
+
+        start_time = time.time()
+        new_books = list(
+            books_collection.find({})
+        )
+
+        with self.lock:
+            self.books = new_books
+
+        elapsed_time = time.time() - start_time
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(new_books)} books) in {elapsed_time:.4f} seconds.")
+
+    def _refresh_loop(self):
+        """Runs a loop to refresh the book collection every 24 hours."""
+        while True:
+            time.sleep(self.refresh_interval)
+            self.refresh_books()
+
+    def get_books(self):
+        """Returns all books from memory."""
+        with self.lock:
+            return self.books.copy()  # Return a copy to prevent external modifications
+
+# Initialize the book collection on startup
+book_collection = BookCollection()
 
 
 # load_dotenv(override=True)
@@ -66,8 +117,7 @@ def process_wishlist(user_id):
         # print("genre weights:", genre_weights)
         update_genre_weights(user_id, genre_weights)
         # print(update_user_gw(user_id, genre_weights))
-        # print("User new genre weights:", retrieve_genre_weights(user_id))
-        print("genre weights:", retrieve_genre_weights(user_id))
+        # print("genre weights:", retrieve_genre_weights(user_id))
         
         # Embedding update
         user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
@@ -168,9 +218,9 @@ def retrieve_user_embedding(user_id):
     redis_client.set(cache_key, json.dumps(user_embedding.tolist()), ex=3600)
     return user_embedding
 
-def get_all_books():
-    # return list(books_collection.find({}))
-    return list(books_collection.find({}, {"_id": 1, "title": 1, "author": 1, "cover_image": 1, "embedding": 1, "genre_tags": 1}))
+# def get_all_books():
+#     """Retrieve books from Redis instead of MongoDB."""
+#     return list(books_collection.find({}))
 
 
 def update_book_embeddings(books):
@@ -189,13 +239,15 @@ def update_book_embeddings(books):
             result = books_collection.update_one({"_id": book["_id"]}, {"$set": {"embedding": embedding.tolist()}})
             print(f"Updated book {book['_id']}: {result.modified_count} document(s) updated")
 
+
 def generate_recs(user_id, top_n=6):
-    # print("generating recs")
+    print("generating recs")
     user_embedding = retrieve_user_embedding(user_id)
     # print("user emb:", user_embedding)
     genre_weights = retrieve_genre_weights(user_id)
     # print("gw:", genre_weights)
-    books = get_all_books()
+    print("retrieving books...")
+    books = book_collection.get_books()  # Get books from memory
     print(f"Total books retrieved: {len(books)}")
 
     update_book_embeddings(books)
@@ -255,7 +307,9 @@ def generate_recs(user_id, top_n=6):
 def recommend_books(user_id):
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
+    # print("starting gw: ", retrieve_genre_weights(user_id))
     update_embedding(user_id, np.zeros(384).tolist())
+    # print("starting embedding: ", retrieve_embedding(user_id))
     # print("2 ***************************")
     process_reading_history(user_id)
     # print("3 ***************************")

@@ -164,9 +164,11 @@ def update_genre_weights(user_id, new_genre_weights):
     Update the genre weight dictionary for a user.
     Expects new_genre_weights to be a dictionary with genre names as keys and float values as weights.
     """
-    existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    u_id = user_id
+    existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
-        existing_user = users_collection.find_one({"_id": user_id})
+        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})   
+        u_id = ObjectId(user_id)     
         if not existing_user:
             return "Error: User not found."
     
@@ -179,9 +181,14 @@ def update_genre_weights(user_id, new_genre_weights):
     ):
         return "Error: Genre keys must be strings and weights must be numerical values."
 
-    return users_collection.update_one(
-        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}}
+    result = users_collection.update_one(
+        {"_id": u_id}, {"$set": {"genre_weights": new_genre_weights}}
     )
+    # if result.modified_count == 0:
+    #     print("Genre weights were not updated.")
+    # else:
+    #     print("Success. Updated genre weights.")
+    return result
 
 
 def retrieve_genre_weights(user_id):
@@ -192,9 +199,9 @@ def retrieve_genre_weights(user_id):
     if not user:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
     if user:
-        if user["genre_weights"] == []:
-            return dict()
-    return user["genre_weights"] if user else "Error: User not found."
+        return user["genre_weights"] if user else dict()
+    else:
+        return "User not found"
 
 
 def update_embedding(user_id, new_embedding):
@@ -202,9 +209,11 @@ def update_embedding(user_id, new_embedding):
     Update the user's embedding vector.
     Expects new_embedding to be an array (list) of floats.
     """
-    existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    u_id = user_id
+    existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
-        existing_user = users_collection.find_one({"_id": user_id})
+        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+        u_id = ObjectId(user_id)
         if not existing_user:
             return "Error: User not found."
     
@@ -214,13 +223,12 @@ def update_embedding(user_id, new_embedding):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": user_id}, {"$set": {"embedding": new_embedding}},
+        {"_id": u_id}, {"$set": {"embedding": new_embedding}},
     )
-
-    if result.modified_count == 0:
-        print("Warning: embedding was not updated.")
-    else:
-        print("Success. Updated user embedding.")
+    # if result.modified_count == 0:
+    #     print("Embedding was not updated.")
+    # else:
+    #     print("Success. Updated user embedding.")
     return result
 
 
@@ -234,7 +242,13 @@ def retrieve_embedding(user_id):
     ):  # Check if "embedding" exists and is not empty
         return user["embedding"]
     else:
-        return None
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        if (
+            user and "embedding" in user and user["embedding"]
+        ):  # Check if "embedding" exists and is not empty
+            return user["embedding"]
+        else:
+            return None
 
 
 ### End of new update/retrieval functions

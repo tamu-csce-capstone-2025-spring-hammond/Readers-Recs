@@ -13,7 +13,7 @@ def objectid_to_str(obj):
     """Helper function to convert ObjectId to string"""
     if isinstance(obj, ObjectId):
         return str(obj)
-    raise TypeError(f"Object of type {type(obj).__name__} is not ObjectId")
+    
 
 
 
