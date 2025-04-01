@@ -9,7 +9,7 @@ const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const [showUpdateProgress, setShowUpdateProgress] = useState(false);
-  const [bookProgress, setBookProgress] = useState(67);
+  const [bookProgress, setBookProgress] = useState(0);
   const [user, setUser] = useState(null);
   const [bookshelf, setBookshelf] = useState({
     currentRead: null,
