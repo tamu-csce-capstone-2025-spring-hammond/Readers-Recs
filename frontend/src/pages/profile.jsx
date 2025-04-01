@@ -64,9 +64,12 @@ const Profile = () => {
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Error: User profile not found</div>;
 
-  const scrollBooks = (id, direction) => {
-    const container = document.getElementById(id);
-    if (container) container.scrollBy({ left: direction * 250, behavior: 'smooth' });
+  const scrollBooks = (shelfId, direction) => {
+    const container = document.getElementById(shelfId);
+    if (container) {
+      const scrollAmount = 300 * direction; // Adjust for smooth scrolling
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
   };
 
   const handleLogout = () => {
