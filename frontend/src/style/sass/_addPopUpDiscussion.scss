@@ -1,0 +1,55 @@
+.add-box-discussion {
+    background: $-dark-green;
+    color: $-tan;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+}
+
+.add-popup-close-discussion {
+    background: none;
+    border: none;
+    color: $-tan;
+    font-size: 32px;
+    position: absolute;
+    top: 0px;
+    right: 15px;
+    cursor: pointer;
+
+    &:hover, &:focus {
+        color: $-brown;
+    }
+}
+
+.things-to-add-to {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 22px;
+}
+
+.things-to-add-to div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.plus-button-discussion {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: $-tan;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    &:hover, &:focus {
+        color: $-brown;
+    }
+}

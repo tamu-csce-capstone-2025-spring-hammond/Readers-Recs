@@ -1844,6 +1844,22 @@ footer {
   flex-direction: row;
   gap: 20px;
   width: 100%;
+  position: relative;
+}
+.popup-container .popup-content .add-button {
+  position: absolute;
+  bottom: 10px;
+  right: 30px;
+  background-color: none;
+  color: #EBE8E1;
+  border: none;
+  font-size: 36px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.popup-container .popup-content .add-button:hover, .popup-container .popup-content .add-button:focus {
+  background-color: #7e4f34;
+  transform: scale(1.2);
 }
 .popup-container .popup-content .popup-image {
   width: 150px;
@@ -2296,4 +2312,59 @@ input[type=file] {
 }
 .update-btn:hover, .update-btn:focus {
   background-color: #0e3523;
+}
+
+.add-box-discussion {
+  background: #0e3523;
+  color: #EBE8E1;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+}
+
+.add-popup-close-discussion {
+  background: none;
+  border: none;
+  color: #EBE8E1;
+  font-size: 32px;
+  position: absolute;
+  top: 0px;
+  right: 15px;
+  cursor: pointer;
+}
+.add-popup-close-discussion:hover, .add-popup-close-discussion:focus {
+  color: #796855;
+}
+
+.things-to-add-to {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 22px;
+}
+
+.things-to-add-to div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plus-button-discussion {
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: #EBE8E1;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.plus-button-discussion:hover, .plus-button-discussion:focus {
+  color: #796855;
 }/*# sourceMappingURL=style.css.map */
