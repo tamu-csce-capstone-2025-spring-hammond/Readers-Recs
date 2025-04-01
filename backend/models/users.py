@@ -53,7 +53,7 @@ def create_user(
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
             demographics=demographics,
-            genre_weights=[],
+            genre_weights=dict(),
             embedding=[],
         )
 
