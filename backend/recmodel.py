@@ -15,6 +15,7 @@ from bson import ObjectId
 from models.users import read_user, retrieve_embedding, retrieve_genre_weights, update_embedding, update_genre_weights
 from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 
+
 # load_dotenv(override=True)
 # uri = os.getenv("MONGO_URI")
 # if not uri:
@@ -46,7 +47,7 @@ def process_wishlist(user_id):
         if book_obj:
             books_to_read.append(book_obj)
     user = read_user(user_id)
-    print(books_to_read)
+    # print(books_to_read)
     if not user:
         print("USER NOT FOUND")
     for book in books_to_read:
@@ -69,7 +70,7 @@ def process_wishlist(user_id):
         print("genre weights:", retrieve_genre_weights(user_id))
         
         # Embedding update
-        user_embedding = retrieve_user_embedding(user_id)  # Retrieve embedding from DB
+        user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
         book_embedding = np.array(book["embedding"], dtype=np.float64)
 
         if isinstance(user_embedding, np.ndarray):
@@ -86,7 +87,7 @@ def process_wishlist(user_id):
 
         # Compute new embedding
         new_embedding = (user_embedding + book_embedding) / 2
-        print(new_embedding)
+        # print(new_embedding)
         update_user_embedding(user_id, new_embedding.tolist())
 
 def process_user_rating(user_id, book_id, rating):
@@ -160,9 +161,7 @@ def retrieve_user_embedding(user_id):
     cached_embedding = redis_client.get(cache_key)
     if cached_embedding:
         return np.array(json.loads(cached_embedding))
-    
     user_embedding = retrieve_embedding(user_id)  
-
     if user_embedding is None:  # Handle missing embeddings
         # raise ValueError(f"User embedding not found for user_id: {user_id}")
         user_embedding = np.zeros(384)
@@ -170,7 +169,9 @@ def retrieve_user_embedding(user_id):
     return user_embedding
 
 def get_all_books():
-    return list(books_collection.find({}))
+    # return list(books_collection.find({}))
+    return list(books_collection.find({}, {"_id": 1, "title": 1, "author": 1, "cover_image": 1, "embedding": 1, "genre_tags": 1}))
+
 
 def update_book_embeddings(books):
     if not isinstance(books, collections.abc.Iterable):
@@ -189,10 +190,13 @@ def update_book_embeddings(books):
             print(f"Updated book {book['_id']}: {result.modified_count} document(s) updated")
 
 def generate_recs(user_id, top_n=6):
+    # print("generating recs")
     user_embedding = retrieve_user_embedding(user_id)
+    # print("user emb:", user_embedding)
     genre_weights = retrieve_genre_weights(user_id)
+    # print("gw:", genre_weights)
     books = get_all_books()
-    # print(f"Total books retrieved: {len(books)}")
+    print(f"Total books retrieved: {len(books)}")
 
     update_book_embeddings(books)
     books_read = {book["book_id"] for book in retrieve_user_bookshelf(user_id)} 
@@ -206,8 +210,8 @@ def generate_recs(user_id, top_n=6):
             valid_books.append(book)
 
     # Debugging output
-    # print(f"user_embedding shape: {user_embedding.shape if user_embedding is not None else 'None'}")
-    # print(f"book_embeddings shape: {book_embeddings.shape if book_embeddings is not None else 'None'}")
+    print(f"user_embedding shape: {user_embedding.shape if user_embedding is not None else 'None'}")
+    print(f"book_embeddings shape: {book_embeddings.shape if book_embeddings is not None else 'None'}")
     
     # Check if user_embedding is None or empty
     if user_embedding is None or user_embedding.size == 0:
@@ -236,7 +240,7 @@ def generate_recs(user_id, top_n=6):
     
     # return [book for book, _ in recommendations[:top_n]]
 
-    similarities = cosine_similarity(user_embedding, book_embeddings)[0]
+    similarities = cosine_similarity(user_embedding.reshape(1, -1), book_embeddings)[0]
     
     recommendations = []
     for book, sim in zip(valid_books, similarities):
@@ -249,10 +253,14 @@ def generate_recs(user_id, top_n=6):
     return [book for book, _ in recommendations[:top_n]]
 
 def recommend_books(user_id):
+    # print("1 ***************************")
     update_genre_weights(user_id, dict())
     update_embedding(user_id, np.zeros(384).tolist())
+    # print("2 ***************************")
     process_reading_history(user_id)
+    # print("3 ***************************")
     process_wishlist(user_id)
+    # print("4 ***************************")
     return generate_recs(user_id=user_id)
 
 # Example usage:
@@ -262,5 +270,4 @@ def recommend_books(user_id):
 # print(recommend_books(user_id))
 
 # user_id = "67e4821400344e912e331e32"
-# process_reading_history(user_id)
 # print(recommend_books(user_id))

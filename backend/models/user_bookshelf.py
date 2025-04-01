@@ -197,6 +197,59 @@ def rate_book(user_id, book_id, new_rating):
 
     except Exception as e:
         return f"Error: {str(e)}"
+    
+
+### NEW METHODS FOR PAGE NUMBER
+def update_page_number(user_id, book_id, new_page_number):
+    try:
+        # Validate user_id and book_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
+
+        # Validate new_page_number
+        if not isinstance(new_page_number, int) or new_page_number < 0:
+            return "Error: Invalid page number. It must be a non-negative integer."
+
+        # Update the page number
+        result = user_bookshelf_collection.update_one(
+            {"user_id": user_id, "book_id": book_id, "status": "currently-reading"},
+            {"$set": {"page_number": new_page_number}}
+        )
+
+        if result.matched_count:
+            return "Page number updated successfully."
+        else:
+            return "UserBookshelf entry not found."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_page_number(user_id, book_id):
+    try:
+        # Validate user_id and book_id
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
+        print("user id:", user_id)
+        print("book_id:", book_id)
+        # Retrieve the page number
+        book_entry = user_bookshelf_collection.find_one(
+            {"user_id": user_id, "book_id": ObjectId(book_id)},
+            {"status": "currently-reading"}
+        )
+
+        if book_entry is not None:
+            return book_entry.get("page_number", 0)
+        else:
+            return "UserBookshelf entry not found."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 
 
 def delete_user_bookshelf(user_id, book_id):

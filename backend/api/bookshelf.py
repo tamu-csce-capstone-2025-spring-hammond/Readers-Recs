@@ -10,10 +10,12 @@ from models.user_bookshelf import (
     create_user_bookshelf,
     delete_user_bookshelf,
     get_currently_reading_books,
+    get_page_number,
     get_read_books,
     get_unread_books,
     rate_book,
-    update_user_bookshelf_status,
+    update_page_number,
+    update_user_bookshelf_status
 )
 
 shelf_bp = Blueprint("shelf", __name__)
@@ -170,6 +172,7 @@ def add_book_to_bookshelf(user_id):
             status=status,
             date_started=date_started,
             date_finished=date_finished,
+            page_number=0
         )
 
         if "Error" not in result:
@@ -182,6 +185,53 @@ def add_book_to_bookshelf(user_id):
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["PUT"])
+def update_current_page(user_id, book_id):
+    """
+    Update the current page number of a book the user is reading.
+    """
+    try:
+        data = request.get_json()
+        page_number = data.get("page_number")
+
+        if not isinstance(page_number, int) or page_number < 0:
+            return jsonify({"error": "Invalid page number"}), 400
+
+        result = update_page_number(user_id, book_id, page_number)
+
+        if "successfully" in result:
+            return jsonify({"message": result}), 200
+        else:
+            return jsonify({"error": result}), 400
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["GET"])
+def get_current_page(user_id, book_id):
+    """
+    Retrieve the current page number of a book the user is reading.
+    """
+    try:
+        page_number = get_page_number(user_id, book_id)
+
+        if isinstance(page_number, int):
+            return jsonify({"page_number": page_number}), 200
+        else:
+            return jsonify({"error": page_number}), 404
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+
+
 
 
 ####### THESE API FUNCTIONS ARE UNUSED SO FAR

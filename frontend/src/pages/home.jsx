@@ -81,12 +81,24 @@ const Home = () => {
           { key: 'lastRead', url: `books/lastread` },
           { key: 'toReadShelf', url: `books/to-read` },
         ];
+        
         for (const { key, url } of endpoints) {
           const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
+    
           if (response.ok) {
             const data = await response.json();
+            
+            // Fetch current page number if it's the current read
+            if (key === "currentRead" && data) {
+              const pageResponse = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
+              if (pageResponse.ok) {
+                const pageData = await pageResponse.json();
+                data.current_page = pageData.current_page; // Attach page info
+              }
+            }
+            
             setBookshelf((prev) => ({ ...prev, [key]: data }));
           }
         }
@@ -94,6 +106,7 @@ const Home = () => {
         console.error('Error fetching bookshelf data:', error);
       }
     };
+    
 
     const fetchRecommendations = async (userId) => {
       try {
@@ -125,9 +138,38 @@ const Home = () => {
     setShowUpdateProgress(true);
   };
 
-  const handleProgressUpdate = (newProgress) => {
-    setBookProgress(newProgress);
-    setShowUpdateProgress(false);
+  const handleProgressUpdate = async (newProgress) => {
+    if (!bookshelf.currentRead) return;
+  
+    const userId = user?.id;
+    const bookId = bookshelf.currentRead.id;
+    const totalPages = bookshelf.currentRead.total_pages;
+  
+    const newPageNumber = Math.round((newProgress / 100) * totalPages);
+  
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({ page_number: newPageNumber }),
+      });
+  
+      if (!response.ok) throw new Error('Failed to update progress');
+  
+      setBookProgress(newProgress);
+      setBookshelf((prev) => ({
+        ...prev,
+        currentRead: { ...prev.currentRead, current_page: newPageNumber },
+      }));
+  
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    } finally {
+      setShowUpdateProgress(false);
+    }
   };
 
   const handleRatingClick = (newRating) => {
