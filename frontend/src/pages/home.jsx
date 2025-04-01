@@ -16,14 +16,16 @@ const Home = () => {
     lastRead: null,
     toReadShelf: [],
   });
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   
-  // Sample data - replace with your actual data
-  const recommendations = Array(6).fill(null).map((_, i) => ({
-    id: i,
-    title: `Book ${i+1}`,
-    author: `Author ${i+1}`,
-    coverColor: `hsl(${i * 60}, 70%, 80%)` // Just for demo
-  }));
+  // // Sample data - replace with your actual data
+  // const recommendations = Array(6).fill(null).map((_, i) => ({
+  //   id: i,
+  //   title: `Book ${i+1}`,
+  //   author: `Author ${i+1}`,
+  //   coverColor: `hsl(${i * 60}, 70%, 80%)` // Just for demo
+  // }));
   
   const toReadShelf = Array(3).fill(null).map((_, i) => ({
     id: i,
@@ -64,6 +66,7 @@ const Home = () => {
         const profileData = await profileResponse.json();
         setUser(profileData);
         fetchBookshelfData(profileData.id, token);
+        fetchRecommendations(profileData.id);  
       } catch (error) {
         console.error('Error fetching profile or bookshelf data:', error);
       } finally {
@@ -91,6 +94,25 @@ const Home = () => {
         console.error('Error fetching bookshelf data:', error);
       }
     };
+
+    const fetchRecommendations = async (userId) => {
+      try {
+        console.log("Fetching recs");
+        console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
+        const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations`);
+        
+        if (!response.ok) throw new Error('Failed to fetch recommendations');
+        const data = await response.json();
+        console.log("recs:", data.recommendations)
+        setRecommendations(data.recommendations);
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+      } finally {
+        setLoadingRecommendations(false);
+      }
+    };
+  
+
 
     fetchUserProfile();
   }, []);
@@ -133,23 +155,24 @@ const Home = () => {
               <button className="refresh-btn">↻</button>
             </div>
             <div className="book-cards-container">
-              {/* <div className="book-grid recommendations-grid"> */}
-                {recommendations.map((book, index) => (
-                  <div
-                    key={`rec-${index}`}
-                    className="book-card"
-                    style={{ animationDelay: `${0.1 + index * 0.03}s` }}
-                  >
-                    <div
-                      className="home-book-cover"
-                      style={{ backgroundColor: book.coverColor }}
-                    ></div>
-                    <div className="book-info">
-                      <h3 className="book-title">{book.title}</h3>
-                      <p className="book-author">{book.author}</p>
+                {loadingRecommendations ? (
+                  <p>Loading recommendations...</p>
+                ) : recommendations.length > 0 ? (
+                  recommendations.map((book) => (
+                    <div key={book.id} className="book-card">
+                      <div
+                        className="home-book-cover"
+                        style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
+                      ></div>
+                      <div className="book-info">
+                        <h3 className="book-title">{book.title}</h3>
+                        <p className="book-author">{book.author}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p>No recommendations available.</p>
+                )}
               </div>
             {/* </div> */}
           </div>

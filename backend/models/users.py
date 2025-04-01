@@ -174,7 +174,8 @@ def update_genre_weights(user_id, new_genre_weights):
         return "Error: Genre keys must be strings and weights must be numerical values."
 
     return users_collection.update_one(
-        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}}
+        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}},
+        upsert=True
     )
 
 
@@ -182,8 +183,13 @@ def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": user_id}, {"genre_weights": 1})
-    return user.get("genre_weights", {}) if user else "Error: User not found."
+    user = users_collection.find_one({"_id": user_id})
+    if not user:
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        if user["genre_weights"] == []:
+            return dict()
+    return user["genre_weights"] if user else "Error: User not found."
 
 
 def update_embedding(user_id, new_embedding):
