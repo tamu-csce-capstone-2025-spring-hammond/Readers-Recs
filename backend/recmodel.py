@@ -1,4 +1,5 @@
 import collections
+from load_books import BookCollection
 from pymongo import MongoClient
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -20,52 +21,8 @@ from bson import ObjectId
 from models.users import read_user, retrieve_embedding, retrieve_genre_weights, update_embedding, update_genre_weights
 from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 
-class BookCollection:
-    def __init__(self, refresh_interval=24 * 60 * 60):
-        """
-        Initializes the BookCollection and starts a background thread to refresh books.
-        :param refresh_interval: Time in seconds before refreshing (default: 24 hours)
-        """
-        self.books = []
-        self.lock = threading.Lock()
-        self.refresh_interval = refresh_interval
-        
-        # Load books initially
-        self.refresh_books()
-
-        # Start background refresh thread
-        self.refresh_thread = threading.Thread(target=self._refresh_loop, daemon=True)
-        self.refresh_thread.start()
-
-    def refresh_books(self):
-        """Fetches all books from the database and updates the in-memory collection."""
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Refreshing book collection...")
-
-        start_time = time.time()
-        new_books = list(
-            books_collection.find({})
-        )
-
-        with self.lock:
-            self.books = new_books
-
-        elapsed_time = time.time() - start_time
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(new_books)} books) in {elapsed_time:.4f} seconds.")
-
-    def _refresh_loop(self):
-        """Runs a loop to refresh the book collection every 24 hours."""
-        while True:
-            time.sleep(self.refresh_interval)
-            self.refresh_books()
-
-    def get_books(self):
-        """Returns all books from memory."""
-        with self.lock:
-            return self.books.copy()  # Return a copy to prevent external modifications
-
 # Initialize the book collection on startup
 book_collection = BookCollection()
-
 
 # load_dotenv(override=True)
 # uri = os.getenv("MONGO_URI")

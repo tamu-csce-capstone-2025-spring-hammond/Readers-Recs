@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { Plus } from 'lucide-react';
 import '../style/style.css';
 import AddPopUp from '../components/add-to-bookshelf-discussion';
@@ -13,7 +14,39 @@ export default function BookPopup({ book, onClose }) {
     const [newComment, setNewComment] = useState('');
     // local state for testing posts
     const [posts, setPosts] = useState(book.posts || []);
+    
 
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const token = localStorage.getItem("access_token");
+    
+            if (!token) {
+                console.error("No access token found.");
+                return;
+            }
+    
+            try {
+                const response = await fetch("http://localhost:8000/user/profile", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user profile");
+                }
+    
+                const data = await response.json();
+                setUserId(data.id); // Ensure the user ID is set properly
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            }
+        };
+    
+        fetchUserProfile();
+    }, []); // Run only on component mount
+    
     const toggleComments = (postIndex) => {
         setIsCommentsVisible(prevState => ({
             ...prevState,
@@ -57,35 +90,6 @@ export default function BookPopup({ book, onClose }) {
         setNewComment(e.target.value);
     };
 
-    const fetchUserProfile = async () => {
-        const token = localStorage.getItem("access_token");
-    
-        if (!token) {
-            console.error("No access token found.");
-            return;
-        }
-    
-        try {
-            const response = await fetch("http://localhost:8000/user/profile", {
-            method: "GET",
-            headers: {
-            Authorization: `Bearer ${token}`,
-            },
-            });
-    
-            if (!response.ok) {
-                throw new Error("Failed to fetch user profile");
-            }
-    
-            const data = await response.json();
-    
-            setUserId(data.id); // Extract and set the user ID
-            } catch (error) {
-            console.error("Error fetching user profile:", error);
-        }
-    };
-    
-    fetchUserProfile();
 
     const openAddPopup = (book, event) => {
         event.stopPropagation();

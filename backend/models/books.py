@@ -3,8 +3,8 @@ from bson.objectid import ObjectId
 from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import BookSchema
-from backend.database import collections
+from schemas import BookSchema
+from database import collections
 from pymongo.errors import PyMongoError
 import numpy as np
 
