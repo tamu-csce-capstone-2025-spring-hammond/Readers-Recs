@@ -5,6 +5,17 @@ import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
 
+const BookTitle = ({ title }) => {
+  const titleLength = title.length;
+  const fontSize = `${Math.max(14, Math.min(20, titleLength / 4))}px`;
+
+  return (
+    <h3 className="book-title" style={{ fontSize }}>
+      {title}
+    </h3>
+  );
+};
+
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
@@ -177,7 +188,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="book-info">
-                  <h3 className="book-title">{bookshelf.currentRead?.title ?? 'No current book'}</h3>
+                  <BookTitle title={bookshelf.currentRead?.title ?? 'No current book'} />
                   <p className="book-author">{bookshelf.currentRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="progress-info">
                     <span className="progress-percentage">{currentBook.progress}%</span>
@@ -214,7 +225,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="book-info">
-                  <h3 className="book-title">{bookshelf.lastRead?.title ?? 'No books finished'}</h3>
+                  <BookTitle title={bookshelf.lastRead?.title ?? 'No books finished'} />
                   <p className="book-author">{bookshelf.lastRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="rating-thumbs">
                     <button

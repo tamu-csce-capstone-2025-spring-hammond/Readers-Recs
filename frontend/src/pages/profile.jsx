@@ -84,6 +84,9 @@ const Profile = () => {
     setEditProfilePopup(false);
   }
 
+  const titleLength = bookshelf.currentRead?.title.length || 0;
+  const fontSize = `${Math.max(16, Math.min(28, titleLength / 4))}px`;
+
   return (
     <div className="profile-container">
       <div className="profile-inner">
@@ -110,7 +113,9 @@ const Profile = () => {
                     <div className="progress-indicator" style={{ height: `${bookshelf.currentRead.progress}%` }}></div>
                   </div>
                 </div>
-                <div className="current-book-title">{bookshelf.currentRead.title}</div>
+                <div className="current-book-title" style={{ fontSize }}>
+                  {bookshelf.currentRead?.title}
+                </div>
               </div>
             ) : (
               <div>No current book</div>
