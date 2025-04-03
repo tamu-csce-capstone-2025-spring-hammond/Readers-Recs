@@ -4,6 +4,8 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import { ClipLoader } from "react-spinners";
+
 
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -18,6 +20,8 @@ const Home = () => {
   });
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+  const [loadingBookshelf, setLoadingBookshelf] = useState(true);
+
   
   // // Sample data - replace with your actual data
   // const recommendations = Array(6).fill(null).map((_, i) => ({
@@ -75,6 +79,8 @@ const Home = () => {
     };
 
     const fetchBookshelfData = async (userId, token) => {
+      setLoadingBookshelf(true);
+
       try {
         const endpoints = [
           { key: 'currentRead', url: `books/currently-reading` },
@@ -109,11 +115,15 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error fetching bookshelf data:', error);
+      } finally {
+        setLoadingBookshelf(false);
       }
     };
     
 
     const fetchRecommendations = async (userId) => {
+      setLoadingRecommendations(true);
+
       try {
         console.log("Fetching recs");
         console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
@@ -182,7 +192,7 @@ const Home = () => {
     
     const userId = user.id;
     const bookId = bookshelf.lastRead._id;
-    
+
     setBookshelf((prev) => ({
       ...prev,
       lastRead: { ...prev.lastRead, rating: newRating },
@@ -207,25 +217,201 @@ const Home = () => {
     }
   };
   
+  if (loadingRecommendations || loadingBookshelf) {
+    return (
+      <div className={`page-wrapper ${isLoaded ? 'loaded' : ''}`}>
+      <div className="home-container">
+        <div className="main-grid">
+          
+          {/* Left side - Recommended For You */}
+          <div className="left-column">
+            <div
+              className="recommendations-section"
+              onMouseEnter={() => handleSectionHover('recommendations')}
+              onMouseLeave={() => handleSectionHover(null)}
+            >
+              <div className="section-header">
+                <BookOpen className="section-icon" size={32} />
+                <h2 className="section-title">Recommended For You</h2>
+                <button className="refresh-btn">↻</button>
+                <div className="flex items-center justify-center mt-4">
+                <ClipLoader color="black" loading={loadingRecommendations || loadingBookshelf} size={50} />
+                </div>
+            </div>
+          </div>
+          </div>
   
+          {/* Right side - Currently Reading and Last Finished */}
+          <div className="right-column">
+            <div className="right-top">
+              
+              {/* Currently Reading */}
+              <div className="reading-section current-section">
+                <div className="section-header">
+                  <Clock className="section-icon" size={32} />
+                  <h2 className="section-title">Currently Reading</h2>
+                </div>
+                <div className="current-book">
+                  {loadingBookshelf ? (
+                    <p>Loading currently reading book...</p>
+                  ) : bookshelf.currentRead ? (
+                    <div className="book-display">
+                      <div
+                        className="home-book-cover featured-cover"
+                        style={{ backgroundImage: `url(${bookshelf.currentRead.cover_image ?? ''})` }}
+                      >
+                        <div className="reading-progress-container">
+                          <div className="reading-progress-bar" style={{ width: `${bookProgress}%` }}></div>
+                        </div>
+                      </div>
+                      <div className="book-info">
+                        <h3 className="book-title">{bookshelf.currentRead.title}</h3>
+                        <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
+                        <div className="progress-info">
+                          <span className="progress-percentage">{bookProgress}%</span>
+                          <span className="progress-text">completed</span>
+                        </div>
+                        <button className="action-button update-button" onClick={handleUpdateClick}>
+                          Update Progress
+                        </button>
+                      </div>
+                      {showUpdateProgress && (
+                        <UpdateProgress
+                          currentPage={bookshelf.currentRead?.current_page || 0}
+                          totalPages={bookshelf.currentRead?.page_count || 1}
+                          onUpdate={handleProgressUpdate}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <p>No book currently being read.</p>
+                  )}
+                </div>
+              </div>
+  
+              {/* Last Finished */}
+              <div className="reading-section finished-section">
+                <div className="section-header">
+                  <Award className="section-icon" size={32} />
+                  <h2 className="section-title">Last Finished</h2>
+                </div>
+                <div className="last-finished">
+                  {loadingBookshelf ? (
+                    <p>Loading last finished book...</p>
+                  ) : bookshelf.lastRead ? (
+                    <div className="book-display">
+                      <div
+                        className="home-book-cover featured-cover"
+                        style={{ backgroundImage: `url(${bookshelf.lastRead.cover_image ?? ''})` }}
+                      >
+                        <div className="book-badge">
+                          <span>Finished</span>
+                        </div>
+                      </div>
+                      <div className="book-info">
+                        <h3 className="book-title">{bookshelf.lastRead.title}</h3>
+                        <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
+                        <div className="rating-thumbs">
+                          <button
+                            className={`thumb-btn thumbs-up ${bookshelf.lastRead?.rating === 'pos' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('pos')}
+                          >
+                            <ThumbsUp size={20} />
+                            <span>Loved it</span>
+                          </button>
+                          <button
+                            className={`thumb-btn thumbs-mid ${bookshelf.lastRead?.rating === 'mid' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('mid')}
+                          >
+                            <Minus size={20} />
+                            <span>It's okay</span>
+                          </button>
+                          <button
+                            className={`thumb-btn thumbs-down ${bookshelf.lastRead?.rating === 'neg' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('neg')}
+                          >
+                            <ThumbsDown size={20} />
+                            <span>Not great</span>
+                          </button>
+                        </div>
+                        <Link to="/chats" className="action-button chat-button">
+                          <span>Discuss Book</span>
+                          <ChevronRight size={14} />
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <p>No books finished.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+  
+            {/* Reading Wishlist */}
+            <div
+              className={`reading-section to-read-section ${activeSection === 'toread' ? 'active' : ''}`}
+              onMouseEnter={() => handleSectionHover('toread')}
+              onMouseLeave={() => handleSectionHover(null)}
+            >
+              <div className="section-header">
+                <PlusCircle className="section-icon" size={32} />
+                <h2 className="section-title">Reading Wishlist</h2>
+              </div>
+              <div className="to-read-shelf">
+                {loadingBookshelf ? (
+                  <p>Loading reading wishlist...</p>
+                ) : (
+                  <div className="book-grid to-read-grid">
+                    {bookshelf.toReadShelf.map((book, index) => (
+                      <div
+                        key={`to-read-${index}`}
+                        className="wishlist-book"
+                        style={{ animationDelay: `${0.1 + index * 0.03}s` }}
+                      >
+                        <div
+                          className="home-book-cover"
+                          style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
+                        ></div>
+                      </div>
+                    ))}
+                    <Link to="/search" className="add-more-card">
+                      <div className="add-more-content">
+                        <PlusCircle size={24} />
+                        <span>Find More</span>
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+  
+          </div>
+        </div>
+      </div>
+      <Navbar />
+    </div>
+  );
+}
+
 
   return (
     <div className={`page-wrapper ${isLoaded ? 'loaded' : ''}`}>
       <div className="home-container">
-      <div className="main-grid">
-        {/* Left side - Recommended For You */}
-        <div className="left-column">
-          <div
-            className="recommendations-section"
-            onMouseEnter={() => handleSectionHover('recommendations')}
-            onMouseLeave={() => handleSectionHover(null)}
-          >
-            <div className="section-header">
-              <BookOpen className="section-icon" size={32} />
-              <h2 className="section-title">Recommended For You</h2>
-              <button className="refresh-btn">↻</button>
-            </div>
-            <div className="book-cards-container">
+        <div className="main-grid">
+          
+          {/* Left side - Recommended For You */}
+          <div className="left-column">
+            <div
+              className="recommendations-section"
+              onMouseEnter={() => handleSectionHover('recommendations')}
+              onMouseLeave={() => handleSectionHover(null)}
+            >
+              <div className="section-header">
+                <BookOpen className="section-icon" size={32} />
+                <h2 className="section-title">Recommended For You</h2>
+                <button className="refresh-btn">↻</button>
+              </div>
+              <div className="book-cards-container">
                 {loadingRecommendations ? (
                   <p>Loading recommendations...</p>
                 ) : recommendations.length > 0 ? (
@@ -245,104 +431,117 @@ const Home = () => {
                   <p>No recommendations available.</p>
                 )}
               </div>
-            {/* </div> */}
-          </div>
-        </div>
-
-        {/* Right side - Currently Reading and Last Finished */}
-        <div className="right-column">
-          <div className="right-top">
-          <div className="reading-section current-section">
-            <div className="section-header">
-              <Clock className="section-icon" size={32} />
-              <h2 className="section-title">Currently Reading</h2>
-            </div>
-            <div className="current-book">
-              <div className="book-display">
-                <div
-                  className="home-book-cover featured-cover"
-                  style={{ backgroundImage: `url(${bookshelf.currentRead?.cover_image ?? ''})`  }}
-                >
-                  <div className="reading-progress-container">
-                    <div
-                      className="reading-progress-bar"
-                      style={{ width: `${bookProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="book-info">
-                  <h3 className="book-title">{bookshelf.currentRead?.title ?? 'No current book'}</h3>
-                  <p className="book-author">{bookshelf.currentRead?.author?.[0] ?? 'Unknown author'}</p>
-                  <div className="progress-info">
-                    <span className="progress-percentage">{bookProgress}%</span>
-                    <span className="progress-text">completed</span>
-                  </div>
-                  <button className="action-button update-button" onClick={handleUpdateClick}>
-                    Update Progress
-                  </button>
-                </div>
-                {showUpdateProgress && (
-                  <UpdateProgress 
-                    currentPage={bookshelf.currentRead?.current_page || 0}
-                    totalPages={bookshelf.currentRead?.page_count || 1}
-                    onUpdate={handleProgressUpdate}
-                  />
-                )}
-              </div>
             </div>
           </div>
-
-          <div className="reading-section finished-section">
-            <div className="section-header">
-              <Award className="section-icon" size={32} />
-              <h2 className="section-title">Last Finished</h2>
-            </div>
-            <div className="last-finished">
-              <div className="book-display">
-                <div
-                  className="home-book-cover featured-cover"
-                  style={{ backgroundImage: `url(${bookshelf.lastRead?.cover_image ?? ''})`  }}
-                >
-                  <div className="book-badge">
-                    <span>Finished</span>
-                  </div>
+  
+          {/* Right side - Currently Reading and Last Finished */}
+          <div className="right-column">
+            <div className="right-top">
+              
+              {/* Currently Reading */}
+              <div className="reading-section current-section">
+                <div className="section-header">
+                  <Clock className="section-icon" size={32} />
+                  <h2 className="section-title">Currently Reading</h2>
                 </div>
-                <div className="book-info">
-                  <h3 className="book-title">{bookshelf.lastRead?.title ?? 'No books finished'}</h3>
-                  <p className="book-author">{bookshelf.lastRead?.author?.[0] ?? 'Unknown author'}</p>
-                  <div className="rating-thumbs">
-                    <button
-                      className={`thumb-btn thumbs-up ${bookshelf.lastRead?.rating === 'pos' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('pos')}
-                    >
-                      <ThumbsUp size={20} />
-                      <span>Loved it</span>
-                    </button>
-                    <button
-                      className={`thumb-btn thumbs-mid ${bookshelf.lastRead?.rating === 'mid' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('mid')}
-                    >
-                      <Minus size={20} />
-                      <span>It's okay</span>
-                    </button>
-                    <button
-                      className={`thumb-btn thumbs-down ${bookshelf.lastRead?.rating === 'neg' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('neg')}
-                    >
-                      <ThumbsDown size={20} />
-                      <span>Not great</span>
-                    </button>
-                  </div>
-                  <Link to="/chats" className="action-button chat-button">
-                    <span>Discuss Book</span>
-                    <ChevronRight size={14} />
-                  </Link>
+                <div className="current-book">
+                  {loadingBookshelf ? (
+                    <p>Loading currently reading book...</p>
+                  ) : bookshelf.currentRead ? (
+                    <div className="book-display">
+                      <div
+                        className="home-book-cover featured-cover"
+                        style={{ backgroundImage: `url(${bookshelf.currentRead.cover_image ?? ''})` }}
+                      >
+                        <div className="reading-progress-container">
+                          <div className="reading-progress-bar" style={{ width: `${bookProgress}%` }}></div>
+                        </div>
+                      </div>
+                      <div className="book-info">
+                        <h3 className="book-title">{bookshelf.currentRead.title}</h3>
+                        <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
+                        <div className="progress-info">
+                          <span className="progress-percentage">{bookProgress}%</span>
+                          <span className="progress-text">completed</span>
+                        </div>
+                        <button className="action-button update-button" onClick={handleUpdateClick}>
+                          Update Progress
+                        </button>
+                      </div>
+                      {showUpdateProgress && (
+                        <UpdateProgress
+                          currentPage={bookshelf.currentRead?.current_page || 0}
+                          totalPages={bookshelf.currentRead?.page_count || 1}
+                          onUpdate={handleProgressUpdate}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <p>No book currently being read.</p>
+                  )}
                 </div>
               </div>
+  
+              {/* Last Finished */}
+              <div className="reading-section finished-section">
+                <div className="section-header">
+                  <Award className="section-icon" size={32} />
+                  <h2 className="section-title">Last Finished</h2>
+                </div>
+                <div className="last-finished">
+                  {loadingBookshelf ? (
+                    <p>Loading last finished book...</p>
+                  ) : bookshelf.lastRead ? (
+                    <div className="book-display">
+                      <div
+                        className="home-book-cover featured-cover"
+                        style={{ backgroundImage: `url(${bookshelf.lastRead.cover_image ?? ''})` }}
+                      >
+                        <div className="book-badge">
+                          <span>Finished</span>
+                        </div>
+                      </div>
+                      <div className="book-info">
+                        <h3 className="book-title">{bookshelf.lastRead.title}</h3>
+                        <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
+                        <div className="rating-thumbs">
+                          <button
+                            className={`thumb-btn thumbs-up ${bookshelf.lastRead?.rating === 'pos' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('pos')}
+                          >
+                            <ThumbsUp size={20} />
+                            <span>Loved it</span>
+                          </button>
+                          <button
+                            className={`thumb-btn thumbs-mid ${bookshelf.lastRead?.rating === 'mid' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('mid')}
+                          >
+                            <Minus size={20} />
+                            <span>It's okay</span>
+                          </button>
+                          <button
+                            className={`thumb-btn thumbs-down ${bookshelf.lastRead?.rating === 'neg' ? 'selected' : ''}`}
+                            onClick={() => handleRatingClick('neg')}
+                          >
+                            <ThumbsDown size={20} />
+                            <span>Not great</span>
+                          </button>
+                        </div>
+                        <Link to="/chats" className="action-button chat-button">
+                          <span>Discuss Book</span>
+                          <ChevronRight size={14} />
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <p>No books finished.</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-          </div>
-          <div
+  
+            {/* Reading Wishlist */}
+            <div
               className={`reading-section to-read-section ${activeSection === 'toread' ? 'active' : ''}`}
               onMouseEnter={() => handleSectionHover('toread')}
               onMouseLeave={() => handleSectionHover(null)}
@@ -351,39 +550,41 @@ const Home = () => {
                 <PlusCircle className="section-icon" size={32} />
                 <h2 className="section-title">Reading Wishlist</h2>
               </div>
-              
               <div className="to-read-shelf">
-                <div className="book-grid to-read-grid">
-                  {bookshelf.toReadShelf.map((book, index) => (
-                    <div
-                      key={`to-read-${index}`}
-                      className="wishlist-book"
-                      style={{
-                        animationDelay: `${0.1 + index * 0.03}s`
-                      }}
-                    >
+                {loadingBookshelf ? (
+                  <p>Loading reading wishlist...</p>
+                ) : (
+                  <div className="book-grid to-read-grid">
+                    {bookshelf.toReadShelf.map((book, index) => (
                       <div
-                        className="home-book-cover"
-                        style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
+                        key={`to-read-${index}`}
+                        className="wishlist-book"
+                        style={{ animationDelay: `${0.1 + index * 0.03}s` }}
                       >
+                        <div
+                          className="home-book-cover"
+                          style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
+                        ></div>
                       </div>
-                    </div>
-                  ))}
-                  <Link to="/search" className="add-more-card">
-                    <div className="add-more-content">
-                      <PlusCircle size={24} />
-                      <span>Find More</span>
-                    </div>
-                  </Link>
-                </div>
+                    ))}
+                    <Link to="/search" className="add-more-card">
+                      <div className="add-more-content">
+                        <PlusCircle size={24} />
+                        <span>Find More</span>
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
+  
           </div>
         </div>
       </div>
       <Navbar />
     </div>
   );
+  
 };
 
 export default Home;
