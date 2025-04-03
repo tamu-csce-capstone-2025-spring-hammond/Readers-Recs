@@ -46,15 +46,21 @@ def get_last_read_book(user_id):
             if books_with_finish_date:
                 # Get the most recent book
                 last_read_book = books_with_finish_date[0]
+                rating = books_with_finish_date[0].get("rating", "mid")
+
 
                 # Fetch the full book details
                 b = read_book_by_bookId(last_read_book["book_id"])
+                b["rating"] = rating
                 b = {
                     key: (
                         objectid_to_str(value) if isinstance(value, ObjectId) else value
                     )
                     for key, value in b.items()
                 }
+
+                
+                print("book rating:", b["rating"])
 
                 return jsonify(b), 200
             else:
@@ -77,6 +83,8 @@ def get_read_books_api(user_id):
             books_read = list()
             for book in books:
                 b = read_book_by_bookId(book["book_id"])
+                rating = book.get("rating", "mid")
+                b["rating"] = rating
                 b = {
                     key: (
                         objectid_to_str(value) if isinstance(value, ObjectId) else value
@@ -280,6 +288,7 @@ def rate_book_api(user_id, book_id):
         if "Error" not in result:
             return jsonify({"message": "Book rating updated."}), 200
         else:
+            print("error:", result)
             return jsonify({"error": result}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

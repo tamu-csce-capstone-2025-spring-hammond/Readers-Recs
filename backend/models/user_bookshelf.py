@@ -173,6 +173,11 @@ def get_currently_reading_books(user_id):
 
 def rate_book(user_id, book_id, new_rating):
     # TODO: add check that book has been completed
+    shelf_entry = user_bookshelf_collection.find(
+                {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
+            )
+    if not shelf_entry:
+        return "Error: Book has not been read yet."
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
@@ -187,7 +192,7 @@ def rate_book(user_id, book_id, new_rating):
 
         # Update the rating
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id}, {"$set": {"rating": new_rating}}
+            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": {"rating": new_rating}}
         )
 
         if result.matched_count:

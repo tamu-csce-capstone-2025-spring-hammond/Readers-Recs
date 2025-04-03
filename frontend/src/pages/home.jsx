@@ -27,26 +27,26 @@ const Home = () => {
   //   coverColor: `hsl(${i * 60}, 70%, 80%)` // Just for demo
   // }));
   
-  const toReadShelf = Array(3).fill(null).map((_, i) => ({
-    id: i,
-    title: `To Read ${i+1}`,
-    author: `Author ${i+1}`,
-    coverColor: `hsl(${i * 40 + 120}, 70%, 75%)` // Just for demo
-  }));
+  // const toReadShelf = Array(3).fill(null).map((_, i) => ({
+  //   id: i,
+  //   title: `To Read ${i+1}`,
+  //   author: `Author ${i+1}`,
+  //   coverColor: `hsl(${i * 40 + 120}, 70%, 75%)` // Just for demo
+  // }));
 
-  const currentBook = {
-    title: "Current Reading",
-    author: "Author Name",
-    progress: bookProgress,
-    coverColor: "#ffffff"
-  };
+  // const currentBook = {
+  //   title: "Current Reading",
+  //   author: "Author Name",
+  //   progress: bookProgress,
+  //   coverColor: "#ffffff"
+  // };
 
-  const [lastFinishedBook, setLastFinishedBook] = useState({
-    title: "Last Finished",
-    author: "Author Name",
-    rating: "thumbsMid", // Changed from numeric to thumbs rating
-    coverColor: "#ffffff"
-  });
+  // const [lastFinishedBook, setLastFinishedBook] = useState({
+  //   title: "Last Finished",
+  //   author: "Author Name",
+  //   rating: "thumbsMid", // Changed from numeric to thumbs rating
+  //   coverColor: "#ffffff"
+  // });
 
   // Animate elements on page load
   useEffect(() => {
@@ -177,12 +177,36 @@ const Home = () => {
     }
   };
 
-  const handleRatingClick = (newRating) => {
-    setLastFinishedBook((prevBook) => ({
-      ...prevBook,
-      rating: newRating
+  const handleRatingClick = async (newRating) => {
+    if (!user || !bookshelf.lastRead) return;
+    
+    const userId = user.id;
+    const bookId = bookshelf.lastRead._id;
+    
+    setBookshelf((prev) => ({
+      ...prev,
+      lastRead: { ...prev.lastRead, rating: newRating },
     }));
+  
+  
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/rating`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({ rating: newRating }),
+      });
+  
+      if (!response.ok) throw new Error("Failed to update rating");
+  
+      
+    } catch (error) {
+      console.error("Error updating book rating:", error);
+    }
   };
+  
   
 
   return (
@@ -288,22 +312,22 @@ const Home = () => {
                   <p className="book-author">{bookshelf.lastRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="rating-thumbs">
                     <button
-                      className={`thumb-btn thumbs-up ${lastFinishedBook.rating === 'thumbsUp' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('thumbsUp')}
+                      className={`thumb-btn thumbs-up ${bookshelf.lastRead?.rating === 'pos' ? 'selected' : ''}`}
+                      onClick={() => handleRatingClick('pos')}
                     >
                       <ThumbsUp size={20} />
                       <span>Loved it</span>
                     </button>
                     <button
-                      className={`thumb-btn thumbs-mid ${lastFinishedBook.rating === 'thumbsMid' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('thumbsMid')}
+                      className={`thumb-btn thumbs-mid ${bookshelf.lastRead?.rating === 'mid' ? 'selected' : ''}`}
+                      onClick={() => handleRatingClick('mid')}
                     >
                       <Minus size={20} />
                       <span>It's okay</span>
                     </button>
                     <button
-                      className={`thumb-btn thumbs-down ${lastFinishedBook.rating === 'thumbsDown' ? 'selected' : ''}`}
-                      onClick={() => handleRatingClick('thumbsDown')}
+                      className={`thumb-btn thumbs-down ${bookshelf.lastRead?.rating === 'neg' ? 'selected' : ''}`}
+                      onClick={() => handleRatingClick('neg')}
                     >
                       <ThumbsDown size={20} />
                       <span>Not great</span>
