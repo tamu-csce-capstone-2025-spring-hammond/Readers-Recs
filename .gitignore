@@ -1,8 +1,6 @@
 # python testing
 .pytest_cache
-backend/__pycache__
-backend/models/__pycache__
-tests/__pycache__
+__pycache__/
 .coverage
 
 # local environment files
@@ -10,3 +8,6 @@ tests/__pycache__
 .env
 
 .vscode
+
+node_modules/
+
