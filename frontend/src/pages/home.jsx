@@ -95,7 +95,12 @@ const Home = () => {
               const pageResponse = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
               if (pageResponse.ok) {
                 const pageData = await pageResponse.json();
-                data.current_page = pageData.current_page; // Attach page info
+                // console.log("current page:", pageData.page_number)
+
+                data.current_page = pageData.page_number; // Attach page info
+                // progress = data.current_page / data.page_count
+                console.log("book progress:", (data.current_page / data.page_count))
+                setBookProgress(Math.round((data.current_page / data.page_count) * 100))
               }
             }
             
@@ -142,14 +147,14 @@ const Home = () => {
     if (!bookshelf.currentRead) return;
   
     const userId = user?.id;
-    const bookId = bookshelf.currentRead.id;
-    const totalPages = bookshelf.currentRead.total_pages;
+    const bookId = bookshelf.currentRead._id;
+    const totalPages = bookshelf.currentRead.page_count;
   
     const newPageNumber = Math.round((newProgress / 100) * totalPages);
   
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -237,7 +242,7 @@ const Home = () => {
                   <div className="reading-progress-container">
                     <div
                       className="reading-progress-bar"
-                      style={{ width: `${currentBook.progress}%` }}
+                      style={{ width: `${bookProgress}%` }}
                     ></div>
                   </div>
                 </div>
@@ -245,7 +250,7 @@ const Home = () => {
                   <h3 className="book-title">{bookshelf.currentRead?.title ?? 'No current book'}</h3>
                   <p className="book-author">{bookshelf.currentRead?.author?.[0] ?? 'Unknown author'}</p>
                   <div className="progress-info">
-                    <span className="progress-percentage">{currentBook.progress}%</span>
+                    <span className="progress-percentage">{bookProgress}%</span>
                     <span className="progress-text">completed</span>
                   </div>
                   <button className="action-button update-button" onClick={handleUpdateClick}>
@@ -254,8 +259,8 @@ const Home = () => {
                 </div>
                 {showUpdateProgress && (
                   <UpdateProgress 
-                    currentPage={bookshelf.currentRead?.currentPage || 0}
-                    totalPages={bookshelf.currentRead?.totalPages || 1}
+                    currentPage={bookshelf.currentRead?.current_page || 0}
+                    totalPages={bookshelf.currentRead?.page_count || 1}
                     onUpdate={handleProgressUpdate}
                   />
                 )}

@@ -191,18 +191,20 @@ def update_current_page(user_id, book_id):
     """
     Update the current page number of a book the user is reading.
     """
+    print("UPDATING PAGE NUMBER")
     try:
         data = request.get_json()
         page_number = data.get("page_number")
-
+        print("new page number:", page_number)
         if not isinstance(page_number, int) or page_number < 0:
             return jsonify({"error": "Invalid page number"}), 400
 
         result = update_page_number(user_id, book_id, page_number)
-
+        print(result)
         if "successfully" in result:
             return jsonify({"message": result}), 200
         else:
+            print("Error:", result)
             return jsonify({"error": result}), 400
 
     except Exception as e:

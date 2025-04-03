@@ -43,27 +43,36 @@ class BookCollection:
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Refreshing book collection...")
 
         start_time = time.time()
-        new_books = list(books_collection.find({}).limit(10000))
+        new_books = list(books_collection.find({}))
 
-        # Convert ObjectId to string before saving
-        books_to_cache = [
-            {
-                **book, 
-                "_id": str(book["_id"]),
-                "publication_date": book["publication_date"].isoformat() if book.get("publication_date") else "2000-01-01",
+        books_to_cache = []
+        valid_books = []
 
-            } for book in new_books
-        ]
+        for book in new_books:
+            try:
+                formatted_book = {
+                    **book,
+                    "_id": str(book["_id"]),
+                    "publication_date": book["publication_date"] 
+                        if isinstance(book.get("publication_date"), str) 
+                        else book["publication_date"].isoformat() 
+                        if book.get("publication_date") 
+                        else "2000-01-01",
+                }
+                books_to_cache.append(formatted_book)
+                valid_books.append(book)
+            except Exception as e:
+                print(f"Error processing book with _id {book.get('_id', 'UNKNOWN')}: {e}")
 
         with self.lock:
-            self.books = new_books
+            self.books = valid_books  # Only store successfully processed books
 
         # Save to JSON cache file
         with open(self.cache_file, "w", encoding="utf-8") as f:
-            json.dump(books_to_cache, f, indent=4)  # Pretty print for readability
+            json.dump(books_to_cache, f, indent=4)
 
         elapsed_time = time.time() - start_time
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(new_books)} books) in {elapsed_time:.4f} seconds.")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(valid_books)} books) in {elapsed_time:.4f} seconds.")
 
     def _refresh_loop(self):
         """Runs a loop to refresh the book collection every 24 hours."""

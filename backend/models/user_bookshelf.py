@@ -204,23 +204,48 @@ def update_page_number(user_id, book_id, new_page_number):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
+            print("Error: Invalid user id")
             return "Error: Invalid user_id."
+            
         if not is_valid_object_id("Books", book_id):
+            print("Error: Invalid book_id")
             return "Error: Invalid book_id."
 
         # Validate new_page_number
         if not isinstance(new_page_number, int) or new_page_number < 0:
             return "Error: Invalid page number. It must be a non-negative integer."
+        
+        # u_id = user_id
+        # existing_entry = users_collection.find_one({"_id": u_id})
+        # if not existing_entry:
+        #     u_id = ObjectId(user_id)
+        #     existing_entry = users_collection.find_one({"_id": u_id})
+        #     if not existing_entry:
+        #         print("Still no match for user_id.")   
+
+        # # existing_entry = books_collection.find_one({"_id": ObjectId(book_id)})
+        # # if not existing_entry:
+        # #     print("No matching entry found for book_id.")
+
+        # existing_entry = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
+        # if not existing_entry:
+        #     print("No matching entry found for user_id and book_id.")
+
 
         # Update the page number
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id, "status": "currently-reading"},
+            {"user_id": user_id, "book_id": ObjectId(book_id), "status": "currently-reading"},
             {"$set": {"page_number": new_page_number}}
         )
+        # print(result)
+        # existing_entry = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id), "status": "currently-reading"})
+        # if existing_entry:
+        #     print("updated entry:", existing_entry)
 
         if result.matched_count:
             return "Page number updated successfully."
         else:
+            print("UserBookshelf entry not found.")
             return "UserBookshelf entry not found."
 
     except Exception as e:
@@ -238,8 +263,8 @@ def get_page_number(user_id, book_id):
         print("book_id:", book_id)
         # Retrieve the page number
         book_entry = user_bookshelf_collection.find_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)},
-            {"status": "currently-reading"}
+            {"user_id": user_id, "book_id": ObjectId(book_id),
+            "status": "currently-reading"}
         )
 
         if book_entry is not None:
