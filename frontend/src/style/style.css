@@ -960,6 +960,12 @@ body {
   font-size: 24px;
 }
 
+.loading-circle {
+  margin-left: 250px;
+  margin-top: 200px;
+  margin-bottom: 300px;
+}
+
 * {
   margin: 0;
   padding: 0;

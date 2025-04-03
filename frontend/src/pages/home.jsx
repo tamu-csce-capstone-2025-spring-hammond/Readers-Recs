@@ -234,11 +234,11 @@ const Home = () => {
                 <BookOpen className="section-icon" size={32} />
                 <h2 className="section-title">Recommended For You</h2>
                 <button className="refresh-btn">↻</button>
-                <div className="flex items-center justify-center mt-4">
-                <ClipLoader color="black" loading={loadingRecommendations || loadingBookshelf} size={50} />
-                </div>
+              </div>
+              <div className="loading-circle">
+                <ClipLoader color="white" loading={loadingRecommendations || loadingBookshelf} size={100} />
+              </div>
             </div>
-          </div>
           </div>
   
           {/* Right side - Currently Reading and Last Finished */}
