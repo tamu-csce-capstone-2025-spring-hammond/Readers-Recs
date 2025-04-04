@@ -87,7 +87,7 @@ def get_user_by_id(user_id):
     """
     Fetch a user's profile by user_id (NOT by access token).
     """
-    from backend.models.users import read_user_by_id  # You may already have this
+    from backend.models.users import read_user_by_id
 
     user = read_user_by_id(user_id)
     if not user:

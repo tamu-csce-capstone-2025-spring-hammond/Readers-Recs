@@ -6,6 +6,7 @@ from schemas import PostSchema
 from database import collections
 from models.comments import delete_comments_by_post
 from mongo_id_utils import is_valid_object_id
+import pytz
 
 posts_collection = collections["Posts"]
 
@@ -93,7 +94,7 @@ def update_post(post_id, title="", post_text="", tags=None):
             update_data["tags"] = tags if isinstance(tags, list) else [tags]
 
         # Update the date_edited field using a timezone-aware datetime for America/Chicago
-        update_data["date_edited"] = datetime.now(ZoneInfo("America/Chicago"))
+        update_data["date_edited"] = datetime.now(pytz.timezone("America/Chicago"))
 
         # Update the post
         result = posts_collection.update_one(
@@ -138,12 +139,10 @@ def get_all_posts_for_book(book_id):
         results = []
         for post in posts:
             post_data = PostSchema(**post).model_dump(by_alias=True)
-
-            # look up username
             user = users_collection.find_one({"_id": post["user_id"]})
             if user:
                 post_data["username"] = user.get("username", "Unknown User")
-                post_data["profile_image"] = user.get("profile_image", "")
+                post_data["profile_picture"] = user.get("profile_image", "")
 
             results.append(post_data)
 

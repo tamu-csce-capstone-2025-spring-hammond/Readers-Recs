@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from schemas import ChatMessageSchema
 from mongo_id_utils import is_valid_object_id
 from database import collections
+import pytz
 
 chat_messages_collection = collections["Chat_Messages"]
 
@@ -76,7 +77,7 @@ def update_chat_message(message_id, message_text):
 
         update_data = {
             "message_text": message_text,
-            "date_edited": datetime.now(ZoneInfo("America/Chicago")),
+            "date_edited": datetime.now(pytz.timezone("America/Chicago")),
         }
         result = chat_messages_collection.update_one(
             {"_id": ObjectId(message_id)}, {"$set": update_data}
