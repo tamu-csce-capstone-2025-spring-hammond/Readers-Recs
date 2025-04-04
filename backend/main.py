@@ -5,6 +5,7 @@ from api.user import user_bp
 from api.bookshelf import shelf_bp
 from api.recommendations import recommendation_bp
 from api.posts import discussion_bp
+from api.comments import comments_bp
 
 app = Flask(__name__)
 
@@ -22,6 +23,7 @@ app.register_blueprint(user_bp, url_prefix="/user")
 app.register_blueprint(shelf_bp, url_prefix="/shelf")
 app.register_blueprint(recommendation_bp, url_prefix="/recs")
 app.register_blueprint(discussion_bp, url_prefix="/api/books")
+app.register_blueprint(comments_bp, url_prefix="/api/posts")
 
 
 # Explicit handling for preflight OPTIONS requests

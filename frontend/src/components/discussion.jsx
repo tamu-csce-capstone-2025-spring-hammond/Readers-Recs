@@ -53,26 +53,25 @@ export default function BookPopup({ book, onClose, userId }) {
 
     // Fetch comments
     const fetchComments = async (postId, postIndex) => {
-      try {
-          const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments`);
-          const data = await response.json();
-          if (response.ok) {
-              const fixedComments = data.map(comment => ({
-                  ...comment,
-                  content: comment.comment_text
-              }));
-              const updatedPosts = [...posts];
-              updatedPosts[postIndex].comments = fixedComments;
-              setPosts(updatedPosts);
-          } else {
-              console.error('Error fetching comments:', data.error);
-          }
-      } catch (error) {
-          console.error('Error fetching comments:', error);
-      }
+        try {
+            const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments`);
+            const data = await response.json();
+            if (response.ok) {
+                const fixedComments = data.map(comment => ({
+                    ...comment,
+                    content: comment.comment_text
+                }));
+                const updatedPosts = [...posts];
+                updatedPosts[postIndex].comments = fixedComments;
+                setPosts(updatedPosts);
+            } else {
+                console.error('Error fetching comments:', data.error);
+            }
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+        }
     };
   
-
     const toggleComments = (postIndex) => {
         const post = posts[postIndex];
         if (!isCommentsVisible[postIndex]) {
@@ -119,37 +118,38 @@ export default function BookPopup({ book, onClose, userId }) {
     };
      
     const handleAddComment = async (postIndex) => {
-      const post = posts[postIndex];
-      const commentText = newComment[postIndex];
+        const post = posts[postIndex];
+        const commentText = newComment[postIndex];
   
-      if (!commentText || !commentText.trim()) return;
+        if (!commentText || !commentText.trim()) return;
   
-      try {
-          const response = await fetch(`http://localhost:8000/api/posts/${post._id}/comments`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                  user_id: userId,
-                  comment_text: commentText,
-              }),
-          });
+        try {
+            const response = await fetch(`http://localhost:8000/api/posts/${post._id}/comments`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    comment_text: commentText,
+                    post_id: post._id,
+                }),
+            });
   
-          if (response.ok) {
-              console.log('Comment created');
-              await fetchComments(post._id, postIndex);
-              await fetchPosts(); // refresh posts and comments
-              setNewComment(prev => ({
-                  ...prev,
-                  [postIndex]: ''
-              }));
-          } else {
-              const text = await response.text();
-              console.error('Error creating comment:', text);
-          }
-      } catch (error) {
-          console.error('Error creating comment:', error);
-      }
-  };
+            if (response.ok) {
+                console.log('Comment created');
+                await fetchComments(post._id, postIndex);
+                await fetchPosts(); // refresh posts and comments
+                setNewComment(prev => ({
+                    ...prev,
+                    [postIndex]: ''
+                }));
+            } else {
+                const text = await response.text();
+                console.error('Error creating comment:', text);
+            }
+        } catch (error) {
+            console.error('Error creating comment:', error);
+        }
+    };
   
     const handleCancelNewPost = () => {
         setIsAddingPost(false);
@@ -186,6 +186,20 @@ export default function BookPopup({ book, onClose, userId }) {
           [postIndex]: value
       }));
     };
+
+    const renderComments = (comments) => {
+        return comments.map((comment, idx) => (
+          <div key={idx} className="popup-comment">
+            <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content}</p>
+            {/* Show replies if any */}
+            {comment.replies && comment.replies.length > 0 && (
+              <div className="popup-replies">
+                {renderComments(comment.replies)}
+              </div>
+            )}
+          </div>
+        ));
+      };
   
 
     return (
@@ -250,9 +264,9 @@ export default function BookPopup({ book, onClose, userId }) {
                         posts.map((post, index) => (
                             <div key={index} className="popup-post">
                                 <div className="popup-post-header">
-                                <div className="popup-pfp">
-                                    {post.profile_image ? (
-                                        <img src={post.profile_image} alt="Profile" className="profile-picture" />
+                                <div className="profile-picture">
+                                    {post.profile_picture ? (
+                                        <img src={post.profile_picture} alt="Profile" className="profile-picture" />
                                     ) : (
                                         <div className="default-pfp" />
                                     )}
@@ -267,11 +281,7 @@ export default function BookPopup({ book, onClose, userId }) {
                                         {isCommentsVisible[index] && (
                                             <div className="popup-comments">
                                                 {post.comments && post.comments.length > 0 ? (
-                                                    post.comments.map((comment, idx) => (
-                                                        <div key={idx} className="popup-comment">
-                                                            <p><strong>{comment.username}:</strong> {comment.content}</p>
-                                                        </div>
-                                                    ))
+                                                    renderComments(post.comments)
                                                 ) : (
                                                     <p>No comments yet. Be the first to comment!</p>
                                                 )}
