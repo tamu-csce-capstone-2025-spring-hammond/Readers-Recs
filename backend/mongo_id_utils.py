@@ -1,6 +1,6 @@
 # backend/objectid_utils.py
 from bson.objectid import ObjectId
-from backend.database import collections
+from database import collections
 
 
 def is_valid_object_id(collection_name, obj_id):
@@ -14,8 +14,11 @@ def is_valid_object_id(collection_name, obj_id):
     if collection_name not in collections:
         return False
     elif collection_name == "Users" or collection_name == "User_Bookshelf":
+        # check with both string and ObjectId
         collection = collections[collection_name]
-        if collection.find_one({"_id": obj_id}) is not None:
+        if collection.find_one({"_id": ObjectId(obj_id)}) is not None:
+            return True
+        elif collection.find_one({"_id": obj_id}) is not None:
             return True
         else:
             return collection.find_one({"_id": ObjectId(obj_id)}) is not None

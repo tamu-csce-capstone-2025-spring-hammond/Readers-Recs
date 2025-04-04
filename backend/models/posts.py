@@ -2,10 +2,10 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from pydantic import ValidationError
 from zoneinfo import ZoneInfo
-from backend.schemas import PostSchema
-from backend.database import collections
-from backend.models.comments import delete_comments_by_post
-from backend.mongo_id_utils import is_valid_object_id
+from schemas import PostSchema
+from database import collections
+from models.comments import delete_comments_by_post
+from mongo_id_utils import is_valid_object_id
 
 posts_collection = collections["Posts"]
 

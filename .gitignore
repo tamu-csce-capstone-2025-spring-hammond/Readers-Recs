@@ -1,7 +1,8 @@
-# python testing
+# python testing & cache
 .pytest_cache
 __pycache__/
 .coverage
+htmlcov/
 
 # local environment files
 .env*.local

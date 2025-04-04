@@ -1,28 +1,17 @@
 # database/models/user_bookshelf.py
 from datetime import datetime
-
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from database import collections
 from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 from bson import ObjectId
+from mongo_id_utils import is_valid_object_id
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
 user_bookshelf_collection = collections["User_Bookshelf"]
 
 # user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
-
-
-def is_valid_object_id(collection_name, obj_id):
-    """
-    Check if the given ObjectId exists in the specified collection.
-    :param collection_name: The MongoDB collection name.
-    :param obj_id: The ObjectId to be checked.
-    :return: True if the ObjectId exists, False otherwise.
-    """
-    collection = collections[collection_name]
-    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 # user_id and book_id need to be verified

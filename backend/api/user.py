@@ -132,3 +132,19 @@ def save_genres():
         add_interest(user_id, genre)
 
     return jsonify({"message": "Genres saved successfully"}), 200
+@user_bp.route("/profile/<user_id>", methods=["GET"])
+def get_user_by_id(user_id):
+    """
+    Fetch a user's profile by user_id (NOT by access token).
+    """
+    from backend.models.users import read_user_by_id  # You may already have this
+
+    user = read_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "id": str(user["_id"]),
+        "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+        "profile_picture": user.get("profile_image", ""),
+    }), 200
