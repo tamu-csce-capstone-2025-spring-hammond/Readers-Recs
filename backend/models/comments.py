@@ -4,9 +4,9 @@ from bson.objectid import ObjectId
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from zoneinfo import ZoneInfo
-from backend.schemas import CommentSchema
-from backend.mongo_id_utils import is_valid_object_id
-from backend.database import collections
+from schemas import CommentSchema
+from mongo_id_utils import is_valid_object_id
+from database import collections
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]

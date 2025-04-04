@@ -1,28 +1,17 @@
 # database/models/user_bookshelf.py
 from datetime import datetime
-
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from database import collections
 from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
 from bson import ObjectId
+from mongo_id_utils import is_valid_object_id
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
 user_bookshelf_collection = collections["User_Bookshelf"]
 
 # user_bookshelf_collection.create_index([("user_id", 1), ("book_id", 1)], unique=True)
-
-
-def is_valid_object_id(collection_name, obj_id):
-    """
-    Check if the given ObjectId exists in the specified collection.
-    :param collection_name: The MongoDB collection name.
-    :param obj_id: The ObjectId to be checked.
-    :return: True if the ObjectId exists, False otherwise.
-    """
-    collection = collections[collection_name]
-    return collection.find_one({"_id": ObjectId(obj_id)}) is not None
 
 
 # user_id and book_id need to be verified
@@ -174,8 +163,8 @@ def get_currently_reading_books(user_id):
 def rate_book(user_id, book_id, new_rating):
     # TODO: add check that book has been completed
     shelf_entry = user_bookshelf_collection.find(
-                {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
-            )
+        {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
+    )
     if not shelf_entry:
         return "Error: Book has not been read yet."
     try:
@@ -192,7 +181,8 @@ def rate_book(user_id, book_id, new_rating):
 
         # Update the rating
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": {"rating": new_rating}}
+            {"user_id": user_id, "book_id": ObjectId(book_id)},
+            {"$set": {"rating": new_rating}},
         )
 
         if result.matched_count:
@@ -202,7 +192,7 @@ def rate_book(user_id, book_id, new_rating):
 
     except Exception as e:
         return f"Error: {str(e)}"
-    
+
 
 ### NEW METHODS FOR PAGE NUMBER
 def update_page_number(user_id, book_id, new_page_number):
@@ -211,7 +201,7 @@ def update_page_number(user_id, book_id, new_page_number):
         if not is_valid_object_id("Users", user_id):
             print("Error: Invalid user id")
             return "Error: Invalid user_id."
-            
+
         if not is_valid_object_id("Books", book_id):
             print("Error: Invalid book_id")
             return "Error: Invalid book_id."
@@ -219,14 +209,14 @@ def update_page_number(user_id, book_id, new_page_number):
         # Validate new_page_number
         if not isinstance(new_page_number, int) or new_page_number < 0:
             return "Error: Invalid page number. It must be a non-negative integer."
-        
+
         # u_id = user_id
         # existing_entry = users_collection.find_one({"_id": u_id})
         # if not existing_entry:
         #     u_id = ObjectId(user_id)
         #     existing_entry = users_collection.find_one({"_id": u_id})
         #     if not existing_entry:
-        #         print("Still no match for user_id.")   
+        #         print("Still no match for user_id.")
 
         # # existing_entry = books_collection.find_one({"_id": ObjectId(book_id)})
         # # if not existing_entry:
@@ -236,11 +226,14 @@ def update_page_number(user_id, book_id, new_page_number):
         # if not existing_entry:
         #     print("No matching entry found for user_id and book_id.")
 
-
         # Update the page number
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id), "status": "currently-reading"},
-            {"$set": {"page_number": new_page_number}}
+            {
+                "user_id": user_id,
+                "book_id": ObjectId(book_id),
+                "status": "currently-reading",
+            },
+            {"$set": {"page_number": new_page_number}},
         )
         # print(result)
         # existing_entry = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id), "status": "currently-reading"})
@@ -268,8 +261,11 @@ def get_page_number(user_id, book_id):
         print("book_id:", book_id)
         # Retrieve the page number
         book_entry = user_bookshelf_collection.find_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id),
-            "status": "currently-reading"}
+            {
+                "user_id": user_id,
+                "book_id": ObjectId(book_id),
+                "status": "currently-reading",
+            }
         )
 
         if book_entry is not None:
@@ -279,7 +275,6 @@ def get_page_number(user_id, book_id):
 
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 
 def delete_user_bookshelf(user_id, book_id):

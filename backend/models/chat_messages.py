@@ -3,9 +3,9 @@ from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from zoneinfo import ZoneInfo
-from backend.schemas import ChatMessageSchema
-from backend.mongo_id_utils import is_valid_object_id
-from backend.database import collections
+from schemas import ChatMessageSchema
+from mongo_id_utils import is_valid_object_id
+from database import collections
 
 chat_messages_collection = collections["Chat_Messages"]
 
