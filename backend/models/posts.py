@@ -125,6 +125,7 @@ def delete_post(post_id):
     except ValueError:
         return "Error: Invalid ObjectId format."
 
+users_collection = collections["Users"]
 
 def get_all_posts_for_book(book_id):
     try:
@@ -133,7 +134,20 @@ def get_all_posts_for_book(book_id):
             return "Error: Invalid book_id."
 
         posts = posts_collection.find({"book_id": ObjectId(book_id)})
-        return [PostSchema(**post).model_dump(by_alias=True) for post in posts]
+
+        results = []
+        for post in posts:
+            post_data = PostSchema(**post).model_dump(by_alias=True)
+
+            # look up username
+            user = users_collection.find_one({"_id": post["user_id"]})
+            if user:
+                post_data["username"] = user.get("username", "Unknown User")
+                post_data["profile_image"] = user.get("profile_image", "")
+
+            results.append(post_data)
+
+        return results
 
     except Exception as e:
         return f"Error: {str(e)}"
