@@ -6,6 +6,7 @@ import time
 from bson import ObjectId
 from models.books import books_collection  # Import your MongoDB collection
 
+
 class BookCollection:
     def __init__(self, cache_file="books_cache.json"):
         """
@@ -26,15 +27,21 @@ class BookCollection:
         if os.path.exists(self.cache_file):
             with open(self.cache_file, "r", encoding="utf-8") as f:
                 cached_books = json.load(f)
-            
+
             # Convert _id from string back to ObjectId
             self.books = [
-                {**book, 
-                 "_id": ObjectId(book["_id"]),
-                 "publication_date": datetime.fromisoformat(book["publication_date"]),
-                } for book in cached_books
+                {
+                    **book,
+                    "_id": ObjectId(book["_id"]),
+                    "publication_date": datetime.fromisoformat(
+                        book["publication_date"]
+                    ),
+                }
+                for book in cached_books
             ]
-            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Loaded {len(self.books)} books from cache.")
+            print(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Loaded {len(self.books)} books from cache."
+            )
         else:
             self.refresh_books()
 
@@ -53,16 +60,22 @@ class BookCollection:
                 formatted_book = {
                     **book,
                     "_id": str(book["_id"]),
-                    "publication_date": book["publication_date"] 
-                        if isinstance(book.get("publication_date"), str) 
-                        else book["publication_date"].isoformat() 
-                        if book.get("publication_date") 
-                        else "2000-01-01",
+                    "publication_date": (
+                        book["publication_date"]
+                        if isinstance(book.get("publication_date"), str)
+                        else (
+                            book["publication_date"].isoformat()
+                            if book.get("publication_date")
+                            else "2000-01-01"
+                        )
+                    ),
                 }
                 books_to_cache.append(formatted_book)
                 valid_books.append(book)
             except Exception as e:
-                print(f"Error processing book with _id {book.get('_id', 'UNKNOWN')}: {e}")
+                print(
+                    f"Error processing book with _id {book.get('_id', 'UNKNOWN')}: {e}"
+                )
 
         with self.lock:
             self.books = valid_books  # Only store successfully processed books
@@ -72,7 +85,9 @@ class BookCollection:
             json.dump(books_to_cache, f, indent=4)
 
         elapsed_time = time.time() - start_time
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(valid_books)} books) in {elapsed_time:.4f} seconds.")
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Book collection updated ({len(valid_books)} books) in {elapsed_time:.4f} seconds."
+        )
 
     def _refresh_loop(self):
         """Runs a loop to refresh the book collection every 24 hours."""
@@ -84,7 +99,6 @@ class BookCollection:
         """Returns all books from memory."""
         with self.lock:
             return self.books.copy()  # Return a copy to prevent modifications
-        
+
 
 # books = BookCollection()
-
