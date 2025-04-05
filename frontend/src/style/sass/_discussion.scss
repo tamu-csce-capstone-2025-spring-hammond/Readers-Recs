@@ -34,16 +34,19 @@
 
         .add-button {
             position: absolute;
-            bottom: 10px;
+            bottom: 30%;
             right: 30px;
-            background-color: none;
+            background-color: $-dark-green;
+            border-radius: 5px;
+            padding: 10px 20px;
+            width: auto;
             color: $-tan;
             border: none;
-            font-size: 36px;
+            font-size: 20px;
             cursor: pointer;
             transition: transform 0.3s ease;
             &:hover, &:focus {
-                background-color: $-rust-brown;
+                color: $-brown;
                 transform: scale(1.2);
             }
         }
