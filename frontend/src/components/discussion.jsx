@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { Plus } from 'lucide-react';
 import '../style/style.css';
+import AddPopUp from '../components/add-to-bookshelf-discussion';
 
 export default function BookPopup({ book, onClose }) {
+    const [addPopupBook, setAddPopupBook] = useState(null);
+    const [userId, setUserId] = useState(null);
     const [isAddingPost, setIsAddingPost] = useState(false);
     const [newPostTitle, setNewPostTitle] = useState('');
     const [newPostContent, setNewPostContent] = useState('');
@@ -53,11 +57,72 @@ export default function BookPopup({ book, onClose }) {
         setNewComment(e.target.value);
     };
 
+    const fetchUserProfile = async () => {
+        const token = localStorage.getItem("access_token");
+    
+        if (!token) {
+            console.error("No access token found.");
+            return;
+        }
+    
+        try {
+            const response = await fetch("http://localhost:8000/user/profile", {
+            method: "GET",
+            headers: {
+            Authorization: `Bearer ${token}`,
+            },
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch user profile");
+            }
+    
+            const data = await response.json();
+    
+            setUserId(data.id); // Extract and set the user ID
+            } catch (error) {
+            console.error("Error fetching user profile:", error);
+        }
+    };
+    
+    fetchUserProfile();
+
+    const openAddPopup = (book, event) => {
+        event.stopPropagation();
+        const rect = event.currentTarget.getBoundingClientRect();
+        setAddPopupBook({ book, position: { top: rect.top, left: rect.right } });
+    };
+    
+    const closeAddPopup = () => setAddPopupBook(null);
+
+    const updateBookshelf = async (book, status) => {
+        try {
+            const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    book_id: book.id || book._id,
+                    status: status,
+                }),
+            });
+    
+            return response;
+        } catch (error) {
+        console.error(`Error updating bookshelf (${status}):`, error);
+        return { ok: false };
+        }
+    };
+
     return (
         <div className="popup-overlay">
             <div className="popup-container">
                 <button className="popup-close" onClick={onClose}> × </button>
                 <div className="popup-content">
+                    <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
+                        <Plus size={20} />
+                    </button>
                     <div className="popup-image">
                         <img src={book.cover_image} alt={book.title} className="cover-img" />
                     </div>
@@ -146,6 +211,14 @@ export default function BookPopup({ book, onClose }) {
                     )}
                 </div>
             </div>
+            {addPopupBook && (
+                <AddPopUp
+                    book={addPopupBook.book}
+                    onClose={closeAddPopup}
+                    updateBookshelf={updateBookshelf}
+                    position={addPopupBook.position}
+                />
+            )}
         </div>
     );
 }

@@ -64,9 +64,12 @@ const Profile = () => {
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Error: User profile not found</div>;
 
-  const scrollBooks = (id, direction) => {
-    const container = document.getElementById(id);
-    if (container) container.scrollBy({ left: direction * 250, behavior: 'smooth' });
+  const scrollBooks = (shelfId, direction) => {
+    const container = document.getElementById(shelfId);
+    if (container) {
+      const scrollAmount = 300 * direction; // Adjust for smooth scrolling
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
   };
 
   const handleLogout = () => {
@@ -80,6 +83,9 @@ const Profile = () => {
   const handleCloseEditProfile = () => {
     setEditProfilePopup(false);
   }
+
+  const titleLength = bookshelf.currentRead?.title.length || 0;
+  const fontSize = `${Math.max(16, Math.min(28, titleLength / 4))}px`;
 
   return (
     <div className="profile-container">
@@ -107,7 +113,9 @@ const Profile = () => {
                     <div className="progress-indicator" style={{ height: `${bookshelf.currentRead.progress}%` }}></div>
                   </div>
                 </div>
-                <div className="current-book-title">{bookshelf.currentRead.title}</div>
+                <div className="current-book-title" style={{ fontSize }}>
+                  {bookshelf.currentRead?.title}
+                </div>
               </div>
             ) : (
               <div>No current book</div>
@@ -121,6 +129,7 @@ const Profile = () => {
                   {bookshelf[key].map((book, index) => (
                     <div key={`${key}-${index}`} className="book-cover-profile">
                       <img src={book.cover_image} alt={book.title} />
+                      <button className="book-delete-button">X</button> {/* onClick={() => handleDeleteBook(book.id)} */}
                       <div className="book-title">{book.title}</div>
                     </div>
                   ))}
