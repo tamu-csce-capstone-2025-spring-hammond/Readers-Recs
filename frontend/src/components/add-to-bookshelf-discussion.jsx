@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../style/style.css";
+import RatingPopup from "./book-rating";
 
 export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
     const handleUpdateBookshelf = async (status) => {
@@ -11,8 +12,18 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
         }
         onClose();
     };
+    const [showRatingPopup, setShowRatingPopup] = useState(false);
+    const handleFinishedClick = () => {
+        setShowRatingPopup(true);
+    };
+    const handleRatingClick = (rating) => {
+        console.log("Selected rating:", rating);
+        setShowRatingPopup(false);
+        onClose();
+    };
 
     return (
+        <>
         <div
             className="add-box-discussion"
             style={{
@@ -39,5 +50,12 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
                 </div>
             </div>
         </div>
+        <RatingPopup
+                open={showRatingPopup}
+                currentRating={null}
+                onClose={() => setShowRatingPopup(false)}
+                onRatingClick={handleRatingClick}
+            />
+        </>
     );
 }
