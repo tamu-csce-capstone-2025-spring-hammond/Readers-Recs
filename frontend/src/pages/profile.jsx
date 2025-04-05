@@ -129,6 +129,7 @@ const Profile = () => {
                   {bookshelf[key].map((book, index) => (
                     <div key={`${key}-${index}`} className="book-cover-profile">
                       <img src={book.cover_image} alt={book.title} />
+                      <button className="book-delete-button">X</button> {/* onClick={() => handleDeleteBook(book.id)} */}
                       <div className="book-title">{book.title}</div>
                     </div>
                   ))}
