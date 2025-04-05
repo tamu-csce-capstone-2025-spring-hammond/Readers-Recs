@@ -125,14 +125,12 @@ def retrieve_user_bookshelf(user_id):
 
 def get_bookshelf_status(user_id, book_id):
     try:
-        # Validate user_id and book_id
-        if not is_valid_object_id("Users", user_id):
-            return "Error: Invalid user_id."
+
 
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
         
-        book = user_bookshelf_collection.find({"user_id": user_id, "book_id": ObjectId(book_id)})
+        book = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
 
         if book:
             return book.get("status", "status-error")
