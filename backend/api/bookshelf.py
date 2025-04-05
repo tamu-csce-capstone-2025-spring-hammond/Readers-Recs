@@ -13,7 +13,7 @@ from models.user_bookshelf import (
     get_unread_books,
     rate_book,
     update_page_number,
-    update_user_bookshelf_status
+    update_user_bookshelf_status,
 )
 
 shelf_bp = Blueprint("shelf", __name__)
@@ -48,7 +48,6 @@ def get_last_read_book(user_id):
                 last_read_book = books_with_finish_date[0]
                 rating = books_with_finish_date[0].get("rating", "mid")
 
-
                 # Fetch the full book details
                 b = read_book_by_bookId(last_read_book["book_id"])
                 b["rating"] = rating
@@ -59,7 +58,6 @@ def get_last_read_book(user_id):
                     for key, value in b.items()
                 }
 
-                
                 print("book rating:", b["rating"])
 
                 return jsonify(b), 200
@@ -178,7 +176,7 @@ def add_book_to_bookshelf(user_id):
             status=status,
             date_started=date_started,
             date_finished=date_finished,
-            page_number=0
+            page_number=0,
         )
 
         if "Error" not in result:
@@ -191,7 +189,6 @@ def add_book_to_bookshelf(user_id):
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
-
 
 
 @shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["PUT"])
@@ -220,8 +217,6 @@ def update_current_page(user_id, book_id):
         return jsonify({"error": str(e)}), 500
 
 
-
-
 @shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["GET"])
 def get_current_page(user_id, book_id):
     """
@@ -238,8 +233,6 @@ def get_current_page(user_id, book_id):
     except Exception as e:
         print(str(e))
         return jsonify({"error": str(e)}), 500
-
-
 
 
 ####### THESE API FUNCTIONS ARE UNUSED SO FAR

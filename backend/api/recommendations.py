@@ -13,8 +13,6 @@ def objectid_to_str(obj):
     """Helper function to convert ObjectId to string"""
     if isinstance(obj, ObjectId):
         return str(obj)
-    
-
 
 
 @recommendation_bp.route("/api/user/<user_id>/recommendations", methods=["GET"])
