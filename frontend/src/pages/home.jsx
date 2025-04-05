@@ -70,7 +70,7 @@ const Home = () => {
         const profileData = await profileResponse.json();
         setUser(profileData);
         fetchBookshelfData(profileData.id, token);
-        fetchRecommendations(profileData.id);  
+        fetchRecommendations(profileData.id);
       } catch (error) {
         console.error('Error fetching profile or bookshelf data:', error);
       } finally {
