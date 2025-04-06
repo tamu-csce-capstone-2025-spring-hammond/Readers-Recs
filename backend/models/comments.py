@@ -175,11 +175,16 @@ def get_all_comments_for_post(post_id):
 
         comments = list(comments_collection.find({"post_id": ObjectId(post_id)}))
 
-        # convert ObjectIds to strings
+        # Convert ObjectIds to strings
         comment_dict = {str(comment["_id"]): serialize_comment(comment) for comment in comments}
 
         nested_comments = []
         for comment in comment_dict.values():
+            user = users_collection.find_one({"_id": ObjectId(comment["user_id"])})
+            if user:
+                comment["username"] = user.get("username", "Unknown User")
+                comment["profile_picture"] = user.get("profile_image", "")
+
             parent_id = comment.get("parent_comment_id")
             if parent_id and parent_id in comment_dict:
                 parent = comment_dict[parent_id]
@@ -193,6 +198,7 @@ def get_all_comments_for_post(post_id):
 
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 # used to convert ObjectId to string and copy comment_text to content
 def serialize_comment(comment):

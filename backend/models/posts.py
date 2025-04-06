@@ -128,6 +128,7 @@ def delete_post(post_id):
 
 users_collection = collections["Users"]
 
+
 def get_all_posts_for_book(book_id):
     try:
         # Validate book_id

@@ -140,8 +140,8 @@ export default function BookPopup({ book, onClose }) {
   
             if (response.ok) {
                 console.log('Comment created');
+                
                 await fetchComments(post._id, postIndex);
-                await fetchPosts(); // refresh posts and comments after adding a comment
                 setNewComment(prev => ({
                     ...prev,
                     [postIndex]: ''
@@ -223,7 +223,7 @@ export default function BookPopup({ book, onClose }) {
     const renderComments = (comments, postId) => {
         return comments.map((comment, idx) => (
           <div key={idx} className="popup-comment">
-            <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content}</p>
+            <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content || comment.comment_text}</p>
       
             <button onClick={() => setReplyingTo(comment._id)}>Reply</button>
       
