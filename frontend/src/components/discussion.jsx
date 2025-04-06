@@ -13,6 +13,10 @@ export default function BookPopup({ book, onClose, userId }) {
     const [isCommentsVisible, setIsCommentsVisible] = useState({});
     const [newComment, setNewComment] = useState({});
 
+    const [replyText, setReplyText] = useState({});
+    const [replyingTo, setReplyingTo] = useState(null); // the comment being replied to
+
+
     // Fetch current user's profile
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -137,7 +141,7 @@ export default function BookPopup({ book, onClose, userId }) {
             if (response.ok) {
                 console.log('Comment created');
                 await fetchComments(post._id, postIndex);
-                await fetchPosts(); // refresh posts and comments
+                await fetchPosts(); // refresh posts and comments after adding a comment
                 setNewComment(prev => ({
                     ...prev,
                     [postIndex]: ''
@@ -150,6 +154,36 @@ export default function BookPopup({ book, onClose, userId }) {
             console.error('Error creating comment:', error);
         }
     };
+
+    const handleReplySubmit = async (postId, parentCommentId) => {
+        const reply = replyText[parentCommentId];
+        if (!reply || !reply.trim()) return;
+      
+        try {
+          const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments/${parentCommentId}/reply`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: userId,
+              comment_text: reply,
+            }),
+          });
+          
+      
+          if (response.ok) {
+            console.log('Reply created');
+            await fetchPosts(); // re-fetch posts and comments
+            setReplyText(prev => ({ ...prev, [parentCommentId]: '' }));
+            setReplyingTo(null);
+          } else {
+            const data = await response.json();
+            console.error('Error creating reply:', data.error);
+          }
+        } catch (error) {
+          console.error('Error creating reply:', error);
+        }
+      };      
+      
   
     const handleCancelNewPost = () => {
         setIsAddingPost(false);
@@ -187,19 +221,34 @@ export default function BookPopup({ book, onClose, userId }) {
       }));
     };
 
-    const renderComments = (comments) => {
+    const renderComments = (comments, postId) => {
         return comments.map((comment, idx) => (
           <div key={idx} className="popup-comment">
             <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content}</p>
-            {/* Show replies if any */}
+      
+            <button onClick={() => setReplyingTo(comment._id)}>Reply</button>
+      
+            {replyingTo === comment._id && (
+              <div className="reply-form">
+                <textarea
+                  value={replyText[comment._id] || ''}
+                  onChange={(e) => setReplyText(prev => ({ ...prev, [comment._id]: e.target.value }))}
+                  placeholder="Write your reply..."
+                />
+                <button onClick={() => handleReplySubmit(postId, comment._id)}>Submit Reply</button>
+              </div>
+            )}
+      
+            {/* Recursive render of replies */}
             {comment.replies && comment.replies.length > 0 && (
               <div className="popup-replies">
-                {renderComments(comment.replies)}
+                {renderComments(comment.replies, postId)}
               </div>
             )}
           </div>
         ));
-      };
+    };
+      
   
 
     return (
@@ -281,7 +330,7 @@ export default function BookPopup({ book, onClose, userId }) {
                                         {isCommentsVisible[index] && (
                                             <div className="popup-comments">
                                                 {post.comments && post.comments.length > 0 ? (
-                                                    renderComments(post.comments)
+                                                    renderComments(post.comments, post._id)
                                                 ) : (
                                                     <p>No comments yet. Be the first to comment!</p>
                                                 )}
