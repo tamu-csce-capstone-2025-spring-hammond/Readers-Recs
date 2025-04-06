@@ -50,15 +50,22 @@ const Chat = () => {
       const response = await fetch(`http://localhost:8000/api/chat/${bookId}/messages`);
       const data = await response.json();
       if (response.ok) {
-        setMessages(data);
+        // 2) Map the API fields into your UI shape:
+        const shaped = data.map(msg => ({
+          id: msg._id,
+          text: msg.message_text,
+          username: msg.username || "Anon",
+          isMine: msg.user_id === userId,
+        }));
+        setMessages(shaped);
       } else {
-        console.error('Error fetching messages:', data.error);
+        console.error("Error fetching messages:", data.error);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
   };
-
+  
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   };
@@ -117,21 +124,17 @@ const Chat = () => {
         {/* Right section - Chat */}
         <div className="chat-section">
           <div className="chat-messages">
-            {messages.length > 0 ? (
-              messages.map((msg) => (
-                <div
-                  key={msg._id}
-                  className={`message-container ${msg.user_id === userId ? 'mine' : 'other'}`}
-                >
-                  <div className="message">
-                    <p className="message-text">{msg.message_text}</p>
-                    <p className="message-username">{msg.username || "Anonymous"}</p>
-                  </div>
+            {messages.map(message => (
+              <div
+                key={message.id}
+                className={`message-container ${message.isMine ? 'mine' : 'other'}`}
+              >
+                <div className="message">
+                  <p className="message-text">{message.text}</p>
+                  <p className="message-username">{message.username}</p>
                 </div>
-              ))
-            ) : (
-              <p className="no-messages">No messages yet. Start the conversation!</p>
-            )}
+              </div>
+            ))}
           </div>
 
           <form className="message-input-form" onSubmit={handleSendMessage}>
@@ -146,6 +149,7 @@ const Chat = () => {
               <ChevronRight size={20} />
             </button>
           </form>
+          
         </div>
       </div>
       <Navbar />
