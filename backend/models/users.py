@@ -168,11 +168,11 @@ def update_genre_weights(user_id, new_genre_weights):
     u_id = user_id
     existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
-        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})   
-        u_id = ObjectId(user_id)     
+        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+        u_id = ObjectId(user_id)
         if not existing_user:
             return "Error: User not found."
-    
+
     if not isinstance(new_genre_weights, dict):
         return "Error: Genre weights must be a dictionary."
 
@@ -217,14 +217,15 @@ def update_embedding(user_id, new_embedding):
         u_id = ObjectId(user_id)
         if not existing_user:
             return "Error: User not found."
-    
+
     if not isinstance(new_embedding, list) or not all(
         isinstance(x, (int, float)) for x in new_embedding
     ):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": u_id}, {"$set": {"embedding": new_embedding}},
+        {"_id": u_id},
+        {"$set": {"embedding": new_embedding}},
     )
     # if result.modified_count == 0:
     #     print("Embedding was not updated.")

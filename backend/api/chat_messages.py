@@ -18,20 +18,7 @@ def get_chat_messages_for_book(book_id):
         msgs = get_all_chat_messages_for_book(book_id)
         if not isinstance(msgs, list):
             return jsonify({"error": msgs}), 400
-
-        enriched = []
-        for msg in msgs:
-            for k, v in list(msg.items()):
-                if isinstance(v, ObjectId):
-                    msg[k] = str(v)
-
-            user = users_collection.find_one({"_id": ObjectId(msg["user_id"])})
-            msg["username"] = user.get("username", "Anonymous") if user else "Anonymous"
-
-            enriched.append(msg)
-
-        return jsonify(enriched), 200
-
+        return jsonify(msgs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -56,6 +43,8 @@ def send_chat_message(book_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# GET: Get the last read book for a user with more information than the similar user API function
 @chat_bp.route("/user/<user_id>/lastread", methods=["GET"])
 def get_chat_last_read_book(user_id):
     try:
@@ -89,6 +78,40 @@ def get_chat_last_read_book(user_id):
             return jsonify(b), 200
         else:
             return jsonify({"message": "No books marked as read yet."}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# UPDATE: Update a chat message
+@chat_bp.route("/<book_id>/update/<message_id>", methods=["PUT"])
+def update_chat_message_api(book_id, message_id):
+    try:
+        data = request.get_json()
+        message_text = data.get("message_text")
+
+        if not message_text:
+            return jsonify({"error": "Missing message_text"}), 400
+
+        result = update_chat_message(message_id, message_text)
+        if isinstance(result, str) and "Error" in result:
+            return jsonify({"error": result}), 400
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# DELETE: Delete a chat message
+@chat_bp.route("/<book_id>/delete/<message_id>", methods=["DELETE"])
+def delete_chat_message_api(book_id, message_id):
+    try:
+        result = delete_chat_message(message_id)
+        if isinstance(result, str) and "Error" in result:
+            return jsonify({"error": result}), 400
+
+        return jsonify({"message": result}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
