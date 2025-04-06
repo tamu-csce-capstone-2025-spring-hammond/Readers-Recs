@@ -122,41 +122,56 @@ def update_user(user_id, **kwargs):
         return "Error: Invalid ObjectId format."
 
 
-# theoretically used for users to update their names, interests, demographics, & interests
+# theoretically used for users to update their name, username, and profile image
 def update_user_settings(
-    user_id, first_name=None, last_name=None, interests=None, demographics=None
+    user_id, first_name=None, last_name=None, username=None, profile_image=None
 ):
     try:
-        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+        # Handle user_id as either string or ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+
+        # Find existing user
+        existing_user = users_collection.find_one({"_id": user_id})
         if not existing_user:
             return "Error: User not found."
 
-        update_data = {**existing_user}
+        update_data = {}
+
+        # Validate username uniqueness
+        if username:
+            existing_username = users_collection.find_one(
+                {"username": username, "_id": {"$ne": user_id}}  # Exclude current user
+            )
+            if existing_username:
+                return "Error: Username already taken."
+
+            update_data["username"] = username.strip()
 
         if first_name is not None:
-            update_data["first_name"] = first_name
+            update_data["first_name"] = first_name.strip()
         if last_name is not None:
-            update_data["last_name"] = last_name
-        if interests is not None:
-            update_data["interests"] = (
-                interests if isinstance(interests, list) else [interests]
-            )
-        if demographics is not None:
-            update_data["demographics"] = (
-                demographics if isinstance(demographics, list) else [demographics]
-            )
+            update_data["last_name"] = last_name.strip()
+        if profile_image is not None:
+            update_data["profile_image"] = profile_image.strip()
 
-        validated_data = UserSchema(**update_data).model_dump(by_alias=True)
+        if not update_data:
+            return "Error: No update fields provided."
 
-        users_collection.update_one(
-            {"_id": ObjectId(user_id)}, {"$set": validated_data}
-        )
+        # Validate full document
+        new_document = {**existing_user, **update_data}
+        validated_document = UserSchema(**new_document).model_dump(by_alias=True)
+
+        users_collection.update_one({"_id": user_id}, {"$set": validated_document})
+
         return "User settings updated successfully."
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except (ValueError, TypeError):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # ADDED FOR BOOK REC MODEL (anna)

@@ -5,7 +5,7 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email
+from models.users import create_user, read_user_by_email, update_user_settings
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -104,3 +104,42 @@ def get_user_by_id(user_id):
         ),
         200,
     )
+
+
+@user_bp.route("/profile/<user_id>/edit-profile", methods=["POST"])
+def edit_profile(user_id):
+    try:
+        data = request.get_json()
+
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        username = data.get("username", "")
+        profile_image = data.get("profile_image", "")
+
+        result = update_user_settings(
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            profile_image=profile_image,
+        )
+
+        if result.startswith("Error"):
+            return jsonify({"error": result}), 400
+
+        return jsonify({"message": "Profile updated successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/check-username/<username>", methods=["GET"])
+def check_username(username):
+    try:
+        user = users_collection.find_one({"username": username})
+        if user:
+            return jsonify({"exists": True}), 200
+        else:
+            return jsonify({"exists": False}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
