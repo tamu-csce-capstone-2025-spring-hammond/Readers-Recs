@@ -121,7 +121,7 @@ const Profile = () => {
           <div className="profile-picture" style={{ backgroundImage: `url(${user.profile_picture})` }}></div>
           <div className="profile-info">
             <h1 className="profile-name">{user.name}</h1>
-            <h2 className="profile-username">{user.email}</h2>
+            <h2 className="profile-username">{user.username}</h2>
             <p className="profile-member-since">Member Since 2025</p>
             <div className="profile-buttons">
               <button className="edit-profile-button" onClick={handleEditProfile}>Edit Profile</button>
@@ -171,7 +171,8 @@ const Profile = () => {
         </div>
       </div>
       {editProfilePopup && (
-        <EditProfile user={user} onClose={handleCloseEditProfile} />
+        <EditProfile user={user} onClose={handleCloseEditProfile} refreshUser={fetchUserProfile}/>
+
       )}
       <Navbar />
     </div>
