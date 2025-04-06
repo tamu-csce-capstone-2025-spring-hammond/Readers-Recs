@@ -176,7 +176,9 @@ def get_all_comments_for_post(post_id):
         comments = list(comments_collection.find({"post_id": ObjectId(post_id)}))
 
         # Convert ObjectIds to strings
-        comment_dict = {str(comment["_id"]): serialize_comment(comment) for comment in comments}
+        comment_dict = {
+            str(comment["_id"]): serialize_comment(comment) for comment in comments
+        }
 
         nested_comments = []
         for comment in comment_dict.values():

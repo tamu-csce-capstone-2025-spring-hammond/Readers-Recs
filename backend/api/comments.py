@@ -14,6 +14,7 @@ from models.comments import (
 comments_bp = Blueprint("comments", __name__)
 CORS(comments_bp)
 
+
 # CREATE: Add a top-level comment to a post
 @comments_bp.route("/<post_id>/comments", methods=["POST"])
 def add_comment_to_post(post_id):
@@ -33,6 +34,7 @@ def add_comment_to_post(post_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # CREATE: Reply to a comment
 @comments_bp.route("/<post_id>/comments/<parent_comment_id>/reply", methods=["POST"])
 def reply_to_existing_comment(post_id, parent_comment_id):
@@ -51,6 +53,7 @@ def reply_to_existing_comment(post_id, parent_comment_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # READ: Get all comments for a post
 @comments_bp.route("/<post_id>/comments", methods=["GET"])
@@ -76,6 +79,7 @@ def get_single_comment(post_id, comment_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # UPDATE: Update a comment's text
 @comments_bp.route("/<post_id>/comments/<comment_id>", methods=["PUT"])
 def update_existing_comment(post_id, comment_id):
@@ -93,6 +97,7 @@ def update_existing_comment(post_id, comment_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # DELETE: Delete a comment
 @comments_bp.route("/<post_id>/comments/<comment_id>", methods=["DELETE"])

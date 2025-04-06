@@ -113,21 +113,21 @@ def delete_chat_message(message_id):
 
 def get_all_chat_messages_for_book(book_id):
     try:
-        if not is_valid_object_id("Books", book_id):
-            return "Error: Invalid book_id."
+        messages = list(chat_messages_collection.find({"book_id": ObjectId(book_id)}))
 
-        # Find all messages for the book and sort chronologically by date_posted
-        cursor = chat_messages_collection.find({"book_id": ObjectId(book_id)}).sort(
-            "date_posted", 1
-        )
-        messages = []
-        for doc in cursor:
-            try:
-                chat_message = ChatMessageSchema(**doc)
-                messages.append(chat_message.model_dump(by_alias=True))
-            except ValidationError:
-                continue
-        return messages
+        # Convert ObjectIds to strings
+        serialized_messages = []
+        for message in messages:
+            serialized = {}
+            for key, value in message.items():
+                if isinstance(value, ObjectId):
+                    serialized[key] = str(value)
+                else:
+                    serialized[key] = value
+            serialized_messages.append(serialized)
+
+        return serialized_messages
 
     except Exception as e:
         return f"Error: {str(e)}"
+

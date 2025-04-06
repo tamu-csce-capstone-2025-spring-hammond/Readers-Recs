@@ -38,6 +38,7 @@ def create_discussion_post(book_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 def convert_objectid(doc):
     if isinstance(doc, list):
         return [convert_objectid(item) for item in doc]
@@ -45,12 +46,13 @@ def convert_objectid(doc):
         return {k: str(v) if isinstance(v, ObjectId) else v for k, v in doc.items()}
     return doc
 
+
 @discussion_bp.route("/<book_id>/posts", methods=["GET"])
 def get_all_discussion_posts(book_id):
     try:
         result = get_all_posts_for_book(book_id)
         if isinstance(result, list):
-            result = convert_objectid(result)   # 👈 ADD THIS
+            result = convert_objectid(result)  # 👈 ADD THIS
             return jsonify(result), 200
         else:
             return jsonify({"error": result}), 400

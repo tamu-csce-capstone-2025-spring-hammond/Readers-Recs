@@ -126,6 +126,7 @@ def delete_post(post_id):
     except ValueError:
         return "Error: Invalid ObjectId format."
 
+
 users_collection = collections["Users"]
 
 
