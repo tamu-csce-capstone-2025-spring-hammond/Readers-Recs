@@ -1,66 +1,139 @@
-import React, { useState } from 'react';
-import { ChevronRight, Search, BookOpen, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight } from 'lucide-react';
 import Navbar from '../components/navbar';
 import '../style/style.css';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
-    
-  // Placeholder data
-  const book = {
-    title: "Book Title",
-    author: "Author",
-    year: "Year",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vestibulum a lectus at auctor. Quisque et interdum mi, in efficitur magna. Maecenas massa sapien, facilisis vitae finibus at, facilisis convallis velit. Aenean sodales turpis nec ornare mollis."
+  const [book, setBook] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [userId, setUserId] = useState(null);       // Current user id
+
+  useEffect(() => {
+    const fetchUserAndRecentBook = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          console.error("No access token found.");
+          return;
+        }
+
+        // Fetch user profile
+        const userResponse = await fetch('http://localhost:8000/user/profile', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const userData = await userResponse.json();
+        setUserId(userData.id);
+
+        // Fetch user's most recently finished book
+        const bookResponse = await fetch(`http://localhost:8000/api/chat/user/${userData.id}/lastread`);
+        const bookData = await bookResponse.json();
+        if (bookResponse.ok) {
+          setBook(bookData);
+          fetchMessages(bookData._id);
+        } else {
+          console.error('Error fetching recent book:', bookData.error);
+        }
+
+      } catch (error) {
+        console.error('Error fetching user or book:', error);
+      }
+    };
+
+    fetchUserAndRecentBook();
+  }, []);
+
+  const fetchMessages = async (bookId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/chat/${bookId}/messages`);
+      const data = await response.json();
+      if (response.ok) {
+        setMessages(data);
+      } else {
+        console.error('Error fetching messages:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
   };
-  
-  const messages = [
-    { id: 1, text: "Message", username: "Username", isMine: false },
-    { id: 2, text: "Message", username: "Username", isMine: true },
-    { id: 3, text: "Message", username: "Username", isMine: false }
-  ];
-  
+
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
   };
-  
-  const handleSendMessage = (e) => {
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (message.trim()) {
-      // Logic to send message would go here
-      setMessage('');
+    if (!message.trim() || !book || !userId) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/chat/${book._id}/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          message_text: message,
+        }),
+      });
+
+      if (response.ok) {
+        setMessage('');
+        fetchMessages(book._id);  // Refresh chat after sending
+      } else {
+        const data = await response.json();
+        console.error('Error sending message:', data.error);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   };
-  
+
   return (
     <div className="chat-page-container">
       <div className="chat-content">
         {/* Left section - Book Info */}
         <div className="book-section">
-          <div className="book-cover"></div>
+        <div className="book-cover">
+          {book?.cover_image && (
+            <img src={book.cover_image} alt={book.title} />
+          )}
+        </div>
           <div className="book-details">
-            <h2 className="book-title">{book.title}</h2>
-            <p className="book-author">{book.author}, {book.year}</p>
-            <p className="book-description">{book.description}</p>
+            {book ? (
+              <>
+                <h2 className="book-title">{book.title}</h2>
+                <p className="book-author">{book.author}, {book.year || ''}</p>
+                <p className="book-description">{book.summary || ''}</p>
+              </>
+            ) : (
+              <p>Loading book information...</p>
+            )}
           </div>
         </div>
-        
+
         {/* Right section - Chat */}
         <div className="chat-section">
           <div className="chat-messages">
-            {messages.map(message => (
-              <div
-                key={message.id}
-                className={`message-container ${message.isMine ? 'mine' : 'other'}`}
-              >
-                <div className="message">
-                  <p className="message-text">{message.text}</p>
-                  <p className="message-username">{message.username}</p>
+            {messages.length > 0 ? (
+              messages.map((msg) => (
+                <div
+                  key={msg._id}
+                  className={`message-container ${msg.user_id === userId ? 'mine' : 'other'}`}
+                >
+                  <div className="message">
+                    <p className="message-text">{msg.message_text}</p>
+                    <p className="message-username">{msg.username || "Anonymous"}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="no-messages">No messages yet. Start the conversation!</p>
+            )}
           </div>
-          
+
           <form className="message-input-form" onSubmit={handleSendMessage}>
             <input
               type="text"
@@ -75,7 +148,7 @@ const Chat = () => {
           </form>
         </div>
       </div>
-      <Navbar/>
+      <Navbar />
     </div>
   );
 };
