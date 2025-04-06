@@ -130,4 +130,3 @@ def get_all_chat_messages_for_book(book_id):
 
     except Exception as e:
         return f"Error: {str(e)}"
-

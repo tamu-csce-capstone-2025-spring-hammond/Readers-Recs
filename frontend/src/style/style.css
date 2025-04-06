@@ -413,6 +413,9 @@ h3 {
   border: 20px solid #0e3523;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px;
+  /* min-height: 50%; */
+  background-size: cover; /* Needs to be moved into the sass */
+  background-position: center; /* Needs to be moved into the sass */
 }
 
 .book-details {
@@ -444,6 +447,8 @@ h3 {
   margin: 5px 0 0;
   font-size: 22px;
   line-height: 1.4;
+  overflow-y: scroll; /* Needs to be moved into the sass */
+  max-height: 50%; /* Needs to be moved into the sass */
 }
 
 .chat-section {
@@ -504,6 +509,7 @@ h3 {
 }
 
 .message-input-form {
+  max-height: 200px; /* Needs to be moved into the sass */
   display: flex;
   gap: 10px;
   margin-top: auto;
@@ -521,6 +527,7 @@ h3 {
   outline: none;
   color: #0e3523;
   min-height: 40px;
+  overflow-y: scroll; /* Needs to be moved into the sass */
 }
 .message-input::-moz-placeholder {
   color: rgba(14, 53, 35, 0.7);
@@ -539,6 +546,8 @@ h3 {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  position: absolute; /* Needs to be moved into the sass */
+  right: 20px; /* Needs to be moved into the sass */
 }
 .send-button svg {
   color: white;
