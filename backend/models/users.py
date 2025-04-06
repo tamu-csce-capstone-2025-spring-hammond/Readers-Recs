@@ -225,7 +225,8 @@ def update_embedding(user_id, new_embedding):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": u_id}, {"$set": {"embedding": new_embedding}},
+        {"_id": u_id},
+        {"$set": {"embedding": new_embedding}},
     )
     # if result.modified_count == 0:
     #     print("Embedding was not updated.")

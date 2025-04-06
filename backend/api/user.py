@@ -143,8 +143,13 @@ def get_user_by_id(user_id):
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    return jsonify({
-        "id": str(user["_id"]),
-        "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
-        "profile_picture": user.get("profile_image", ""),
-    }), 200
+    return (
+        jsonify(
+            {
+                "id": str(user["_id"]),
+                "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                "profile_picture": user.get("profile_image", ""),
+            }
+        ),
+        200,
+    )
