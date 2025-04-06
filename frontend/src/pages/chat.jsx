@@ -32,7 +32,7 @@ const Chat = () => {
         const bookData = await bookResponse.json();
         if (bookResponse.ok) {
           setBook(bookData);
-          fetchMessages(bookData._id);
+          fetchMessages(bookData._id, userData.id);
         } else {
           console.error('Error fetching recent book:', bookData.error);
         }
@@ -45,17 +45,16 @@ const Chat = () => {
     fetchUserAndRecentBook();
   }, []);
 
-  const fetchMessages = async (bookId) => {
+  const fetchMessages = async (bookId, currentUserId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/chat/${bookId}/messages`);
       const data = await response.json();
       if (response.ok) {
-        // 2) Map the API fields into your UI shape:
         const shaped = data.map(msg => ({
           id: msg._id,
           text: msg.message_text,
           username: msg.username || "Anon",
-          isMine: msg.user_id === userId,
+          isMine: msg.user_id === currentUserId,
         }));
         setMessages(shaped);
       } else {
@@ -88,7 +87,7 @@ const Chat = () => {
 
       if (response.ok) {
         setMessage('');
-        fetchMessages(book._id);  // Refresh chat after sending
+        fetchMessages(book._id, userId);  // Refresh chat after sending
       } else {
         const data = await response.json();
         console.error('Error sending message:', data.error);
