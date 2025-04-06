@@ -15,10 +15,22 @@ chat_messages_collection = collections["Chat_Messages"]
 @chat_bp.route("/<book_id>/messages", methods=["GET"])
 def get_chat_messages_for_book(book_id):
     try:
-        result = get_all_chat_messages_for_book(book_id)
-        if isinstance(result, list):
-            return jsonify(result), 200
-        return jsonify({"error": result}), 400
+        msgs = get_all_chat_messages_for_book(book_id)
+        if not isinstance(msgs, list):
+            return jsonify({"error": msgs}), 400
+
+        enriched = []
+        for msg in msgs:
+            for k, v in list(msg.items()):
+                if isinstance(v, ObjectId):
+                    msg[k] = str(v)
+
+            user = users_collection.find_one({"_id": ObjectId(msg["user_id"])})
+            msg["username"] = user.get("username", "Anonymous") if user else "Anonymous"
+
+            enriched.append(msg)
+
+        return jsonify(enriched), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
