@@ -168,53 +168,41 @@ def delete_comments_by_post(post_id):
         return f"Error: {str(e)}"
 
 
-def stringify_object_ids(comment):
-    comment["_id"] = str(comment["_id"])
-    if comment.get("user_id"):
-        comment["user_id"] = str(comment["user_id"])
-    if comment.get("post_id"):
-        comment["post_id"] = str(comment["post_id"])
-    if comment.get("parent_comment_id"):
-        comment["parent_comment_id"] = str(comment["parent_comment_id"])
-    # recursively fix replies if any
-    if "replies" in comment:
-        for reply in comment["replies"]:
-            stringify_object_ids(reply)
-    return comment
-
-
 def get_all_comments_for_post(post_id):
     try:
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
 
-        comments_cursor = comments_collection.find({"post_id": ObjectId(post_id)})
-        comment_map = {}
+        comments = list(comments_collection.find({"post_id": ObjectId(post_id)}))
 
-        # Load and validate all comments
-        for comment in comments_cursor:
-            try:
-                validated_comment = CommentSchema(**comment).model_dump(by_alias=True)
-                validated_comment["replies"] = []
-                comment_id = str(validated_comment["_id"])
-                comment_map[comment_id] = validated_comment
-            except Exception as e:
-                print(f"Skipping invalid comment: {e}")
-                continue
+        # convert ObjectIds to strings
+        comment_dict = {str(comment["_id"]): serialize_comment(comment) for comment in comments}
 
-        # Organize into tree
-        root_comments = []
-        for comment_id, comment in comment_map.items():
+        nested_comments = []
+        for comment in comment_dict.values():
             parent_id = comment.get("parent_comment_id")
-            if parent_id:
-                parent_id = str(parent_id)
-                parent_comment = comment_map.get(parent_id)
-                if parent_comment:
-                    parent_comment["replies"].append(comment)
+            if parent_id and parent_id in comment_dict:
+                parent = comment_dict[parent_id]
+                if "replies" not in parent:
+                    parent["replies"] = []
+                parent["replies"].append(comment)
             else:
-                root_comments.append(comment)
+                nested_comments.append(comment)
 
-        return [stringify_object_ids(comment) for comment in root_comments]
+        return nested_comments
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+# used to convert ObjectId to string and copy comment_text to content
+def serialize_comment(comment):
+    serialized = {}
+    for key, value in comment.items():
+        if isinstance(value, ObjectId):
+            serialized[key] = str(value)
+        else:
+            serialized[key] = value
+    # copy comment_text to content
+    if "comment_text" in serialized:
+        serialized["content"] = serialized["comment_text"]
+    return serialized
