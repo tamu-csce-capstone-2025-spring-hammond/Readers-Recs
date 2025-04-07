@@ -41,6 +41,7 @@ const SearchBooks = () => {
       const data = await response.json();
 
       setUserId(data.id); // Extract and set the user ID
+      localStorage.setItem("userId", data.id)
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -170,7 +171,7 @@ const SearchBooks = () => {
 
       <Navbar />
 
-      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} userId={userId} />}
       {addPopupBook && (
         <AddPopUp
           book={addPopupBook.book}
