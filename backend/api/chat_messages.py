@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
-from database import collections
+from flask_cors import CORS
 from models.chat_messages import create_chat_message, get_all_chat_messages_for_book
 from bson import ObjectId
 from models.books import read_book_by_bookId
 from models.user_bookshelf import get_read_books
 
 chat_bp = Blueprint("chat", __name__)
-
-users_collection = collections["Users"]
-chat_messages_collection = collections["Chat_Messages"]
+CORS(chat_bp)
 
 
 # GET: Get all chat messages for a book
