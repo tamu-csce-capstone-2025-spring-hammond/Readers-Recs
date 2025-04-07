@@ -4,9 +4,12 @@ import { Plus } from 'lucide-react';
 import '../style/style.css';
 import AddPopUp from '../components/add-to-bookshelf-discussion';
 
-export default function BookPopup({ book, onClose }) {
+export default function BookPopup({ book, onClose, userId }) {
     const [addPopupBook, setAddPopupBook] = useState(null);
-    const [userId, setUserId] = useState(null);
+    const [bookStatus, setBookStatus] = useState(null);
+    const [isLoadingStatus, setIsLoadingStatus] = useState(true); 
+
+    // const [userId, setUserId] = useState(null);
     const [isAddingPost, setIsAddingPost] = useState(false);
     const [newPostTitle, setNewPostTitle] = useState('');
     const [newPostContent, setNewPostContent] = useState('');
@@ -15,36 +18,66 @@ export default function BookPopup({ book, onClose }) {
     // local state for testing posts
     const [posts, setPosts] = useState(book.posts || []);
     
+    const fetchBookStatus = async () => {
+        setIsLoadingStatus(true);
+        try {
+            const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${book._id}/status`, {
+                method: "GET",
+            });
 
+            if (!response.ok) {
+                throw new Error("Failed to fetch book status");
+            }
+
+            const data = await response.json()
+            if (data.status == "no-status"){
+                setBookStatus("unread")
+            } else if (data.status == "to-read") {
+                setBookStatus("in wishlist")
+            } else if (data.status == "currently-reading") {
+                setBookStatus("reading")
+            } else {
+                setBookStatus(data.status)
+            }
+            
+        } catch (error) {
+            console.error("Error fetching book status:", error);
+        } finally {
+            setIsLoadingStatus(false); // Set loading state to false when done
+        }
+    };
+    
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            const token = localStorage.getItem("access_token");
+        // const fetchUserProfile = async () => {
+        //     const token = localStorage.getItem("access_token");
     
-            if (!token) {
-                console.error("No access token found.");
-                return;
-            }
+        //     if (!token) {
+        //         console.error("No access token found.");
+        //         return;
+        //     }
     
-            try {
-                const response = await fetch("http://localhost:8000/user/profile", {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+        //     try {
+        //         const response = await fetch("http://localhost:8000/user/profile", {
+        //             method: "GET",
+        //             headers: {
+        //                 Authorization: `Bearer ${token}`,
+        //             },
+        //         });
     
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user profile");
-                }
+        //         if (!response.ok) {
+        //             throw new Error("Failed to fetch user profile");
+        //         }
     
-                const data = await response.json();
-                setUserId(data.id); // Ensure the user ID is set properly
-            } catch (error) {
-                console.error("Error fetching user profile:", error);
-            }
-        };
-    
-        fetchUserProfile();
+        //         const data = await response.json();
+        //         setUserId(data.id);
+        //         fetchBookStatus(data.id); // Ensure the user ID is set properly
+        //     } catch (error) {
+        //         console.error("Error fetching user profile:", error);
+        //     }
+        // };
+
+        fetchBookStatus();
+        
     }, []); // Run only on component mount
     
     const toggleComments = (postIndex) => {
@@ -109,10 +142,16 @@ export default function BookPopup({ book, onClose }) {
                 body: JSON.stringify({
                     book_id: book.id || book._id,
                     status: status,
+                    rating: "mid",
                 }),
             });
     
+            if (response.ok) {
+                fetchBookStatus(); // Re-fetch the book status after updating
+            }
+
             return response;
+
         } catch (error) {
         console.error(`Error updating bookshelf (${status}):`, error);
         return { ok: false };
@@ -125,7 +164,7 @@ export default function BookPopup({ book, onClose }) {
                 <button className="popup-close" onClick={onClose}> × </button>
                 <div className="popup-content">
                     <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
-                        <Plus size={20} />
+                        Add Book to Shelf +
                     </button>
                     <div className="popup-image">
                         <img src={book.cover_image} alt={book.title} className="cover-img" />
@@ -133,6 +172,12 @@ export default function BookPopup({ book, onClose }) {
                     <div className="popup-details">
                         <h2 className="popup-title">{book.title}</h2>
                         <p className="popup-author">{Array.isArray(book.author) ? book.author.join(", ") : book.author}</p>
+                        {/* Display loading message while status is being fetched */}
+                        {isLoadingStatus ? (
+                            <p className="popup-info">Loading book status...</p>
+                        ) : (
+                            <p className="popup-info">Bookshelf status: {bookStatus}</p>
+                        )}
                         <p className="popup-info">Page Count: {book.page_count}</p>
                         <p className="popup-info">
                             Genre: {book.genre_tags && book.genre_tags.length > 0 

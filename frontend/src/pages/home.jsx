@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import {ClipLoader} from 'react-spinners';
 import { Link } from 'react-router-dom';
 import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
-import { ClipLoader } from "react-spinners";
 
+const BookTitle = ({ title }) => {
+  const titleLength = title.length;
+  const fontSize = `${Math.max(14, Math.min(20, titleLength / 4))}px`;
+
+  return (
+    <h3 className="book-title" style={{ fontSize }}>
+      {title}
+    </h3>
+  );
+};
 
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -458,7 +468,7 @@ const Home = () => {
                         </div>
                       </div>
                       <div className="book-info">
-                        <h3 className="book-title">{bookshelf.currentRead.title}</h3>
+                        <BookTitle title={bookshelf.currentRead.title} />
                         <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="progress-info">
                           <span className="progress-percentage">{bookProgress}%</span>
@@ -502,7 +512,7 @@ const Home = () => {
                         </div>
                       </div>
                       <div className="book-info">
-                        <h3 className="book-title">{bookshelf.lastRead.title}</h3>
+                        <BookTitle title={bookshelf.lastRead.title} />
                         <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="rating-thumbs">
                           <button

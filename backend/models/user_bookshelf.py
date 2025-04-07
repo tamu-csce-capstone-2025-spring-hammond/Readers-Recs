@@ -42,14 +42,10 @@ def create_user_bookshelf(
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
         
-        existing = user_bookshelf_collection.find({"user_id": user_id, "book_id": ObjectId(book_id)})
+        existing = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
         if existing:
             return "Error: book already present in user bookshelves."
 
-        
-        existing = user_bookshelf_collection.find({"user_id": user_id, "book_id": ObjectId(book_id)})
-        if existing:
-            return "Error: book already present in user bookshelves."
 
         # Convert date_added to datetime if it's a datetime.date object
         date_added = datetime.today().date()  # Default to today's date

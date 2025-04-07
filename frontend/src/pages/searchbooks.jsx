@@ -41,6 +41,7 @@ const SearchBooks = () => {
       const data = await response.json();
 
       setUserId(data.id); // Extract and set the user ID
+      localStorage.setItem("userId", data.id)
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -100,7 +101,7 @@ const SearchBooks = () => {
 
   const closeAddPopup = () => setAddPopupBook(null);
 
-  const updateBookshelf = async (book, status) => {
+  const updateBookshelf = async (book, status, rating="mid") => {
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
@@ -110,6 +111,7 @@ const SearchBooks = () => {
         body: JSON.stringify({
           book_id: book.id || book._id,
           status: status,
+          rating: rating
         }),
       });
 
@@ -169,7 +171,7 @@ const SearchBooks = () => {
 
       <Navbar />
 
-      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} userId={userId} />}
       {addPopupBook && (
         <AddPopUp
           book={addPopupBook.book}
