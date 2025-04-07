@@ -4,6 +4,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BookPopUp from '../components/discussion';
 
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -45,6 +46,10 @@ const Home = () => {
     rating: "thumbsMid", // Changed from numeric to thumbs rating
     coverColor: "#ffffff"
   });
+
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showPopUp, setShowPopUp] = useState(false);
+
 
   // Animate elements on page load
   useEffect(() => {
@@ -139,6 +144,10 @@ const Home = () => {
                     key={`rec-${index}`}
                     className="book-card"
                     style={{ animationDelay: `${0.1 + index * 0.03}s` }}
+                    onClick={() => {
+                      setSelectedBook(book);
+                      setShowPopUp(true);
+                    }}
                   >
                     <div
                       className="home-book-cover"
@@ -153,6 +162,13 @@ const Home = () => {
               </div>
             {/* </div> */}
           </div>
+          {showPopUp && (
+            <BookPopUp 
+              book={selectedBook} 
+              onClose={() => setShowPopUp(false)} 
+            />
+          )}
+
         </div>
 
         {/* Right side - Currently Reading and Last Finished */}
