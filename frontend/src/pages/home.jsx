@@ -5,6 +5,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BookPopUp from '../components/discussion';
 
 const BookTitle = ({ title }) => {
   const titleLength = title.length;
@@ -61,6 +62,10 @@ const Home = () => {
   //   rating: "thumbsMid", // Changed from numeric to thumbs rating
   //   coverColor: "#ffffff"
   // });
+
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showPopUp, setShowPopUp] = useState(false);
+
 
   // Animate elements on page load
   useEffect(() => {
@@ -249,61 +254,62 @@ const Home = () => {
                 <ClipLoader color="white" loading={loadingRecommendations || loadingBookshelf} size={100} />
               </div>
             </div>
-          </div>
-  
-          {/* Right side - Currently Reading and Last Finished */}
-          <div className="right-column">
-            <div className="right-top">
-              
-              {/* Currently Reading */}
-              <div className="reading-section current-section">
-                <div className="section-header">
-                  <Clock className="section-icon" size={32} />
-                  <h2 className="section-title">Currently Reading</h2>
-                </div>
-                <div className="current-book">
-                  {loadingBookshelf ? (
-                    <p>Loading currently reading book...</p>
-                  ) : bookshelf.currentRead ? (
-                    <div className="book-display">
-                      <div
-                        className="home-book-cover featured-cover"
-                        style={{ backgroundImage: `url(${bookshelf.currentRead.cover_image ?? ''})` }}
-                      >
-                        <div className="reading-progress-container">
-                          <div className="reading-progress-bar" style={{ width: `${bookProgress}%` }}></div>
-                        </div>
-                      </div>
-                      <div className="book-info">
-                        <h3 className="book-title">{bookshelf.currentRead.title}</h3>
-                        <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
-                        <div className="progress-info">
-                          <span className="progress-percentage">{bookProgress}%</span>
-                          <span className="progress-text">completed</span>
-                        </div>
-                        <button className="action-button update-button" onClick={handleUpdateClick}>
-                          Update Progress
-                        </button>
-                      </div>
-                      {showUpdateProgress && (
-                        <UpdateProgress
-                          currentPage={bookshelf.currentRead?.current_page || 0}
-                          totalPages={bookshelf.currentRead?.page_count || 1}
-                          onUpdate={handleProgressUpdate}
-                        />
-                      )}
+            <div className="book-cards-container">
+              {/* <div className="book-grid recommendations-grid"> */}
+                {recommendations.map((book, index) => (
+                  <div
+                    key={`rec-${index}`}
+                    className="book-card"
+                    style={{ animationDelay: `${0.1 + index * 0.03}s` }}
+                    onClick={() => {
+                      setSelectedBook(book);
+                      setShowPopUp(true);
+                    }}
+                  >
+                    <div
+                      className="home-book-cover"
+                      style={{ backgroundColor: book.coverColor }}
+                    ></div>
+                    <div className="book-info">
+                      <h3 className="book-title">{book.title}</h3>
+                      <p className="book-author">{book.author}</p>
                     </div>
                   ) : (
                     <p>No book currently being read.</p>
                   )}
                 </div>
               </div>
-  
-              {/* Last Finished */}
-              <div className="reading-section finished-section">
-                <div className="section-header">
-                  <Award className="section-icon" size={32} />
-                  <h2 className="section-title">Last Finished</h2>
+            {/* </div> */}
+          </div>
+          {showPopUp && (
+            <BookPopUp 
+              book={selectedBook} 
+              onClose={() => setShowPopUp(false)} 
+            />
+          )}
+
+        </div>
+
+        {/* Right side - Currently Reading and Last Finished */}
+        <div className="right-column">
+          <div className="right-top">
+          <div className="reading-section current-section">
+            <div className="section-header">
+              <Clock className="section-icon" size={32} />
+              <h2 className="section-title">Currently Reading</h2>
+            </div>
+            <div className="current-book">
+              <div className="book-display">
+                <div
+                  className="home-book-cover featured-cover"
+                  style={{ backgroundImage: `url(${bookshelf.currentRead?.cover_image ?? ''})`  }}
+                >
+                  <div className="reading-progress-container">
+                    <div
+                      className="reading-progress-bar"
+                      style={{ width: `${currentBook.progress}%` }}
+                    ></div>
+                  </div>
                 </div>
                 <div className="last-finished">
                   {loadingBookshelf ? (
