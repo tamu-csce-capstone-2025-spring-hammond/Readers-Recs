@@ -157,7 +157,7 @@ def add_book_to_bookshelf(user_id):
         data = request.get_json()
         book_id = data["book_id"]
         status = data["status"]
-        data["rating"]
+        rating = data["rating"]
         date_finished = None
         date_started = None
         current_date = datetime.now().date().isoformat()  # "YYYY-MM-DD"
@@ -179,6 +179,7 @@ def add_book_to_bookshelf(user_id):
             date_started=date_started,
             date_finished=date_finished,
             page_number=0,
+            rating = rating,
         )
 
         if "Error" not in result:

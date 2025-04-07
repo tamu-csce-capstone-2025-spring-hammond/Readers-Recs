@@ -15,6 +15,7 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
 
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const handleFinishedClick = () => {
+        console.log("HANDLE FINSH CLICK")
         setShowRatingPopup(true);
     };
     const handleRatingClick = (rating) => {
