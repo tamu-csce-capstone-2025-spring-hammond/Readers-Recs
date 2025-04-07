@@ -219,8 +219,6 @@ def rate_book(user_id, book_id, new_rating):
         result = user_bookshelf_collection.update_one(
             {"user_id": user_id, "book_id": ObjectId(book_id)},
             {"$set": {"rating": new_rating}},
-            {"user_id": user_id, "book_id": ObjectId(book_id)},
-            {"$set": {"rating": new_rating}},
         )
 
         if result.matched_count:
