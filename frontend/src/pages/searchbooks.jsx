@@ -100,7 +100,7 @@ const SearchBooks = () => {
 
   const closeAddPopup = () => setAddPopupBook(null);
 
-  const updateBookshelf = async (book, status) => {
+  const updateBookshelf = async (book, status, rating="mid") => {
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
@@ -110,6 +110,7 @@ const SearchBooks = () => {
         body: JSON.stringify({
           book_id: book.id || book._id,
           status: status,
+          rating: rating
         }),
       });
 

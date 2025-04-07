@@ -42,14 +42,10 @@ def create_user_bookshelf(
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
         
-        existing = user_bookshelf_collection.find({"user_id": user_id, "book_id": ObjectId(book_id)})
+        existing = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
         if existing:
             return "Error: book already present in user bookshelves."
 
-        
-        existing = user_bookshelf_collection.find({"user_id": user_id, "book_id": ObjectId(book_id)})
-        if existing:
-            return "Error: book already present in user bookshelves."
 
         # Convert date_added to datetime if it's a datetime.date object
         date_added = datetime.today().date()  # Default to today's date
@@ -202,8 +198,6 @@ def rate_book(user_id, book_id, new_rating):
     shelf_entry = user_bookshelf_collection.find(
         {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
     )
-        {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
-    )
     if not shelf_entry:
         return "Error: Book has not been read yet."
     try:
@@ -279,12 +273,6 @@ def update_page_number(user_id, book_id, new_page_number):
                 "status": "currently-reading",
             },
             {"$set": {"page_number": new_page_number}},
-            {
-                "user_id": user_id,
-                "book_id": ObjectId(book_id),
-                "status": "currently-reading",
-            },
-            {"$set": {"page_number": new_page_number}},
         )
         # print(result)
         # existing_entry = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id), "status": "currently-reading"})
@@ -317,11 +305,6 @@ def get_page_number(user_id, book_id):
                 "book_id": ObjectId(book_id),
                 "status": "currently-reading",
             }
-            {
-                "user_id": user_id,
-                "book_id": ObjectId(book_id),
-                "status": "currently-reading",
-            }
         )
 
         if book_entry is not None:
@@ -344,7 +327,6 @@ def delete_user_bookshelf(user_id, book_id):
 
         # Delete the document
         result = user_bookshelf_collection.delete_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)}
             {"user_id": user_id, "book_id": ObjectId(book_id)}
         )
         if result.deleted_count:
