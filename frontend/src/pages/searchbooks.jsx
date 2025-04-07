@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Book } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
@@ -88,6 +88,40 @@ const SearchBooks = () => {
 
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
+
+  useEffect(() => {
+    const defaultBooks = [
+      'If He Had Been with Me',
+      'Tomorrow, and Tomorrow, and Tomorrow',
+      'Tuesdays with Morrie',
+      'The Anthropocene Reviewed',
+      'Never Let Me Go'
+    ];
+  
+    const fetchDefaultBooks = async () => {
+      try {
+        const fetchedBooks = await Promise.all(
+          defaultBooks.map(async (title) => {
+            const response = await fetch(
+              `http://localhost:8000/api/books?query=${encodeURIComponent(title)}&type=title`
+            );
+            const data = await response.json();
+            return Array.isArray(data) ? data[0] : null;
+          })
+        );
+  
+        const validBooks = fetchedBooks.filter(Boolean); // remove any nulls
+        setBooks(validBooks);
+      } catch (err) {
+        console.error("Error fetching default books:", err);
+      }
+    };
+  
+    if (!searchQuery.trim()) {
+      fetchDefaultBooks();
+    }
+  }, [searchQuery]);
+  
 
   const openPopup = (book) => setSelectedBook(book);
   const closePopup = () => setSelectedBook(null);
