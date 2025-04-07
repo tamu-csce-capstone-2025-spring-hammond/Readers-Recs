@@ -5,7 +5,7 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email, update_user_settings
+from models.users import create_user, read_user_by_email, update_user_settings, read_user_by_username
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -78,6 +78,7 @@ def get_user_profile():
         "email": user.get("email_address", ""),
         "profile_picture": user.get("profile_image", ""),
         "created_at": user.get("created_at", ""),
+        "username": user.get("username", ""),
     }
 
     return jsonify(user_profile), 200
@@ -115,6 +116,14 @@ def edit_profile(user_id):
         last_name = data.get("last_name", "")
         username = data.get("username", "")
         profile_image = data.get("profile_image", "")
+
+        # if there is a username, validate that it is unique
+        if username:
+            existing_user = read_user_by_username(username)
+            if existing_user and str(existing_user["_id"]) != user_id:
+                return jsonify({"error": "Username already exists."}), 400
+            if existing_user and str(existing_user["_id"]) == user_id:
+                existing_user = None
 
         result = update_user_settings(
             user_id=user_id,
