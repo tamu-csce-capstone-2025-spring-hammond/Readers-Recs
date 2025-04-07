@@ -125,7 +125,7 @@ export default function BookPopup({ book, onClose }) {
                 <button className="popup-close" onClick={onClose}> × </button>
                 <div className="popup-content">
                     <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
-                        <Plus size={20} />
+                        Add Book to Shelf +
                     </button>
                     <div className="popup-image">
                         <img src={book.cover_image} alt={book.title} className="cover-img" />
