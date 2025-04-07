@@ -252,10 +252,14 @@
   transition: all 0.3s ease;
   cursor: pointer;
 
-  &:hover {
+  &:hover, &:focus {
     transform: scale(1.05);
     box-shadow: 0 6px 15px rgba(4, 53, 35, 0.3);
     z-index: 1;
+    .book-title,
+    .book-delete-button {
+      opacity: 1;
+    }
   }
 
   img {
@@ -272,21 +276,41 @@
     background-color: rgba(0, 28, 8, 0.6);
     color: white;
     padding: 5px;
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
     opacity: 0;
     transition: opacity 0.3s ease;
     font-family: 'Open Sans', sans-serif;
   }
 
-  &:hover .book-title {
-    opacity: 1;
+  .book-delete-button {
+    position: absolute;
+    top: 8px;
+    right: 5px;
+    color: $-tan;
+    background-color: rgb(42, 102, 77, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+
+    &:hover, &:focus {
+      background-color: $-green;
+      color: $-tan;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
   }
 }
 
 .book-cover-profile.current {
-  height: 258px;  
-  width: 220px;  
+  height: 258px;
+  width: 220px;
   margin-bottom: 20px;
   box-shadow: 0 6px 15px rgba(0,0,0,0.2);
 }
