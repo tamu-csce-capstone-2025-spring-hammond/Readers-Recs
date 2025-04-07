@@ -1,5 +1,4 @@
-from models.books import read_book_by_bookId
-from flask import Flask, Blueprint, jsonify
+from flask import Blueprint, jsonify
 from flask_cors import CORS
 from recmodel import recommend_books
 from bson import ObjectId

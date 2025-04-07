@@ -41,11 +41,12 @@ def create_user_bookshelf(
             return "Error: Invalid user_id."
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
-        
-        existing = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
+
+        existing = user_bookshelf_collection.find_one(
+            {"user_id": user_id, "book_id": ObjectId(book_id)}
+        )
         if existing:
             return "Error: book already present in user bookshelves."
-
 
         # Convert date_added to datetime if it's a datetime.date object
         date_added = datetime.today().date()  # Default to today's date
@@ -124,23 +125,25 @@ def retrieve_user_bookshelf(user_id):
     books = list(user_bookshelf_collection.find({"user_id": user_id, "status": "read"}))
     return books  # returns list of books
 
+
 def get_bookshelf_status(user_id, book_id):
     try:
 
-
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
-        
-        book = user_bookshelf_collection.find_one({"user_id": user_id, "book_id": ObjectId(book_id)})
+
+        book = user_bookshelf_collection.find_one(
+            {"user_id": user_id, "book_id": ObjectId(book_id)}
+        )
 
         if book:
             return book.get("status", "status-error")
         else:
             return "no-status"
-        
 
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 def get_read_books(user_id):
     try:
@@ -229,7 +232,6 @@ def rate_book(user_id, book_id, new_rating):
         return f"Error: {str(e)}"
 
 
-
 ### NEW METHODS FOR PAGE NUMBER
 def update_page_number(user_id, book_id, new_page_number):
     try:
@@ -238,7 +240,6 @@ def update_page_number(user_id, book_id, new_page_number):
             print("Error: Invalid user id")
             return "Error: Invalid user_id."
 
-
         if not is_valid_object_id("Books", book_id):
             print("Error: Invalid book_id")
             return "Error: Invalid book_id."
@@ -246,7 +247,6 @@ def update_page_number(user_id, book_id, new_page_number):
         # Validate new_page_number
         if not isinstance(new_page_number, int) or new_page_number < 0:
             return "Error: Invalid page number. It must be a non-negative integer."
-
 
         # u_id = user_id
         # existing_entry = users_collection.find_one({"_id": u_id})

@@ -1,22 +1,12 @@
 import collections
 from load_books import BookCollection
-from pymongo import MongoClient
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
-from models.books import books_collection, read_book_by_bookId
+from models.books import books_collection
 import redis
 import json
 
-import threading
-import time
-
-
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-from dotenv import load_dotenv
-import os
-from bson import ObjectId
 
 from models.users import (
     read_user,
