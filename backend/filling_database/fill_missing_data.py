@@ -1,9 +1,11 @@
 import re
 from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-from dotenv import load_dotenv
+
+# from pymongo.server_api import ServerApi
+# from dotenv import load_dotenv
 import requests as req
-import os
+
+# import os
 
 client = MongoClient("<ADD AUTH HERE>")
 db = client["Readers-Recs"]
@@ -27,7 +29,7 @@ def findBooksMissingData(start=None):
             count += 1
 
     if start and start in isbn13_list:
-        startidx = isbn13_list.index(start)
+        # startidx = isbn13_list.index(start)
         isbn13_list = isbn13_list[start:]
 
     print("Count:", count)

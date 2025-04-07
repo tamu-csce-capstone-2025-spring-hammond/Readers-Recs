@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
+import EditProfile from '../components/edit-profile';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -11,6 +12,7 @@ const Profile = () => {
     toReadShelf: [],
   });
   const [loading, setLoading] = useState(true);
+  const [editProfilePopup, setEditProfilePopup] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -55,22 +57,61 @@ const Profile = () => {
         console.error('Error fetching bookshelf data:', error);
       }
     };
-
     fetchUserProfile();
   }, []);
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Error: User profile not found</div>;
 
-  const scrollBooks = (id, direction) => {
-    const container = document.getElementById(id);
-    if (container) container.scrollBy({ left: direction * 250, behavior: 'smooth' });
+  const scrollBooks = (shelfId, direction) => {
+    const container = document.getElementById(shelfId);
+    if (container) {
+      const scrollAmount = 300 * direction; // Adjust for smooth scrolling
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     window.location.href = '/';
   };
+
+  const handleEditProfile = () => {
+    setEditProfilePopup(true);
+  }
+  const handleCloseEditProfile = () => {
+    setEditProfilePopup(false);
+  }
+
+  const handleDeleteBook = async (bookId, shelfKey) => {
+    // if (!user) return;
+    console.log("In delete book function")
+    const token = localStorage.getItem('access_token');
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${user.id}/bookshelf/${bookId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Remove book from local state
+        console.log("BOOK DELETED")
+        alert(`Deleted book!`);
+        setBookshelf((prev) => ({
+          ...prev,
+          [shelfKey]: prev[shelfKey].filter((book) => book._id !== bookId),
+        }));
+      } else {
+        console.error('Failed to delete book:', data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting book:', error);
+    }
+  }
+
+
+  const titleLength = bookshelf.currentRead?.title.length || 0;
+  const fontSize = `${Math.max(16, Math.min(28, titleLength / 4))}px`;
 
   return (
     <div className="profile-container">
@@ -82,7 +123,7 @@ const Profile = () => {
             <h2 className="profile-username">{user.email}</h2>
             <p className="profile-member-since">Member Since 2025</p>
             <div className="profile-buttons">
-              <button className="edit-profile-button">Edit Profile</button>
+              <button className="edit-profile-button" onClick={handleEditProfile}>Edit Profile</button>
               <button className="edit-profile-button" onClick={handleLogout}>Logout</button>
             </div>
           </div>
@@ -98,7 +139,9 @@ const Profile = () => {
                     <div className="progress-indicator" style={{ height: `${bookshelf.currentRead.progress}%` }}></div>
                   </div>
                 </div>
-                <div className="current-book-title">{bookshelf.currentRead.title}</div>
+                <div className="current-book-title" style={{ fontSize }}>
+                  {bookshelf.currentRead?.title}
+                </div>
               </div>
             ) : (
               <div>No current book</div>
@@ -112,6 +155,7 @@ const Profile = () => {
                   {bookshelf[key].map((book, index) => (
                     <div key={`${key}-${index}`} className="book-cover-profile">
                       <img src={book.cover_image} alt={book.title} />
+                      <button className="book-delete-button" onClick={() => handleDeleteBook(book._id, key)}>X</button>
                       <div className="book-title">{book.title}</div>
                     </div>
                   ))}
@@ -125,6 +169,9 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      {editProfilePopup && (
+        <EditProfile user={user} onClose={handleCloseEditProfile} />
+      )}
       <Navbar />
     </div>
   );

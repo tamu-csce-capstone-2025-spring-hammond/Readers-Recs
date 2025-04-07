@@ -96,7 +96,6 @@ def read_book_field(book_id, field):
 
 
 def read_book_by_bookId(book_id):
-    # value can be isbn, isbn13, or title
     try:
         obj_id = ObjectId(book_id)
     except Exception:

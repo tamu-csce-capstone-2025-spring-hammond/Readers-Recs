@@ -1,6 +1,6 @@
-import os
+# import os
 import requests
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from starlette.config import Config
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
