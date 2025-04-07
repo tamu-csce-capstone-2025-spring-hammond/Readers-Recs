@@ -31,7 +31,15 @@ book_collection = BookCollection()
 redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 # Load SentenceTransformer model once
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# model = SentenceTransformer("all-MiniLM-L6-v2", token=False)
+
+model_name = "all-MiniLM-L6-v2"
+try:
+    model = SentenceTransformer(model_name)
+    print("Model loaded successfully with SentenceTransformer.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+
 
 
 def process_reading_history(user_id):
