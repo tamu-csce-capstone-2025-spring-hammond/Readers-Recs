@@ -14,6 +14,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editProfilePopup, setEditProfilePopup] = useState(false);
 
+  
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('access_token');
@@ -60,6 +61,49 @@ const Profile = () => {
     };
     fetchUserProfile();
   }, []);
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('No token found');
+      setLoading(false);
+      return;
+    }
+    try {
+      const profileResponse = await fetch('http://localhost:8000/user/profile', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
+      const profileData = await profileResponse.json();
+      setUser(profileData);
+      fetchBookshelfData(profileData.id, token);
+    } catch (error) {
+      console.error('Error fetching profile or bookshelf data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBookshelfData = async (userId, token) => {
+    try {
+      const endpoints = [
+        { key: 'currentRead', url: `books/currently-reading` },
+        { key: 'booksRead', url: `books/read` },
+        { key: 'toReadShelf', url: `books/to-read` },
+      ];
+      for (const { key, url } of endpoints) {
+        const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBookshelf((prev) => ({ ...prev, [key]: data }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching bookshelf data:', error);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Error: User profile not found</div>;

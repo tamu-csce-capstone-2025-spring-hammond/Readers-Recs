@@ -148,11 +148,11 @@ def update_user_settings(
 
             update_data["username"] = username.strip()
 
-        if first_name is not None:
+        if first_name is not None and first_name.strip():
             update_data["first_name"] = first_name.strip()
-        if last_name is not None:
+        if last_name is not None and last_name.strip():
             update_data["last_name"] = last_name.strip()
-        if profile_image is not None:
+        if profile_image is not None and profile_image.strip():
             update_data["profile_image"] = profile_image.strip()
 
         if not update_data:
