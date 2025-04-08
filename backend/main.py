@@ -14,9 +14,17 @@ app = Flask(__name__)
 CORS(
     app,
     resources={
-        r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}
+        r"/*": {
+            "origins": [
+                "http://localhost:3000", 
+                "https://readers-recs-one.vercel.app",
+                "https://readers-recs-git-kaitlyn-dev-2-kaitlyngrifs-projects.vercel.app"
+            ],
+            "supports_credentials": True
+        }
     },
 )
+
 
 # Register API Blueprints
 app.register_blueprint(books_bp, url_prefix="/api")
