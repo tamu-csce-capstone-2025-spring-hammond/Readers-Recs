@@ -5,7 +5,7 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from backend.models.users import create_user, read_user_by_email
+from models.users import create_user, read_user_by_email
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -81,3 +81,16 @@ def get_user_profile():
     }
 
     return jsonify(user_profile), 200
+
+@user_bp.route("/check-email-exists", methods=["GET"])
+def check_email_exists():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "Email parameter is required"}), 400
+
+    user = read_user_by_email(email)
+
+    # print("DEBUG: Queried Email:", email)
+    # print("DEBUG: User Found:", user) 
+    exists = False if user == "User not found." or user is None else True
+    return jsonify({"exists": exists})

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Book } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
@@ -41,6 +41,7 @@ const SearchBooks = () => {
       const data = await response.json();
 
       setUserId(data.id); // Extract and set the user ID
+      localStorage.setItem("userId", data.id)
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -89,6 +90,40 @@ const SearchBooks = () => {
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
 
+  useEffect(() => {
+    const defaultBooks = [
+      'If He Had Been with Me',
+      'Tomorrow, and Tomorrow, and Tomorrow',
+      'Tuesdays with Morrie',
+      'The Anthropocene Reviewed',
+      'Never Let Me Go'
+    ];
+  
+    const fetchDefaultBooks = async () => {
+      try {
+        const fetchedBooks = await Promise.all(
+          defaultBooks.map(async (title) => {
+            const response = await fetch(
+              `http://localhost:8000/api/books?query=${encodeURIComponent(title)}&type=title`
+            );
+            const data = await response.json();
+            return Array.isArray(data) ? data[0] : null;
+          })
+        );
+  
+        const validBooks = fetchedBooks.filter(Boolean); // remove any nulls
+        setBooks(validBooks);
+      } catch (err) {
+        console.error("Error fetching default books:", err);
+      }
+    };
+  
+    if (!searchQuery.trim()) {
+      fetchDefaultBooks();
+    }
+  }, [searchQuery]);
+  
+
   const openPopup = (book) => setSelectedBook(book);
   const closePopup = () => setSelectedBook(null);
 
@@ -100,7 +135,7 @@ const SearchBooks = () => {
 
   const closeAddPopup = () => setAddPopupBook(null);
 
-  const updateBookshelf = async (book, status) => {
+  const updateBookshelf = async (book, status, rating="mid") => {
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
@@ -110,6 +145,7 @@ const SearchBooks = () => {
         body: JSON.stringify({
           book_id: book.id || book._id,
           status: status,
+          rating: rating
         }),
       });
 
@@ -139,7 +175,7 @@ const SearchBooks = () => {
       </div>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'black' }}>{error}</p>}
 
       <div className="search-results">
         {books.length > 0 ? (
@@ -163,13 +199,13 @@ const SearchBooks = () => {
             </div>
           ))
         ) : (
-          !loading && <p className="no-results">No books found.</p>
+          !loading && <p className="no-results"></p>
         )}
       </div>
 
       <Navbar />
 
-      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} userId={userId} />}
       {addPopupBook && (
         <AddPopUp
           book={addPopupBook.book}

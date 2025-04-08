@@ -57,7 +57,6 @@ const Profile = () => {
         console.error('Error fetching bookshelf data:', error);
       }
     };
-
     fetchUserProfile();
   }, []);
 
@@ -83,6 +82,33 @@ const Profile = () => {
   const handleCloseEditProfile = () => {
     setEditProfilePopup(false);
   }
+
+  const handleDeleteBook = async (bookId, shelfKey) => {
+    // if (!user) return;
+    console.log("In delete book function")
+    const token = localStorage.getItem('access_token');
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${user.id}/bookshelf/${bookId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Remove book from local state
+        console.log("BOOK DELETED")
+        alert(`Deleted book!`);
+        setBookshelf((prev) => ({
+          ...prev,
+          [shelfKey]: prev[shelfKey].filter((book) => book._id !== bookId),
+        }));
+      } else {
+        console.error('Failed to delete book:', data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting book:', error);
+    }
+  }
+
 
   const titleLength = bookshelf.currentRead?.title.length || 0;
   const fontSize = `${Math.max(16, Math.min(28, titleLength / 4))}px`;
@@ -129,7 +155,7 @@ const Profile = () => {
                   {bookshelf[key].map((book, index) => (
                     <div key={`${key}-${index}`} className="book-cover-profile">
                       <img src={book.cover_image} alt={book.title} />
-                      <button className="book-delete-button">X</button> {/* onClick={() => handleDeleteBook(book.id)} */}
+                      <button className="book-delete-button" onClick={() => handleDeleteBook(book._id, key)}>X</button>
                       <div className="book-title">{book.title}</div>
                     </div>
                   ))}

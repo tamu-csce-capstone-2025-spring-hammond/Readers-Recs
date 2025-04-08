@@ -1,16 +1,19 @@
 from datetime import datetime
-from backend.models.books import read_book_by_bookId
+from models.books import read_book_by_bookId
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from bson import ObjectId
 
-from backend.models.user_bookshelf import (
+from models.user_bookshelf import (
     create_user_bookshelf,
     delete_user_bookshelf,
+    get_bookshelf_status,
     get_currently_reading_books,
+    get_page_number,
     get_read_books,
     get_unread_books,
     rate_book,
+    update_page_number,
     update_user_bookshelf_status,
 )
 
@@ -44,15 +47,19 @@ def get_last_read_book(user_id):
             if books_with_finish_date:
                 # Get the most recent book
                 last_read_book = books_with_finish_date[0]
+                rating = books_with_finish_date[0].get("rating", "mid")
 
                 # Fetch the full book details
                 b = read_book_by_bookId(last_read_book["book_id"])
+                b["rating"] = rating
                 b = {
                     key: (
                         objectid_to_str(value) if isinstance(value, ObjectId) else value
                     )
                     for key, value in b.items()
                 }
+
+                print("book rating:", b["rating"])
 
                 return jsonify(b), 200
             else:
@@ -75,6 +82,8 @@ def get_read_books_api(user_id):
             books_read = list()
             for book in books:
                 b = read_book_by_bookId(book["book_id"])
+                rating = book.get("rating", "mid")
+                b["rating"] = rating
                 b = {
                     key: (
                         objectid_to_str(value) if isinstance(value, ObjectId) else value
@@ -148,6 +157,7 @@ def add_book_to_bookshelf(user_id):
         data = request.get_json()
         book_id = data["book_id"]
         status = data["status"]
+        rating = data["rating"]
         date_finished = None
         date_started = None
         current_date = datetime.now().date().isoformat()  # "YYYY-MM-DD"
@@ -168,6 +178,8 @@ def add_book_to_bookshelf(user_id):
             status=status,
             date_started=date_started,
             date_finished=date_finished,
+            page_number=0,
+            rating = rating,
         )
 
         if "Error" not in result:
@@ -179,6 +191,50 @@ def add_book_to_bookshelf(user_id):
 
     except Exception as e:
         print(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["PUT"])
+def update_current_page(user_id, book_id):
+    """
+    Update the current page number of a book the user is reading.
+    """
+    print("UPDATING PAGE NUMBER")
+    try:
+        data = request.get_json()
+        page_number = data.get("page_number")
+        print("new page number:", page_number)
+        if not isinstance(page_number, int) or page_number < 0:
+            return jsonify({"error": "Invalid page number"}), 400
+
+        result = update_page_number(user_id, book_id, page_number)
+        print(result)
+        if "successfully" in result:
+            return jsonify({"message": result}), 200
+        else:
+            print("Error:", result)
+            return jsonify({"error": result}), 400
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/current-page", methods=["GET"])
+def get_current_page(user_id, book_id):
+    """
+    Retrieve the current page number of a book the user is reading.
+    """
+    try:
+        page_number = get_page_number(user_id, book_id)
+
+        if isinstance(page_number, int):
+            return jsonify({"page_number": page_number}), 200
+        else:
+            return jsonify({"error": page_number}), 404
+
+    except Exception as e:
+        print(str(e))
         return jsonify({"error": str(e)}), 500
 
 
@@ -228,6 +284,7 @@ def rate_book_api(user_id, book_id):
         if "Error" not in result:
             return jsonify({"message": "Book rating updated."}), 200
         else:
+            print("error:", result)
             return jsonify({"error": result}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -245,5 +302,21 @@ def delete_book_from_bookshelf(user_id, book_id):
             return jsonify({"message": "Book deleted from bookshelf."}), 200
         else:
             return jsonify({"error": result}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/status", methods=["GET"])
+def get_book_status(user_id, book_id):
+    """
+    Get a given books status if in user bookshelf.
+    """
+    try:
+        status = get_bookshelf_status(user_id, book_id)
+
+        if "Error" not in status:
+            return jsonify({"status": status}), 200
+        else:
+            return jsonify({"error": status}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -3,8 +3,8 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, date
 from pydantic import ValidationError
-from backend.schemas import UserSchema, OAuthSchema, DemographicSchema
-from backend.database import collections
+from schemas import UserSchema, OAuthSchema, DemographicSchema
+from database import collections
 
 # from pymongo import errors
 
@@ -54,7 +54,7 @@ def create_user(
             profile_image=profile_image,
             interests=interests if isinstance(interests, list) else [interests],
             demographics=demographics,
-            genre_weights=[],
+            genre_weights=dict(),
             embedding=[],
         )
 
@@ -165,6 +165,14 @@ def update_genre_weights(user_id, new_genre_weights):
     Update the genre weight dictionary for a user.
     Expects new_genre_weights to be a dictionary with genre names as keys and float values as weights.
     """
+    u_id = user_id
+    existing_user = users_collection.find_one({"_id": u_id})
+    if not existing_user:
+        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+        u_id = ObjectId(user_id)
+        if not existing_user:
+            return "Error: User not found."
+
     if not isinstance(new_genre_weights, dict):
         return "Error: Genre weights must be a dictionary."
 
@@ -174,17 +182,27 @@ def update_genre_weights(user_id, new_genre_weights):
     ):
         return "Error: Genre keys must be strings and weights must be numerical values."
 
-    return users_collection.update_one(
-        {"_id": user_id}, {"$set": {"genre_weights": new_genre_weights}}
+    result = users_collection.update_one(
+        {"_id": u_id}, {"$set": {"genre_weights": new_genre_weights}}
     )
+    # if result.modified_count == 0:
+    #     print("Genre weights were not updated.")
+    # else:
+    #     print("Success. Updated genre weights.")
+    return result
 
 
 def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": user_id}, {"genre_weights": 1})
-    return user.get("genre_weights", {}) if user else "Error: User not found."
+    user = users_collection.find_one({"_id": user_id})
+    if not user:
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        return user["genre_weights"] if user else dict()
+    else:
+        return "User not found"
 
 
 def update_embedding(user_id, new_embedding):
@@ -192,18 +210,27 @@ def update_embedding(user_id, new_embedding):
     Update the user's embedding vector.
     Expects new_embedding to be an array (list) of floats.
     """
+    u_id = user_id
+    existing_user = users_collection.find_one({"_id": u_id})
+    if not existing_user:
+        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
+        u_id = ObjectId(user_id)
+        if not existing_user:
+            return "Error: User not found."
+
     if not isinstance(new_embedding, list) or not all(
         isinstance(x, (int, float)) for x in new_embedding
     ):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": user_id}, {"$set": {"embedding": new_embedding}}
+        {"_id": u_id},
+        {"$set": {"embedding": new_embedding}},
     )
-
-    if result.modified_count == 0:
-        print("Warning: embedding was not updated.")
-    print("Success. Updated user embedding.")
+    # if result.modified_count == 0:
+    #     print("Embedding was not updated.")
+    # else:
+    #     print("Success. Updated user embedding.")
     return result
 
 
@@ -217,7 +244,13 @@ def retrieve_embedding(user_id):
     ):  # Check if "embedding" exists and is not empty
         return user["embedding"]
     else:
-        return None
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        if (
+            user and "embedding" in user and user["embedding"]
+        ):  # Check if "embedding" exists and is not empty
+            return user["embedding"]
+        else:
+            return None
 
 
 ### End of new update/retrieval functions
