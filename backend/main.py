@@ -17,8 +17,8 @@ CORS(
         r"/*": {
             "origins": [
                 "http://localhost:3000", 
-                "https://readers-recs-one.vercel.app",
-                "https://readers-recs-git-kaitlyn-dev-2-kaitlyngrifs-projects.vercel.app"
+                "https://*.vercel.app",
+                "https://readers-recs-backend.onrender.com/"
             ],
             "supports_credentials": True
         }
