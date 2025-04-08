@@ -1,0 +1,12 @@
+Flask
+flask-cors
+gunicorn
+pymongo
+requests
+python-dotenv
+scikit-learn
+sentence-transformers
+torch
+transformers
+redis
+numpy
