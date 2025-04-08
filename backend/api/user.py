@@ -8,6 +8,7 @@ from models.users import create_user, read_user_by_email
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
+CORS(user_bp, origins=["http://localhost:3000"]) #added debugging
 
 
 @user_bp.route("/profile", methods=["GET"])
@@ -27,6 +28,7 @@ def get_user_profile():
     token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
     token_info_response = requests.get(token_info_url)
     token_info = token_info_response.json()
+    print("Token Info:", token_info)
 
     if "email" not in token_info:
         return token_info_response.json()
