@@ -194,7 +194,11 @@ def retrieve_user_embedding(user_id):
     if user_embedding is None:  # Handle missing embeddings
         # raise ValueError(f"User embedding not found for user_id: {user_id}")
         user_embedding = np.zeros(384)
-    redis_client.set(cache_key, json.dumps(user_embedding.tolist()), ex=3600)
+    if isinstance(user_embedding, np.ndarray):
+        redis_client.set(cache_key, json.dumps(user_embedding.tolist()), ex=3600)
+    else:
+        redis_client.set(cache_key, json.dumps(user_embedding), ex=3600)
+
     return user_embedding
 
 
@@ -255,8 +259,6 @@ def generate_recs(user_id, top_n=6, count=1):
     # print(
     #     f"book_embeddings shape: {book_embeddings.shape if book_embeddings is not None else 'None'}"
     # )
-
-    print("VALID BOOKS:", len(valid_books))
 
     # Check if user_embedding is None or empty
     if user_embedding is None or user_embedding.size == 0:
