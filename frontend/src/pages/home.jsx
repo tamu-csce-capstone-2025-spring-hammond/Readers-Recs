@@ -6,6 +6,8 @@ import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
 import BookPopup from '../components/discussion';
+import { ClipLoader } from "react-spinners";
+import BACKEND_URL from "../api";
 
 const BookTitle = ({ title }) => {
   const titleLength = title.length;
@@ -47,7 +49,7 @@ const Home = () => {
         return;
       }
       try {
-        const profileResponse = await fetch('http://localhost:8000/user/profile', {
+        const profileResponse = await fetch(`${BACKEND_URL}/user/profile`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
@@ -73,7 +75,7 @@ const Home = () => {
         ];
         
         for (const { key, url } of endpoints) {
-          const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+          const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/${url}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
     
@@ -82,7 +84,7 @@ const Home = () => {
             
             // Fetch current page number if it's the current read
             if (key === "currentRead" && data) {
-              const pageResponse = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
+              const pageResponse = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
               if (pageResponse.ok) {
                 const pageData = await pageResponse.json();
                 // console.log("current page:", pageData.page_number)
@@ -150,7 +152,7 @@ const Home = () => {
     const newPageNumber = Math.round((newProgress / 100) * totalPages);
   
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -187,7 +189,7 @@ const Home = () => {
   
   
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/rating`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/rating`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

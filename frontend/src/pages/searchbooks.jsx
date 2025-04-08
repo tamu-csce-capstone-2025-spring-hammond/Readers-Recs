@@ -4,6 +4,7 @@ import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
 import AddPopUp from '../components/add-to-bookshelf';
+import BACKEND_URL from "../api";
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +28,7 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/user/profile", {
+      const response = await fetch(`${BACKEND_URL}/user/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -60,7 +61,7 @@ const SearchBooks = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
+        `${BACKEND_URL}/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
 
       const data = await response.json();
@@ -137,7 +138,7 @@ const SearchBooks = () => {
 
   const updateBookshelf = async (book, status, rating="mid") => {
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

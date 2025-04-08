@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus } from 'lucide-react';
 import '../style/style.css';
 import AddPopUp from '../components/add-to-bookshelf-discussion';
+import BACKEND_URL from "../api";
 
 export default function BookPopup({ book, onClose, userId }) {
     const [addPopupBook, setAddPopupBook] = useState(null);
@@ -23,7 +24,7 @@ export default function BookPopup({ book, onClose, userId }) {
             const token = localStorage.getItem("access_token");
             if (!token) return console.error("No access token found.");
             try {
-                const response = await fetch("http://localhost:8000/user/profile", {
+                const response = await fetch(`${BACKEND_URL}/user/profile`, {
                     method: "GET",
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -39,7 +40,7 @@ export default function BookPopup({ book, onClose, userId }) {
     // Fetch posts
     const fetchPosts = useCallback(async () => {
       try {
-          const response = await fetch(`http://localhost:8000/api/books/${book._id}/posts`);
+          const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`);
           const data = await response.json();
           if (response.ok) {
             setPosts(data);
@@ -58,7 +59,7 @@ export default function BookPopup({ book, onClose, userId }) {
     // Fetch comments
     const fetchComments = async (postId, postIndex) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments`);
+            const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments`);
             const data = await response.json();
             if (response.ok) {
                 const fixedComments = data.map(comment => ({
@@ -91,7 +92,7 @@ export default function BookPopup({ book, onClose, userId }) {
       if (!newPostTitle || !newPostContent) return;
   
       try {
-          const response = await fetch(`http://localhost:8000/api/books/${book._id}/posts`, {
+          const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`, {
               method: "POST",
               headers: {
                   "Content-Type": "application/json",
@@ -128,7 +129,7 @@ export default function BookPopup({ book, onClose, userId }) {
         if (!commentText || !commentText.trim()) return;
   
         try {
-            const response = await fetch(`http://localhost:8000/api/posts/${post._id}/comments`, {
+            const response = await fetch(`${BACKEND_URL}/api/posts/${post._id}/comments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -160,7 +161,7 @@ export default function BookPopup({ book, onClose, userId }) {
         if (!reply || !reply.trim()) return;
       
         try {
-          const response = await fetch(`http://localhost:8000/api/posts/${postId}/comments/${parentCommentId}/reply`, {
+          const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments/${parentCommentId}/reply`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -201,7 +202,7 @@ export default function BookPopup({ book, onClose, userId }) {
 
     const updateBookshelf = async (book, status) => {
         try {
-            const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+            const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ book_id: book.id || book._id, status }),
