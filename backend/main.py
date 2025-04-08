@@ -7,6 +7,7 @@ from api.recommendations import recommendation_bp
 from api.posts import discussion_bp
 from api.comments import comments_bp
 from api.chat_messages import chat_bp
+import os 
 
 app = Flask(__name__)
 
@@ -44,4 +45,5 @@ def before_request():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(debug=True, host="0.0.0.0", port=port)
