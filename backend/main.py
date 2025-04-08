@@ -18,7 +18,7 @@ CORS(
             "origins": [
                 "http://localhost:3000", 
                 "https://*.vercel.app",
-                "https://readers-recs-backend.onrender.com/"
+                "https://readers-recs-backend.onrender.com"
             ],
             "supports_credentials": True
         }
