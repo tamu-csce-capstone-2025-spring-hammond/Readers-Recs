@@ -8,6 +8,7 @@ const RatingPopup = ({ open, currentRating, onClose, onRatingClick }) => {
     return (
         <div className="rating-popup-overlay">
             <div className="rating-popup-content">
+                <p>What did you think of this book?</p>
                 <div className="rating-thumbs">
                     <button
                         className={`thumb-btn thumbs-up ${currentRating === 'pos' ? 'selected' : ''}`}
@@ -16,7 +17,7 @@ const RatingPopup = ({ open, currentRating, onClose, onRatingClick }) => {
                         onClose();
                         }}
                     >
-                        <ThumbsUp size={20} />
+                        <ThumbsUp size={40} />
                         <span>Loved it</span>
                     </button>
                     <button
@@ -26,7 +27,7 @@ const RatingPopup = ({ open, currentRating, onClose, onRatingClick }) => {
                         onClose();
                         }}
                     >
-                        <Minus size={20} />
+                        <Minus size={40} />
                         <span>It's okay</span>
                     </button>
                     <button
@@ -36,7 +37,7 @@ const RatingPopup = ({ open, currentRating, onClose, onRatingClick }) => {
                         onClose();
                         }}
                     >
-                        <ThumbsDown size={20} />
+                        <ThumbsDown size={40} />
                         <span>Not great</span>
                     </button>
                 </div>
