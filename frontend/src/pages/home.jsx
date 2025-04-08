@@ -5,6 +5,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BookPopUp from '../components/discussion';
 
 const BookTitle = ({ title }) => {
   const titleLength = title.length;
@@ -31,6 +32,9 @@ const Home = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [loadingBookshelf, setLoadingBookshelf] = useState(true);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showPopUp, setShowPopUp] = useState(false);
+
 
   
   // // Sample data - replace with your actual data
@@ -225,6 +229,18 @@ const Home = () => {
     } catch (error) {
       console.error("Error updating book rating:", error);
     }
+  };
+
+  // Handle book click to open popup
+  const handleBookClick = (book) => {
+    setSelectedBook(book);
+    setShowPopUp(true);
+  };
+  
+  // Close popup
+  const handleClosePopup = () => {
+    setShowPopUp(false);
+    setSelectedBook(null);
   };
   
   if (loadingRecommendations || loadingBookshelf) {
@@ -426,7 +442,11 @@ const Home = () => {
                   <p>Loading recommendations...</p>
                 ) : recommendations.length > 0 ? (
                   recommendations.map((book) => (
-                    <div key={book.id} className="book-card">
+                    <div 
+                        key={book.id} 
+                        className="book-card"
+                        onClick={() => handleBookClick(book)}
+                      >
                       <div
                         className="home-book-cover"
                         style={{ backgroundImage: `url(${book.cover_image ?? ''})` }}
@@ -591,6 +611,13 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {showPopUp && selectedBook && (
+        <BookPopUp 
+          book={selectedBook} 
+          onClose={handleClosePopup}
+          userId={user?.id}
+        />
+      )}
       <Navbar />
     </div>
   );
