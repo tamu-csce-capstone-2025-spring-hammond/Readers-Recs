@@ -7,13 +7,14 @@ import AddPopUp from '../components/add-to-bookshelf';
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('any'); // options: any, title, author, isbn
+  const [filterType, setFilterType] = useState('any');
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [currentReading, setCurrentReading] = useState(null);
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
   const handleFilterChange = (e) => setFilterType(e.target.value);
@@ -39,14 +40,30 @@ const SearchBooks = () => {
       }
 
       const data = await response.json();
-
-      setUserId(data.id); // Extract and set the user ID
+      setUserId(data.id);
+      fetchCurrentReading(data.id, token); // Fetch current reading book
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
   };
 
-  fetchUserProfile();
+  const fetchCurrentReading = async (userId, token) => {
+    try {
+      const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentReading(data);
+      }
+    } catch (err) {
+      console.error("Error fetching currently reading book:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -176,6 +193,8 @@ const SearchBooks = () => {
           onClose={closeAddPopup}
           updateBookshelf={updateBookshelf}
           position={addPopupBook.position}
+          currentReading={currentReading}
+          setCurrentReading={setCurrentReading}
         />
       )}
     </div>
