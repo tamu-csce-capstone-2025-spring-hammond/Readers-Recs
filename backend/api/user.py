@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from database import collections
-from bson import ObjectId
+
+# from database import collections
+# from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email
+from models.users import create_user, read_user_by_email, add_interest
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -36,7 +37,7 @@ def get_user_profile():
     # Fetch user data from database
     user = read_user_by_email(email=token_info["email"])
     if not user:
-        return jsonify({f"error": "{token_info}"}), 404
+        return jsonify({f'"error": "{token_info}"'}), 404
 
     if isinstance(user, str):  # User not found, create a new user
         # Create user from Google profile data
@@ -95,3 +96,37 @@ def check_email_exists():
     # print("DEBUG: User Found:", user) 
     exists = False if user == "User not found." or user is None else True
     return jsonify({"exists": exists})
+
+@user_bp.route("/save-genres", methods=["POST"])
+def save_genres():
+    """
+    Save selected genres to the user's interests using the model-level `add_interest`.
+    """
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+    access_token = auth_header.split(" ")[1]
+
+    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
+    token_info_response = requests.get(token_info_url)
+    token_info = token_info_response.json()
+
+    if "email" not in token_info:
+        return jsonify({"error": "Invalid token"}), 401
+
+    user = read_user_by_email(token_info["email"])
+    if not user or isinstance(user, str):
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = user["_id"]
+
+    data = request.get_json()
+    genres = data.get("genres", [])
+    if not isinstance(genres, list) or not genres:
+        return jsonify({"error": "Genres must be a non-empty list"}), 400
+
+    for genre in genres:
+        add_interest(user_id, genre)
+
+    return jsonify({"message": "Genres saved successfully"}), 200

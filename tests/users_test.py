@@ -1,6 +1,5 @@
 import pytest
 from bson import ObjectId
-from datetime import datetime
 from backend.database import collections
 from backend.models.users import (
     create_user,
@@ -16,10 +15,10 @@ from backend.models.users import (
     update_demographics,
     remove_demographic,
     delete_user,
-    update_genre_weights,
-    retrieve_genre_weights,
-    update_embedding,
-    retrieve_embedding,
+    # update_genre_weights,
+    # retrieve_genre_weights,
+    # update_embedding,
+    # retrieve_embedding,
 )
 
 users_collection = collections["Users"]
@@ -278,7 +277,7 @@ def test_add_update_remove_demographics():
     result = remove_demographic(user_id, "birthday")
     assert result.modified_count == 1
     user = read_user(user_id)
-    assert user["demographics"]["birthday"] == None
+    assert user["demographics"]["birthday"] is None
 
 
 def test_add_demographics_invalid_type():

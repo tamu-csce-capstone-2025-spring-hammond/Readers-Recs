@@ -1,6 +1,6 @@
 # backend/schemas.py
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import List, Optional
+from typing import Dict, List, Optional
 from bson import ObjectId
 from datetime import datetime, date
 from pydantic import GetCoreSchemaHandler
@@ -76,7 +76,7 @@ class UserSchema(BaseModel):
     interests: List[str] = Field(default_factory=list)
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
-    genre_weights: List[dict[str, float]] = Field(default_factory=list)
+    genre_weights: Dict[str, float] = Field(default_factory=dict)
     embedding: List[float] = Field(default_factory=list)
     # genre_tags: List[str] = Field(default_factory=list)
 
