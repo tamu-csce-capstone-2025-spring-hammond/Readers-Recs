@@ -1872,17 +1872,20 @@ footer {
 }
 .popup-container .popup-content .add-button {
   position: absolute;
-  bottom: 10px;
+  bottom: 30%;
   right: 30px;
-  background-color: none;
+  background-color: #0e3523;
+  border-radius: 5px;
+  padding: 10px 20px;
+  width: auto;
   color: #EBE8E1;
   border: none;
-  font-size: 36px;
+  font-size: 20px;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
 .popup-container .popup-content .add-button:hover, .popup-container .popup-content .add-button:focus {
-  background-color: #7e4f34;
+  color: #796855;
   transform: scale(1.2);
 }
 .popup-container .popup-content .popup-image {
@@ -2140,6 +2143,19 @@ footer {
 }
 .popup-discussion .comment-form .comment-btns button:hover, .popup-discussion .comment-form .comment-btns button:focus {
   transform: scale(1.1);
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .add-box {
