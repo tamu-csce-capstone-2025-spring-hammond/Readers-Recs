@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BACKEND_URL from "../api";
 
 const EditProfile = ({ user, onClose, refreshUser }) => {
   const [screenName, setScreenName] = useState(user.name || "");
@@ -46,7 +47,7 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/user/profile/${userId}/edit-profile`, {
+      const response = await fetch(`${BACKEND_URL}/user/profile/${userId}/edit-profile`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
