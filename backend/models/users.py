@@ -164,29 +164,29 @@ def update_genre_weights(user_id, new_genre_weights):
     try:
         u_id = ObjectId(user_id)  # Ensure the user_id is an ObjectId
         existing_user = users_collection.find_one({"_id": u_id})
-        
+
         if not existing_user:
             return "Error: User not found."
 
         if not isinstance(new_genre_weights, dict):
             return "Error: Genre weights must be a dictionary."
-        
+
         # Ensure keys are strings and values are numerical
         if not all(
             isinstance(k, str) and isinstance(v, (int, float))
             for k, v in new_genre_weights.items()
         ):
             return "Error: Genre keys must be strings and weights must be numerical values."
-        
+
         result = users_collection.update_one(
             {"_id": u_id}, {"$set": {"genre_weights": new_genre_weights}}
         )
-        
+
         if result.modified_count == 0:
             return "Error: Genre weights were not updated, or no changes detected."
-        
+
         return "Success. Genre weights updated."
-    
+
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -225,8 +225,7 @@ def update_embedding(user_id, new_embedding):
         return "Error: Embedding must be a list of numerical values."
 
     result = users_collection.update_one(
-        {"_id": u_id},
-        {"$set": {"embedding": new_embedding}},
+        {"_id": u_id}, {"$set": {"embedding": new_embedding}},
     )
     # if result.modified_count == 0:
     #     print("Embedding was not updated.")

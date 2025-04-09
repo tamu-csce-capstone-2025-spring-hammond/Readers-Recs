@@ -34,37 +34,7 @@ const Home = () => {
   const [loadingBookshelf, setLoadingBookshelf] = useState(true);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showPopUp, setShowPopUp] = useState(false);
-
-
-  
-  // // Sample data - replace with your actual data
-  // const recommendations = Array(6).fill(null).map((_, i) => ({
-  //   id: i,
-  //   title: `Book ${i+1}`,
-  //   author: `Author ${i+1}`,
-  //   coverColor: `hsl(${i * 60}, 70%, 80%)` // Just for demo
-  // }));
-  
-  // const toReadShelf = Array(3).fill(null).map((_, i) => ({
-  //   id: i,
-  //   title: `To Read ${i+1}`,
-  //   author: `Author ${i+1}`,
-  //   coverColor: `hsl(${i * 40 + 120}, 70%, 75%)` // Just for demo
-  // }));
-
-  // const currentBook = {
-  //   title: "Current Reading",
-  //   author: "Author Name",
-  //   progress: bookProgress,
-  //   coverColor: "#ffffff"
-  // };
-
-  // const [lastFinishedBook, setLastFinishedBook] = useState({
-  //   title: "Last Finished",
-  //   author: "Author Name",
-  //   rating: "thumbsMid", // Changed from numeric to thumbs rating
-  //   coverColor: "#ffffff"
-  // });
+  const [refreshCount, setRefreshCount] = useState(1);
 
   // Animate elements on page load
   useEffect(() => {
@@ -84,7 +54,7 @@ const Home = () => {
         const profileData = await profileResponse.json();
         setUser(profileData);
         fetchBookshelfData(profileData.id, token);
-        fetchRecommendations(profileData.id);
+        fetchRecommendations(profileData.id, refreshCount);
       } catch (error) {
         console.error('Error fetching profile or bookshelf data:', error);
       } finally {
@@ -133,31 +103,33 @@ const Home = () => {
         setLoadingBookshelf(false);
       }
     };
-    
-
-    const fetchRecommendations = async (userId) => {
-      setLoadingRecommendations(true);
-
-      try {
-        console.log("Fetching recs");
-        // console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
-        const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations`);
-        
-        if (!response.ok) throw new Error('Failed to fetch recommendations');
-        const data = await response.json();
-        console.log("recs:", data.recommendations)
-        setRecommendations(data.recommendations);
-      } catch (error) {
-        console.error('Error fetching recommendations:', error);
-      } finally {
-        setLoadingRecommendations(false);
-      }
-    };
-  
-
-
     fetchUserProfile();
   }, []);
+
+  
+  const fetchRecommendations = async (userId, refresh_count=1) => {
+    setLoadingRecommendations(true);
+
+    try {
+      console.log("Fetching recs");
+      // console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
+      const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations?refresh_count=${refresh_count}`);
+      
+      if (!response.ok) throw new Error('Failed to fetch recommendations');
+      const data = await response.json();
+      console.log("recs:", data.recommendations)
+      setRecommendations(data.recommendations);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  const handleRefreshClick = () => {
+    setRefreshCount(prev => prev + 1);
+    fetchRecommendations(user.id, refreshCount);
+  };
 
   const handleSectionHover = (section) => {
     setActiveSection(section);
@@ -166,6 +138,7 @@ const Home = () => {
   const handleUpdateClick = () => {
     setShowUpdateProgress(true);
   };
+  
 
   const handleProgressUpdate = async (newProgress) => {
     if (!bookshelf.currentRead) return;
@@ -259,7 +232,7 @@ const Home = () => {
               <div className="section-header">
                 <BookOpen className="section-icon" size={32} />
                 <h2 className="section-title">Recommended For You</h2>
-                <button className="refresh-btn">↻</button>
+                <button className="refresh-btn" onClick={handleRefreshClick}>↻</button>
               </div>
               <div className="loading-circle">
                 <ClipLoader color="white" loading={loadingRecommendations || loadingBookshelf} size={100} />
@@ -435,7 +408,7 @@ const Home = () => {
               <div className="section-header">
                 <BookOpen className="section-icon" size={32} />
                 <h2 className="section-title">Recommended For You</h2>
-                <button className="refresh-btn">↻</button>
+                <button className="refresh-btn" onClick={handleRefreshClick}>↻</button>
               </div>
               <div className="book-cards-container">
                 {loadingRecommendations ? (

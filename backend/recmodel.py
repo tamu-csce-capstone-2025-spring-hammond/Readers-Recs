@@ -34,7 +34,7 @@ book_collection = BookCollection()
 redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 # Load SentenceTransformer model once
-#model = SentenceTransformer("all-MiniLM-L6-v2")
+# model = SentenceTransformer("all-MiniLM-L6-v2")
 
 model_name = "all-MiniLM-L6-v2"
 try:
@@ -53,13 +53,13 @@ def process_reading_history(user_id):
         rating = book["rating"]
         process_user_rating(user_id, book_id, rating)
 
+
 def update_genre_weights_only(user_id, interested_genres):
     genre_weights = dict()
     for genre in interested_genres:
-        split_genres = [g.strip() for g in genre.split('/')]
+        split_genres = [g.strip() for g in genre.split("/")]
         for g in split_genres:
             genre_weights[g] = genre_weights.get(g, 0) + 1
-
 
     # print("USERID:", user_id)
     # print("new genre_weights:", genre_weights)
@@ -226,8 +226,9 @@ def update_book_embeddings(books):
             )
 
 
-def generate_recs(user_id, top_n=6):
+def generate_recs(user_id, top_n=6, count=1):
     print("USERID IN RECS:", user_id)
+    print("generating recs")
     user_embedding = retrieve_user_embedding(user_id)
     # print("user emb:", user_embedding)
     genre_weights = retrieve_genre_weights(user_id)
@@ -289,7 +290,7 @@ def generate_recs(user_id, top_n=6):
 
     recommendations = []
     # print("genre_weights:", genre_weights)
-    
+
     if use_similarities:
         for book, sim in zip(valid_books, similarities):
             genre_score = sum(
@@ -309,31 +310,51 @@ def generate_recs(user_id, top_n=6):
             # print("GENRE TAGS:", book.get("genre_tags", []))
             recommendations.append((book, genre_score))
 
-
     recommendations.sort(key=lambda x: x[1], reverse=True)
     book_scores = [score for _, score in recommendations[:5]]
     print(book_scores)
     best_books = [book for book, _ in recommendations[:2]]
 
     # Create a list of books to filter for duplicates
-    remaining_books = [book for book, _ in recommendations[2:20]]
+    start = 2 + (count - 1)
+    end = 40 + (count * 5)
+    remaining_books = [book for book, _ in recommendations[start:end]]
 
     # Filter out books that are considered duplicates (same author and similar title)
+    def adjustAuthor(author):
+        if isinstance(author, list):
+            author = " ".join(author)
+        author = author.lower()
+        author = re.sub(r"[^\w\s]", "", author)
+        words = author.split()
+        words.sort()
+        return " ".join(words)
+
+    seen_authors = set()
     filtered_books = []
     for book in remaining_books:
+        raw_author = book.get("author", "")
+        author = adjustAuthor(raw_author)
+        print("AUTHOR: ", author)
+
+        if author in seen_authors:
+            continue
+
         duplicate_found = False
         for seen_book in best_books:
             if is_duplicate(book, seen_book):
                 duplicate_found = True
                 break
         if not duplicate_found:
+            seen_authors.add(author)
             filtered_books.append(book)
 
     # Ensure we have enough books to randomly select
-    if len(filtered_books) >= 4:
-        random_books = random.sample(filtered_books, 4)
+    num_needed = top_n - len(best_books)
+    if len(filtered_books) < num_needed:
+        random_books = filtered_books
     else:
-        random_books = filtered_books  # If fewer than 4 options, select all remaining books
+        random_books = random.sample(filtered_books, num_needed)
 
     # Combine the best 2 books with the randomly selected 4 books
     final_recommendations = best_books + random_books
@@ -345,38 +366,47 @@ def generate_recs(user_id, top_n=6):
 def normalize_title(title):
     # Remove common words like "Edition", "Tie-in", "Book X" etc.
     title = re.sub(r"\(.*\)", "", title)  # Remove anything inside parentheses
-    title = re.sub(r"(Anniversary|Movie Tie-in|Bestselling|Special Edition|Collector's Edition)", "", title, flags=re.IGNORECASE)
-    title = title.strip().lower()  # Convert to lowercase and strip leading/trailing spaces
+    title = re.sub(
+        r"(Anniversary|Movie Tie-in|Bestselling|Special Edition|Collector's Edition)",
+        "",
+        title,
+        flags=re.IGNORECASE,
+    )
+    title = (
+        title.strip().lower()
+    )  # Convert to lowercase and strip leading/trailing spaces
     return title
+
 
 # Function to check if two titles are similar using fuzzy matching
 def are_titles_similar(title1, title2, threshold=50):
     title1_normalized = normalize_title(title1)
     title2_normalized = normalize_title(title2)
-    
+
     # Use fuzzy matching to compare titles
 
     similarity_score = fuzz.ratio(title1_normalized, title2_normalized)
     # print(title1, "+", title2, " similarity=", similarity_score)
     return similarity_score >= threshold
 
+
 def is_duplicate(book1, book2):
-    title1, authors1 = book1['title'], book1['author']
-    title2, authors2 = book2['title'], book2['author']
-    
+    title1, authors1 = book1["title"], book1["author"]
+    title2, authors2 = book2["title"], book2["author"]
+
     # Normalize author lists (in case of varying author name formats)
     authors1 = [author.strip().lower() for author in authors1]
     authors2 = [author.strip().lower() for author in authors2]
 
     # Check if there is any overlap in authors (case-insensitive)
-    if any(author in authors2 for author in authors1) or are_titles_similar(title1, title2):
+    if any(author in authors2 for author in authors1) or are_titles_similar(
+        title1, title2
+    ):
         return True
     return False
 
 
-
-
-def recommend_books(user_id):
+def recommend_books(user_id, count):
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
     # print("starting gw: ", retrieve_genre_weights(user_id))
@@ -387,7 +417,8 @@ def recommend_books(user_id):
     # print("3 ***************************")
     process_wishlist(user_id)
     # print("4 ***************************")
-    return generate_recs(user_id=user_id)
+    return generate_recs(user_id=user_id, count=1)
+
 
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)

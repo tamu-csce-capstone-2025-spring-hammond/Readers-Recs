@@ -179,7 +179,7 @@ def add_book_to_bookshelf(user_id):
             date_started=date_started,
             date_finished=date_finished,
             page_number=0,
-            rating = rating,
+            rating=rating,
         )
 
         if "Error" not in result:

@@ -3,7 +3,6 @@ from flask_cors import CORS
 from recmodel import onboarding_recommendations, recommend_books
 from bson import ObjectId
 import requests
-
 from models.users import read_user_by_email
 
 
@@ -23,7 +22,13 @@ def get_book_recommendations(user_id):
     API endpoint to get book recommendations for a user.
     """
     try:
-        recommendations = recommend_books(user_id)
+        refresh_param = request.args.get("refresh_count", default=0, type=int)
+        try:
+            refresh_count = int(refresh_param)
+        except ValueError:
+            refresh_count = 0
+        # print(refresh_count);
+        recommendations = recommend_books(user_id=user_id, count=refresh_count)
         if recommendations:
             for book in recommendations:
                 book["_id"] = objectid_to_str(book["_id"])
@@ -31,7 +36,8 @@ def get_book_recommendations(user_id):
     except Exception as e:
         print("Error:", e)
         return jsonify({"error": str(e)}), 500
-    
+
+
 @recommendation_bp.route("/api/user/onboarding/recommendations", methods=["POST"])
 def get_onboarding_recommendations():
     """
@@ -44,7 +50,9 @@ def get_onboarding_recommendations():
 
         access_token = auth_header.split(" ")[1]
 
-        token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
+        token_info_url = (
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
+        )
         token_info_response = requests.get(token_info_url)
         token_info = token_info_response.json()
 
@@ -63,7 +71,7 @@ def get_onboarding_recommendations():
         print("init_genres:", init_genres)
         result = onboarding_recommendations(user_id, init_genres)
         if result:
-            return jsonify({ "genres_updated": result}), 200
+            return jsonify({"genres_updated": result}), 200
     except Exception as e:
         print("Error:", e)
         return jsonify({"error": str(e)}), 500

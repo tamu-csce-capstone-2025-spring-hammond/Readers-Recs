@@ -9,7 +9,7 @@ from models.users import create_user, read_user_by_email, add_interest
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
-CORS(user_bp, origins=["http://localhost:3000"]) #added debugging
+CORS(user_bp, origins=["http://localhost:3000"])  # added debugging
 
 
 @user_bp.route("/profile", methods=["GET"])
@@ -84,6 +84,7 @@ def get_user_profile():
 
     return jsonify(user_profile), 200
 
+
 @user_bp.route("/check-email-exists", methods=["GET"])
 def check_email_exists():
     email = request.args.get("email")
@@ -93,9 +94,10 @@ def check_email_exists():
     user = read_user_by_email(email)
 
     # print("DEBUG: Queried Email:", email)
-    # print("DEBUG: User Found:", user) 
+    # print("DEBUG: User Found:", user)
     exists = False if user == "User not found." or user is None else True
     return jsonify({"exists": exists})
+
 
 @user_bp.route("/save-genres", methods=["POST"])
 def save_genres():
