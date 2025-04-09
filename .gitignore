@@ -1,12 +1,17 @@
 # python testing
 .pytest_cache
-backend/__pycache__
-backend/models/__pycache__
-tests/__pycache__
+*.pyc
+__pycache__/
 .coverage
+htmlcov/
 
 # local environment files
 .env*.local
 .env
 
 .vscode
+
+node_modules/
+
+backend/venv/*
+backend/venv
