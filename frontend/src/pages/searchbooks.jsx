@@ -29,6 +29,7 @@ const SearchBooks = () => {
       if (res.ok) {
         const data = await res.json();
         setCurrentReading(data);
+        console.log("Current Reading:", data);
       } else {
         setCurrentReading(null);
       }

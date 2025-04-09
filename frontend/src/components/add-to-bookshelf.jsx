@@ -53,20 +53,18 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position, cur
                 <button className="add-popup-close" onClick={onClose}> × </button>
                 <div className="things-to-add-to">
                     <div className="add-current">
-                        <button className="plus-button"
-                            onClick={() => {
-                                if (
-                                    currentReading &&
-                                    currentReading.id !== book.id &&
-                                    currentReading._id !== book.id
-                                ) {
-                                setPendingStatus("currently-reading");
-                                setShowConflict(true);
-                                } else {
-                                    handleUpdateBookshelf(book, "currently-reading", "mid");
-                                }
-                            }}
-                        > + </button>
+                    <button className="plus-button"
+                        onClick={() => {
+                        const currentIsbn = currentReading?.isbn;
+                        const selectedIsbn = book?.isbn;
+
+                        if (currentReading && currentIsbn && selectedIsbn && currentIsbn !== selectedIsbn) {
+                            setPendingStatus("currently-reading");
+                            setShowConflict(true);
+                        } else {
+                            handleUpdateBookshelf(book, "currently-reading", "mid");
+                        }
+                        }}> + </button>
                         <p>Currently Reading</p>
                     </div>
                     <div className="add-to-read">
