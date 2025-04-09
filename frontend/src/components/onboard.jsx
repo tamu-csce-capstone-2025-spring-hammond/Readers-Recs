@@ -65,6 +65,8 @@ const GenreSelectionModal = ({ onComplete }) => {
 
       if (response.ok) {
         console.log("Genres saved successfully");
+        window.location.href = "/home";
+
         if (onComplete) onComplete();
       } else {
         console.error("Failed to save genres");
@@ -74,6 +76,7 @@ const GenreSelectionModal = ({ onComplete }) => {
       console.error("Error saving genres:", error);
       if (onComplete) onComplete();
     }
+   
   };
 
   return (

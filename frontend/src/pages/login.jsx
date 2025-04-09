@@ -119,26 +119,25 @@ const Login = ({ setShowGenreModal, setIsFirstTimeUser }) => {
             console.log("New user detected");
             setIsFirstTimeUser(true);
             setShowGenreModal(true);
-            
-            // Create new user in database
-            await fetch('http://localhost:8000/user/create', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                email: userEmail,
-                name: decoded.name,
-                picture: decoded.picture
-              }),
-            });
+            // // Create new user in database
+            // await fetch('http://localhost:8000/user/create', {
+            //   method: 'POST',
+            //   headers: {
+            //     'Content-Type': 'application/json',
+            //     'Authorization': `Bearer ${token}`,
+            //   },
+            //   body: JSON.stringify({
+            //     email: userEmail,
+            //     name: decoded.name,
+            //     picture: decoded.picture
+            //   }),
+            // });
           } else {
             console.log("Existing user detected");
           }
           
           // Navigate to home page
-          navigate("/profile")
+          navigate("/profile");
           navigate("/home");
         } else {
           console.error("Failed to check if user exists");

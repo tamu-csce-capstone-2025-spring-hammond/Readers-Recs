@@ -161,35 +161,34 @@ def update_user_settings(
 
 # ADDED FOR BOOK REC MODEL (anna)
 def update_genre_weights(user_id, new_genre_weights):
-    """
-    Update the genre weight dictionary for a user.
-    Expects new_genre_weights to be a dictionary with genre names as keys and float values as weights.
-    """
-    u_id = user_id
-    existing_user = users_collection.find_one({"_id": u_id})
-    if not existing_user:
-        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
-        u_id = ObjectId(user_id)
+    try:
+        u_id = ObjectId(user_id)  # Ensure the user_id is an ObjectId
+        existing_user = users_collection.find_one({"_id": u_id})
+        
         if not existing_user:
             return "Error: User not found."
 
-    if not isinstance(new_genre_weights, dict):
-        return "Error: Genre weights must be a dictionary."
-    # print(existing_user)
-    if not all(
-        isinstance(k, str) and isinstance(v, (int, float))
-        for k, v in new_genre_weights.items()
-    ):
-        return "Error: Genre keys must be strings and weights must be numerical values."
-
-    result = users_collection.update_one(
-        {"_id": u_id}, {"$set": {"genre_weights": new_genre_weights}}
-    )
-    # if result.modified_count == 0:
-    #     print("Genre weights were not updated.")
-    # else:
-    #     print("Success. Updated genre weights.")
-    return result
+        if not isinstance(new_genre_weights, dict):
+            return "Error: Genre weights must be a dictionary."
+        
+        # Ensure keys are strings and values are numerical
+        if not all(
+            isinstance(k, str) and isinstance(v, (int, float))
+            for k, v in new_genre_weights.items()
+        ):
+            return "Error: Genre keys must be strings and weights must be numerical values."
+        
+        result = users_collection.update_one(
+            {"_id": u_id}, {"$set": {"genre_weights": new_genre_weights}}
+        )
+        
+        if result.modified_count == 0:
+            return "Error: Genre weights were not updated, or no changes detected."
+        
+        return "Success. Genre weights updated."
+    
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def retrieve_genre_weights(user_id):
