@@ -34,7 +34,7 @@ book_collection = BookCollection()
 redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 # Load SentenceTransformer model once
-#model = SentenceTransformer("all-MiniLM-L6-v2")
+# model = SentenceTransformer("all-MiniLM-L6-v2")
 
 model_name = "all-MiniLM-L6-v2"
 try:
@@ -53,12 +53,13 @@ def process_reading_history(user_id):
         rating = book["rating"]
         process_user_rating(user_id, book_id, rating)
 
+
 def update_genre_weights_only(user_id, interested_genres):
     genre_weights = retrieve_genre_weights(user_id)
     for genre in interested_genres:
-            genre_weights[genre] = genre_weights.get(genre, 0) + 1
+        genre_weights[genre] = genre_weights.get(genre, 0) + 1
 
-    update_genre_weights(user_id, genre_weights) 
+    update_genre_weights(user_id, genre_weights)
 
 
 def process_wishlist(user_id):
@@ -257,7 +258,6 @@ def generate_recs(user_id, top_n=6):
     if user_embedding is None or user_embedding.size == 0:
         print("Error: user_embedding is empty or None")
         return []
-    
 
     # Ensure user_embedding is 2D
     if user_embedding.ndim == 1:
@@ -311,7 +311,9 @@ def generate_recs(user_id, top_n=6):
     if len(filtered_books) >= 4:
         random_books = random.sample(filtered_books, 4)
     else:
-        random_books = filtered_books  # If fewer than 4 options, select all remaining books
+        random_books = (
+            filtered_books  # If fewer than 4 options, select all remaining books
+        )
 
     # Combine the best 2 books with the randomly selected 4 books
     final_recommendations = best_books + random_books
@@ -323,35 +325,44 @@ def generate_recs(user_id, top_n=6):
 def normalize_title(title):
     # Remove common words like "Edition", "Tie-in", "Book X" etc.
     title = re.sub(r"\(.*\)", "", title)  # Remove anything inside parentheses
-    title = re.sub(r"(Anniversary|Movie Tie-in|Bestselling|Special Edition|Collector's Edition)", "", title, flags=re.IGNORECASE)
-    title = title.strip().lower()  # Convert to lowercase and strip leading/trailing spaces
+    title = re.sub(
+        r"(Anniversary|Movie Tie-in|Bestselling|Special Edition|Collector's Edition)",
+        "",
+        title,
+        flags=re.IGNORECASE,
+    )
+    title = (
+        title.strip().lower()
+    )  # Convert to lowercase and strip leading/trailing spaces
     return title
+
 
 # Function to check if two titles are similar using fuzzy matching
 def are_titles_similar(title1, title2, threshold=50):
     title1_normalized = normalize_title(title1)
     title2_normalized = normalize_title(title2)
-    
+
     # Use fuzzy matching to compare titles
 
     similarity_score = fuzz.ratio(title1_normalized, title2_normalized)
     # print(title1, "+", title2, " similarity=", similarity_score)
     return similarity_score >= threshold
 
+
 def is_duplicate(book1, book2):
-    title1, authors1 = book1['title'], book1['author']
-    title2, authors2 = book2['title'], book2['author']
-    
+    title1, authors1 = book1["title"], book1["author"]
+    title2, authors2 = book2["title"], book2["author"]
+
     # Normalize author lists (in case of varying author name formats)
     authors1 = [author.strip().lower() for author in authors1]
     authors2 = [author.strip().lower() for author in authors2]
 
     # Check if there is any overlap in authors (case-insensitive)
-    if any(author in authors2 for author in authors1) or are_titles_similar(title1, title2):
+    if any(author in authors2 for author in authors1) or are_titles_similar(
+        title1, title2
+    ):
         return True
     return False
-
-
 
 
 def recommend_books(user_id):
@@ -366,6 +377,7 @@ def recommend_books(user_id):
     process_wishlist(user_id)
     # print("4 ***************************")
     return generate_recs(user_id=user_id)
+
 
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)

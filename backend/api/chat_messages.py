@@ -81,35 +81,35 @@ def get_chat_last_read_book(user_id):
         return jsonify({"error": str(e)}), 500
 
 
-# UPDATE: Update a chat message
-@chat_bp.route("/<book_id>/update/<message_id>", methods=["PUT"])
-def update_chat_message_api(book_id, message_id):
-    try:
-        data = request.get_json()
-        message_text = data.get("message_text")
+# # UPDATE: Update a chat message
+# @chat_bp.route("/<book_id>/update/<message_id>", methods=["PUT"])
+# def update_chat_message_api(book_id, message_id):
+#     try:
+#         data = request.get_json()
+#         message_text = data.get("message_text")
 
-        if not message_text:
-            return jsonify({"error": "Missing message_text"}), 400
+#         if not message_text:
+#             return jsonify({"error": "Missing message_text"}), 400
 
-        result = update_chat_message(message_id, message_text)
-        if isinstance(result, str) and "Error" in result:
-            return jsonify({"error": result}), 400
+#         result = update_chat_message(message_id, message_text)
+#         if isinstance(result, str) and "Error" in result:
+#             return jsonify({"error": result}), 400
 
-        return jsonify(result), 200
+#         return jsonify(result), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
-# DELETE: Delete a chat message
-@chat_bp.route("/<book_id>/delete/<message_id>", methods=["DELETE"])
-def delete_chat_message_api(book_id, message_id):
-    try:
-        result = delete_chat_message(message_id)
-        if isinstance(result, str) and "Error" in result:
-            return jsonify({"error": result}), 400
+# # DELETE: Delete a chat message
+# @chat_bp.route("/<book_id>/delete/<message_id>", methods=["DELETE"])
+# def delete_chat_message_api(book_id, message_id):
+#     try:
+#         result = delete_chat_message(message_id)
+#         if isinstance(result, str) and "Error" in result:
+#             return jsonify({"error": result}), 400
 
-        return jsonify({"message": result}), 200
+#         return jsonify({"message": result}), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500

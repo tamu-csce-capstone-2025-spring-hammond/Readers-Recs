@@ -101,4 +101,5 @@ class BookCollection:
         with self.lock:
             return self.books.copy()  # Return a copy to prevent modifications
 
+
 # books = BookCollection()

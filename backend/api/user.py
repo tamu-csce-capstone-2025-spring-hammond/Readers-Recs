@@ -156,6 +156,6 @@ def check_email_exists():
     user = read_user_by_email(email)
 
     # print("DEBUG: Queried Email:", email)
-    # print("DEBUG: User Found:", user) 
+    # print("DEBUG: User Found:", user)
     exists = False if user == "User not found." or user is None else True
     return jsonify({"exists": exists})

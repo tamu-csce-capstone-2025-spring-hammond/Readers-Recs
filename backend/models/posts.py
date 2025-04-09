@@ -1,7 +1,6 @@
 from bson.objectid import ObjectId
 from datetime import datetime
 from pydantic import ValidationError
-from zoneinfo import ZoneInfo
 from schemas import PostSchema
 from database import collections
 from models.comments import delete_comments_by_post

@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from models.comments import (
-    create_comment,
     create_initial_comment,
     get_all_comments_for_post,
     read_comment,

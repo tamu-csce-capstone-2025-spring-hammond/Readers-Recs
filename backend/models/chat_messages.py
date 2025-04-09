@@ -2,7 +2,6 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from zoneinfo import ZoneInfo
 from schemas import ChatMessageSchema
 from mongo_id_utils import is_valid_object_id
 from database import collections
