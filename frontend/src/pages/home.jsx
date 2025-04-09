@@ -440,7 +440,6 @@ const Home = () => {
                       </div>
                       <div className="book-info">
                         <BookTitle title={bookshelf.currentRead.title} />
-                        <BookTitle title={bookshelf.currentRead.title} />
                         <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="progress-info">
                           <span className="progress-percentage">{bookProgress}%</span>
@@ -484,7 +483,6 @@ const Home = () => {
                         </div>
                       </div>
                       <div className="book-info">
-                        <BookTitle title={bookshelf.lastRead.title} />
                         <BookTitle title={bookshelf.lastRead.title} />
                         <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="rating-thumbs">
