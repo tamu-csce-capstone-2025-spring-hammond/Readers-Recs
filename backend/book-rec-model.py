@@ -335,12 +335,9 @@ class BookRecommender:
             ):  # Handle missing or empty embedding
                 print(f"Book {book_id} still has no embedding, skipping.")
                 continue
-            
-                
 
             # Convert summary_embedding to numpy array and check for NaN
             summary_embedding = np.array(summary_embedding)
-            
 
             # Ensure user_vector and summary_embedding are 2D before similarity calculation
             user_vector = np.nan_to_num(

@@ -128,7 +128,9 @@ def get_all_chat_messages_for_book(book_id):
             if user_id:
                 user_data = read_user(user_id)
                 serialized["username"] = (
-                    user_data["username"] if isinstance(user_data, dict) else "Unknown user"
+                    user_data["username"]
+                    if isinstance(user_data, dict)
+                    else "Unknown user"
                 )
             else:
                 serialized["username"] = "Unknown user"

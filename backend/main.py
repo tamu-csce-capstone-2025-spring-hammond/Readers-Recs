@@ -7,7 +7,7 @@ from api.recommendations import recommendation_bp
 from api.posts import discussion_bp
 from api.comments import comments_bp
 from api.chat_messages import chat_bp
-import os 
+import os
 
 app = Flask(__name__)
 
@@ -17,11 +17,12 @@ CORS(
     resources={
         r"/*": {
             "origins": [
-                "http://localhost:3000", 
+                "http://localhost:3000",
                 "https://*.vercel.app",
-                "https://readers-recs-backend.onrender.com"
+                "https://readers-recs-backend.onrender.com",
+                "readers-recs-production.up.railway.app",
             ],
-            "supports_credentials": True
+            "supports_credentials": True,
         }
     },
 )
