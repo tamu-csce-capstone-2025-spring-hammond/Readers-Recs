@@ -3,10 +3,10 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from zoneinfo import ZoneInfo
-from backend.schemas import CommentSchema
-from backend.mongo_id_utils import is_valid_object_id
-from backend.database import collections
+from schemas import CommentSchema
+from mongo_id_utils import is_valid_object_id
+from database import collections
+import pytz
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
@@ -117,7 +117,7 @@ def update_comment(comment_id, comment_text):
         # Prepare update data including the date_edited field
         update_data = {
             "comment_text": comment_text,
-            "date_edited": datetime.now(ZoneInfo("America/Chicago")),
+            "date_edited": datetime.now(pytz.timezone("America/Chicago")),
         }
 
         # Update the comment
@@ -169,16 +169,47 @@ def delete_comments_by_post(post_id):
 
 def get_all_comments_for_post(post_id):
     try:
-        # Validate post_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
 
-        comments = comments_collection.find({"post_id": ObjectId(post_id)})
-        return [
-            CommentSchema(**comment).model_dump(by_alias=True) for comment in comments
-        ]
+        comments = list(comments_collection.find({"post_id": ObjectId(post_id)}))
 
-    except ValueError:
-        return "Error: Invalid ObjectId format."
+        # Convert ObjectIds to strings
+        comment_dict = {
+            str(comment["_id"]): serialize_comment(comment) for comment in comments
+        }
+
+        nested_comments = []
+        for comment in comment_dict.values():
+            user = users_collection.find_one({"_id": ObjectId(comment["user_id"])})
+            if user:
+                comment["username"] = user.get("username", "Unknown User")
+                comment["profile_picture"] = user.get("profile_image", "")
+
+            parent_id = comment.get("parent_comment_id")
+            if parent_id and parent_id in comment_dict:
+                parent = comment_dict[parent_id]
+                if "replies" not in parent:
+                    parent["replies"] = []
+                parent["replies"].append(comment)
+            else:
+                nested_comments.append(comment)
+
+        return nested_comments
+
     except Exception as e:
         return f"Error: {str(e)}"
+
+
+# used to convert ObjectId to string and copy comment_text to content
+def serialize_comment(comment):
+    serialized = {}
+    for key, value in comment.items():
+        if isinstance(value, ObjectId):
+            serialized[key] = str(value)
+        else:
+            serialized[key] = value
+    # copy comment_text to content
+    if "comment_text" in serialized:
+        serialized["content"] = serialized["comment_text"]
+    return serialized

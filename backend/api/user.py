@@ -5,7 +5,12 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email
+from models.users import (
+    create_user,
+    read_user_by_email,
+    update_user_settings,
+    read_user_by_username,
+)
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
@@ -78,9 +83,69 @@ def get_user_profile():
         "email": user.get("email_address", ""),
         "profile_picture": user.get("profile_image", ""),
         "created_at": user.get("created_at", ""),
+        "username": user.get("username", ""),
     }
 
     return jsonify(user_profile), 200
+
+
+@user_bp.route("/profile/<user_id>", methods=["GET"])
+def get_user_by_id(user_id):
+    """
+    Fetch a user's profile by user_id (NOT by access token).
+    """
+    from backend.models.users import read_user_by_id
+
+    user = read_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return (
+        jsonify(
+            {
+                "id": str(user["_id"]),
+                "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                "profile_picture": user.get("profile_image", ""),
+            }
+        ),
+        200,
+    )
+
+
+@user_bp.route("/profile/<user_id>/edit-profile", methods=["POST"])
+def edit_profile(user_id):
+    try:
+        data = request.get_json()
+
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        username = data.get("username", "")
+        profile_image = data.get("profile_image", "")
+
+        # if there is a username, validate that it is unique
+        if username:
+            existing_user = read_user_by_username(username)
+            if existing_user and str(existing_user["_id"]) != user_id:
+                return jsonify({"error": "Username already exists."}), 400
+            if existing_user and str(existing_user["_id"]) == user_id:
+                existing_user = None
+
+        result = update_user_settings(
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            profile_image=profile_image,
+        )
+
+        if result.startswith("Error"):
+            return jsonify({"error": result}), 400
+
+        return jsonify({"message": "Profile updated successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @user_bp.route("/check-email-exists", methods=["GET"])
 def check_email_exists():
@@ -91,6 +156,6 @@ def check_email_exists():
     user = read_user_by_email(email)
 
     # print("DEBUG: Queried Email:", email)
-    # print("DEBUG: User Found:", user) 
+    # print("DEBUG: User Found:", user)
     exists = False if user == "User not found." or user is None else True
     return jsonify({"exists": exists})

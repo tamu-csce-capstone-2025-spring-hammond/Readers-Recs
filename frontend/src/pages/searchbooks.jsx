@@ -4,6 +4,7 @@ import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
 import AddPopUp from '../components/add-to-bookshelf';
+import BACKEND_URL from "../api";
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,23 +39,22 @@ const SearchBooks = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const token = localStorage.getItem("access_token");
-  
-      if (!token) {
-        console.error("No access token found.");
-        return;
-      }
-  
-      try {
-        const response = await fetch("http://localhost:8000/user/profile", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      console.error("No access token found.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/user/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
         if (!response.ok) {
           throw new Error("Failed to fetch user profile");
         }
@@ -70,9 +70,11 @@ const SearchBooks = () => {
       }
     };
   
+  useEffect(() => {
     fetchUserProfile();
   }, []);
-  
+    
+
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -85,7 +87,7 @@ const SearchBooks = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
+        `${BACKEND_URL}/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
 
       const data = await response.json();
@@ -120,7 +122,7 @@ const SearchBooks = () => {
       'If He Had Been with Me',
       'Tomorrow, and Tomorrow, and Tomorrow',
       'Tuesdays with Morrie',
-      'The Anthropocene Reviewed',
+      'The Anthropocene Reviewed: Essays on a Human-Centered Planet',
       'Never Let Me Go'
     ];
   
@@ -163,7 +165,7 @@ const SearchBooks = () => {
   const updateBookshelf = async (book, status, rating="mid") => {
     console.log(currentReading)
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

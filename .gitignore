@@ -1,7 +1,11 @@
-# python testing
+# python testing & cache
 .pytest_cache
-*.pyc
 __pycache__/
+*.pyc
+||||||| merged common ancestors
+backend/__pycache__
+backend/models/__pycache__
+tests/__pycache__
 .coverage
 htmlcov/
 
@@ -15,3 +19,4 @@ node_modules/
 
 backend/venv/*
 backend/venv
+

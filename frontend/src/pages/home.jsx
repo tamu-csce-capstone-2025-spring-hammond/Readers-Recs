@@ -5,6 +5,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BACKEND_URL from "../api";
 
 const BookTitle = ({ title }) => {
   const titleLength = title.length;
@@ -32,36 +33,6 @@ const Home = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [loadingBookshelf, setLoadingBookshelf] = useState(true);
 
-  
-  // // Sample data - replace with your actual data
-  // const recommendations = Array(6).fill(null).map((_, i) => ({
-  //   id: i,
-  //   title: `Book ${i+1}`,
-  //   author: `Author ${i+1}`,
-  //   coverColor: `hsl(${i * 60}, 70%, 80%)` // Just for demo
-  // }));
-  
-  // const toReadShelf = Array(3).fill(null).map((_, i) => ({
-  //   id: i,
-  //   title: `To Read ${i+1}`,
-  //   author: `Author ${i+1}`,
-  //   coverColor: `hsl(${i * 40 + 120}, 70%, 75%)` // Just for demo
-  // }));
-
-  // const currentBook = {
-  //   title: "Current Reading",
-  //   author: "Author Name",
-  //   progress: bookProgress,
-  //   coverColor: "#ffffff"
-  // };
-
-  // const [lastFinishedBook, setLastFinishedBook] = useState({
-  //   title: "Last Finished",
-  //   author: "Author Name",
-  //   rating: "thumbsMid", // Changed from numeric to thumbs rating
-  //   coverColor: "#ffffff"
-  // });
-
   // Animate elements on page load
   useEffect(() => {
     setIsLoaded(true);
@@ -73,7 +44,7 @@ const Home = () => {
         return;
       }
       try {
-        const profileResponse = await fetch('http://localhost:8000/user/profile', {
+        const profileResponse = await fetch(`${BACKEND_URL}/user/profile`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
@@ -99,7 +70,7 @@ const Home = () => {
         ];
         
         for (const { key, url } of endpoints) {
-          const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+          const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/${url}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
     
@@ -108,7 +79,7 @@ const Home = () => {
             
             // Fetch current page number if it's the current read
             if (key === "currentRead" && data) {
-              const pageResponse = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
+              const pageResponse = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
               if (pageResponse.ok) {
                 const pageData = await pageResponse.json();
                 // console.log("current page:", pageData.page_number)
@@ -136,8 +107,8 @@ const Home = () => {
 
       try {
         console.log("Fetching recs");
-        console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
-        const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations`);
+        console.log("from ${BACKEND_URL}/recs/api/user/${userId}/recommendations ");
+        const response = await fetch(`${BACKEND_URL}/recs/api/user/${userId}/recommendations`);
         
         if (!response.ok) throw new Error('Failed to fetch recommendations');
         const data = await response.json();
@@ -173,7 +144,7 @@ const Home = () => {
     const newPageNumber = Math.round((newProgress / 100) * totalPages);
   
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +181,7 @@ const Home = () => {
   
   
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${bookId}/rating`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/rating`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -469,6 +440,7 @@ const Home = () => {
                       </div>
                       <div className="book-info">
                         <BookTitle title={bookshelf.currentRead.title} />
+                        <BookTitle title={bookshelf.currentRead.title} />
                         <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="progress-info">
                           <span className="progress-percentage">{bookProgress}%</span>
@@ -512,6 +484,7 @@ const Home = () => {
                         </div>
                       </div>
                       <div className="book-info">
+                        <BookTitle title={bookshelf.lastRead.title} />
                         <BookTitle title={bookshelf.lastRead.title} />
                         <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="rating-thumbs">
