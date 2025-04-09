@@ -40,16 +40,8 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position, cur
 
     return (
         <>
-            <div
-                className="add-box"
-                style={{
-                    position: "absolute",
-                    top: position?.top + "px",
-                    left: position?.left + "px",
-                    transform: "translate(-100%, 0)",
-                    zIndex: 1000,
-                }}
-            >
+        <div className="add-overlay">
+            <div className="add-box">
                 <button className="add-popup-close" onClick={onClose}> × </button>
                 <div className="things-to-add-to">
                     <div className="add-current">
@@ -89,6 +81,7 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position, cur
                 onConfirm={handleConfirmConflict}
                 onCancel={handleCancelConflict}
             />
+            </div>
         </>
     );
 }
