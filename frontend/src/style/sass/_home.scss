@@ -127,10 +127,6 @@ $white-color: #ffffff;
     background: $-green;
     &:hover {
       transform: translateY(-5px) rotateZ(0.5deg);
-      .book-title {
-        transition: font-size 0.5s ease;
-        font-size: 20px;
-      }
     }
     .book-info {
       text-align: left;
