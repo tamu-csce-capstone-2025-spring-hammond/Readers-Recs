@@ -227,19 +227,6 @@ export default function BookPopup({ book, onClose, userId }) {
           <div key={idx} className="popup-comment">
             <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content || comment.comment_text}</p>
       
-            <button onClick={() => setReplyingTo(comment._id)}>Reply</button>
-      
-            {replyingTo === comment._id && (
-              <div className="reply-form">
-                <textarea
-                  value={replyText[comment._id] || ''}
-                  onChange={(e) => setReplyText(prev => ({ ...prev, [comment._id]: e.target.value }))}
-                  placeholder="Write your reply..."
-                />
-                <button onClick={() => handleReplySubmit(postId, comment._id)}>Submit Reply</button>
-              </div>
-            )}
-      
             {/* Recursive render of replies */}
             {comment.replies && comment.replies.length > 0 && (
               <div className="popup-replies">

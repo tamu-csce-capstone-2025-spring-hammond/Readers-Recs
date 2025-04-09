@@ -5,7 +5,12 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from models.users import create_user, read_user_by_email, update_user_settings, read_user_by_username
+from models.users import (
+    create_user,
+    read_user_by_email,
+    update_user_settings,
+    read_user_by_username,
+)
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)

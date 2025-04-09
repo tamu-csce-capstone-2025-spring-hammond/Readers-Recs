@@ -16,6 +16,7 @@ class BookCollection:
         self.books = []
         self.lock = threading.Lock()
         self.cache_file = cache_file
+        self.refresh_interval = 86400  # 24 hours in seconds
 
         # Load books from cache or database
         self.load_books()

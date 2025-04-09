@@ -4,10 +4,9 @@ import BACKEND_URL from "../api";
 const EditProfile = ({ user, onClose, refreshUser }) => {
   const [screenName, setScreenName] = useState(user.name || "");
   const [username, setUsername] = useState(user.username || "");
-  const [profilePicture, setProfilePicture] = useState(user.profile_image || "");
+  const [profilePicture, setProfilePicture] = useState(user.profile_picture || "");
   const [saving, setSaving] = useState(false);
 
-  // Loading check if user data is still loading
   if (!user || (!user.id && !user._id)) {
     return <div>Loading user info...</div>;
   }
@@ -19,11 +18,10 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
     try {
       const payload = {};
 
-      // Handle splitting the screen name into first and last name
       if (screenName.trim()) {
-        const nameParts = screenName.trim().split(' ');
+        const nameParts = screenName.trim().split(" ");
         payload.first_name = nameParts[0];
-        payload.last_name = nameParts.slice(1).join(' ') || "";
+        payload.last_name = nameParts.slice(1).join(" ") || "";
       }
 
       if (username.trim()) {
@@ -47,13 +45,16 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
         return;
       }
 
-      const response = await fetch(`${BACKEND_URL}/user/profile/${userId}/edit-profile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/user/profile/${userId}/edit-profile`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -63,8 +64,8 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
       }
 
       alert("Profile updated successfully!");
-      await refreshUser();  // 🆕 Refresh user info from backend
-      onClose();            // Close popup
+      await refreshUser();
+      onClose();
     } catch (err) {
       console.error("Error updating profile:", err);
       alert("Failed to update profile.");
@@ -76,7 +77,9 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
   return (
     <div className="edit-profile-popup">
       <div className="profile-popup-content">
-        <button className="close-btn" onClick={onClose}>x</button>
+        <button className="close-btn" onClick={onClose}>
+          x
+        </button>
         <h2>Edit Profile</h2>
         <form onSubmit={handleSubmit}>
           <label>
@@ -107,20 +110,15 @@ const EditProfile = ({ user, onClose, refreshUser }) => {
             />
           </label>
 
-          {/* Preview the profile image if available */}
-          {profilePicture && (
-            <img
-              src={profilePicture}
-              alt="Profile Preview"
-              className="profile-preview"
-            />
-          )}
+          {/* Preview the profile image.
+              If the profilePicture input is empty, it falls back to user.profile_image */}
+          <img
+            src={profilePicture.trim() ? profilePicture : user.profile_image}
+            alt="Profile Preview"
+            className="profile-preview"
+          />
 
-          <button
-            className="submit-btn"
-            type="submit"
-            disabled={saving}
-          >
+          <button className="submit-btn" type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </form>
