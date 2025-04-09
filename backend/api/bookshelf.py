@@ -7,6 +7,7 @@ from bson import ObjectId
 from models.user_bookshelf import (
     create_user_bookshelf,
     delete_user_bookshelf,
+    get_bookshelf_status,
     get_currently_reading_books,
     get_page_number,
     get_read_books,
@@ -156,6 +157,7 @@ def add_book_to_bookshelf(user_id):
         data = request.get_json()
         book_id = data["book_id"]
         status = data["status"]
+        rating = data["rating"]
         date_finished = None
         date_started = None
         current_date = datetime.now().date().isoformat()  # "YYYY-MM-DD"
@@ -177,6 +179,7 @@ def add_book_to_bookshelf(user_id):
             date_started=date_started,
             date_finished=date_finished,
             page_number=0,
+            rating = rating,
         )
 
         if "Error" not in result:
@@ -299,5 +302,21 @@ def delete_book_from_bookshelf(user_id, book_id):
             return jsonify({"message": "Book deleted from bookshelf."}), 200
         else:
             return jsonify({"error": result}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@shelf_bp.route("/api/user/<user_id>/bookshelf/<book_id>/status", methods=["GET"])
+def get_book_status(user_id, book_id):
+    """
+    Get a given books status if in user bookshelf.
+    """
+    try:
+        status = get_bookshelf_status(user_id, book_id)
+
+        if "Error" not in status:
+            return jsonify({"status": status}), 200
+        else:
+            return jsonify({"error": status}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

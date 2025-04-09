@@ -1,0 +1,82 @@
+.rating-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    .rating-popup-content {
+        background-color: $-dark-green;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        width: 300px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        p {
+            color: $-tan;
+            font-size: 16px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .rating-thumbs {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 0 0 10px;
+            
+            .thumb-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: none;
+                border: none;
+                cursor: pointer;
+                opacity: 0.7;
+                transition: all 0.2s ease;
+                padding: 0;
+                margin: 0;
+                svg {
+                    stroke: $-tan;
+                    stroke-width: 2px;
+                    height: 25px;
+                    width: 25px;
+                    margin-bottom: 2px;
+                }
+                span {
+                    font-size: 12px;
+                    color: $-tan;
+                }
+                &.selected {
+                    opacity: 1;
+                
+                    &.thumbs-up svg {
+                        stroke: #4CAF50;
+                        fill: rgba(#4CAF50, 0.2);
+                    }
+                
+                    &.thumbs-mid svg {
+                        stroke: #FFC107;
+                        fill: rgba(#FFC107, 0.2);
+                    }
+                
+                    &.thumbs-down svg {
+                        stroke: #F44336;
+                        fill: rgba(#F44336, 0.2);
+                    }
+                }
+                &:hover {
+                    opacity: 0.8;
+                    transform: scale(1.05);
+                }
+            }
+        }
+    }
+}

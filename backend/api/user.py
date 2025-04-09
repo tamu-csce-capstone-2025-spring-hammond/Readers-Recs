@@ -147,13 +147,15 @@ def edit_profile(user_id):
         return jsonify({"error": str(e)}), 500
 
 
-@user_bp.route("/check-username/<username>", methods=["GET"])
-def check_username(username):
-    try:
-        user = users_collection.find_one({"username": username})
-        if user:
-            return jsonify({"exists": True}), 200
-        else:
-            return jsonify({"exists": False}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@user_bp.route("/check-email-exists", methods=["GET"])
+def check_email_exists():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "Email parameter is required"}), 400
+
+    user = read_user_by_email(email)
+
+    # print("DEBUG: Queried Email:", email)
+    # print("DEBUG: User Found:", user) 
+    exists = False if user == "User not found." or user is None else True
+    return jsonify({"exists": exists})

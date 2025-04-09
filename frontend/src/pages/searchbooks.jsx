@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Book } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
@@ -15,9 +15,28 @@ const SearchBooks = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [currentReading, setCurrentReading] = useState(null);
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
   const handleFilterChange = (e) => setFilterType(e.target.value);
+
+  // NOT WORKING :(
+  const fetchCurrentReading = async (userId, token) => {
+    try {
+      const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentReading(data);
+      } else {
+        setCurrentReading(null);
+      }
+    } catch (err) {
+      console.error("Error fetching currently reading book:", err);
+    }
+  };
 
   const fetchUserProfile = async () => {
     const token = localStorage.getItem("access_token");
@@ -42,6 +61,9 @@ const SearchBooks = () => {
       const data = await response.json();
 
       setUserId(data.id); // Extract and set the user ID
+      localStorage.setItem("userId", data.id)
+
+      await fetchCurrentReading(data.id, token);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -90,6 +112,40 @@ const SearchBooks = () => {
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
 
+  useEffect(() => {
+    const defaultBooks = [
+      'If He Had Been with Me',
+      'Tomorrow, and Tomorrow, and Tomorrow',
+      'Tuesdays with Morrie',
+      'The Anthropocene Reviewed',
+      'Never Let Me Go'
+    ];
+  
+    const fetchDefaultBooks = async () => {
+      try {
+        const fetchedBooks = await Promise.all(
+          defaultBooks.map(async (title) => {
+            const response = await fetch(
+              `http://localhost:8000/api/books?query=${encodeURIComponent(title)}&type=title`
+            );
+            const data = await response.json();
+            return Array.isArray(data) ? data[0] : null;
+          })
+        );
+  
+        const validBooks = fetchedBooks.filter(Boolean); // remove any nulls
+        setBooks(validBooks);
+      } catch (err) {
+        console.error("Error fetching default books:", err);
+      }
+    };
+  
+    if (!searchQuery.trim()) {
+      fetchDefaultBooks();
+    }
+  }, [searchQuery]);
+  
+
   const openPopup = (book) => setSelectedBook(book);
   const closePopup = () => setSelectedBook(null);
 
@@ -101,7 +157,7 @@ const SearchBooks = () => {
 
   const closeAddPopup = () => setAddPopupBook(null);
 
-  const updateBookshelf = async (book, status) => {
+  const updateBookshelf = async (book, status, rating="mid") => {
     try {
       const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
@@ -111,6 +167,7 @@ const SearchBooks = () => {
         body: JSON.stringify({
           book_id: book.id || book._id,
           status: status,
+          rating: rating
         }),
       });
 
@@ -170,13 +227,15 @@ const SearchBooks = () => {
 
       <Navbar />
 
-      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} userId={userId} />}
       {addPopupBook && (
         <AddPopUp
           book={addPopupBook.book}
           onClose={closeAddPopup}
           updateBookshelf={updateBookshelf}
           position={addPopupBook.position}
+          currentReading={currentReading}
+          setCurrentReading={setCurrentReading}
         />
       )}
     </div>

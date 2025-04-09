@@ -4,79 +4,121 @@ import '../style/style.css';
 import AddPopUp from '../components/add-to-bookshelf-discussion';
 import BACKEND_URL from "../api";
 
-export default function BookPopup({ book, onClose }) {
+export default function BookPopup({ book, onClose, userId }) {
     const [addPopupBook, setAddPopupBook] = useState(null);
-    const [userId, setUserId] = useState(null);
-    const [posts, setPosts] = useState([]);
+    const [bookStatus, setBookStatus] = useState(null);
+    const [isLoadingStatus, setIsLoadingStatus] = useState(true); 
     const [isAddingPost, setIsAddingPost] = useState(false);
     const [newPostTitle, setNewPostTitle] = useState('');
     const [newPostContent, setNewPostContent] = useState('');
     const [isCommentsVisible, setIsCommentsVisible] = useState({});
-    const [newComment, setNewComment] = useState({});
+    const [newComment, setNewComment] = useState('');
+    // local state for testing posts
+    const [posts, setPosts] = useState(book.posts || []);
 
     const [replyText, setReplyText] = useState({});
     const [replyingTo, setReplyingTo] = useState(null); // the comment being replied to
+    
 
+    const fetchBookStatus = async () => {
+        setIsLoadingStatus(true);
+        try {
+            const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${book._id}/status`, {
+                method: "GET",
+            });
 
-    // Fetch current user's profile
+            if (!response.ok) {
+                throw new Error("Failed to fetch book status");
+            }
+
+            const data = await response.json()
+            if (data.status == "no-status"){
+                setBookStatus("unread")
+            } else if (data.status == "to-read") {
+                setBookStatus("in wishlist")
+            } else if (data.status == "currently-reading") {
+                setBookStatus("reading")
+            } else {
+                setBookStatus(data.status)
+            }
+            
+        } catch (error) {
+            console.error("Error fetching book status:", error);
+        } finally {
+            setIsLoadingStatus(false); // Set loading state to false when done
+        }
+    };
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem("access_token");
-            if (!token) return console.error("No access token found.");
+    
+            if (!token) {
+                console.error("No access token found.");
+                return;
+            }
+    
             try {
                 const response = await fetch(`${BACKEND_URL}/user/profile`, {
                     method: "GET",
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user profile");
+                }
+    
                 const data = await response.json();
-                setUserId(data.id);
             } catch (error) {
                 console.error("Error fetching user profile:", error);
             }
         };
+    
         fetchUserProfile();
-    }, []);
+    }, []); // Run only on component mount
 
     // Fetch posts
     const fetchPosts = useCallback(async () => {
-      try {
-          const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`);
-          const data = await response.json();
-          if (response.ok) {
-            setPosts(data);
-          } else {
-            console.error('Error fetching posts:', data.error);
-          }
-      } catch (error) {
-          console.error('Error fetching posts:', error);
-      }
-    }, [book._id]);
-
-    useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
-
-    // Fetch comments
-    const fetchComments = async (postId, postIndex) => {
         try {
-            const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments`);
+            const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`);
             const data = await response.json();
             if (response.ok) {
-                const fixedComments = data.map(comment => ({
-                    ...comment,
-                    content: comment.comment_text
-                }));
-                const updatedPosts = [...posts];
-                updatedPosts[postIndex].comments = fixedComments;
-                setPosts(updatedPosts);
+              setPosts(data);
             } else {
-                console.error('Error fetching comments:', data.error);
+              console.error('Error fetching posts:', data.error);
             }
         } catch (error) {
-            console.error('Error fetching comments:', error);
+            console.error('Error fetching posts:', error);
         }
-    };
+      }, [book._id]);
   
+      useEffect(() => {
+          fetchPosts();
+      }, [fetchPosts]);
+  
+      // Fetch comments
+      const fetchComments = async (postId, postIndex) => {
+          try {
+              const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments`);
+              const data = await response.json();
+              if (response.ok) {
+                  const fixedComments = data.map(comment => ({
+                      ...comment,
+                      content: comment.comment_text
+                  }));
+                  const updatedPosts = [...posts];
+                  updatedPosts[postIndex].comments = fixedComments;
+                  setPosts(updatedPosts);
+              } else {
+                  console.error('Error fetching comments:', data.error);
+              }
+          } catch (error) {
+              console.error('Error fetching comments:', error);
+          }
+      };
+    
     const toggleComments = (postIndex) => {
         const post = posts[postIndex];
         if (!isCommentsVisible[postIndex]) {
@@ -204,10 +246,20 @@ export default function BookPopup({ book, onClose }) {
         try {
             const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ book_id: book.id || book._id, status }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    book_id: book.id || book._id,
+                    status: status,
+                    rating: "mid",
+                }),
             });
+            if (response.ok) {
+                fetchBookStatus(); // Re-fetch the book status after updating
+            }
             return response;
+
         } catch (error) {
             console.error(`Error updating bookshelf (${status}):`, error);
             return { ok: false };
@@ -244,7 +296,7 @@ export default function BookPopup({ book, onClose }) {
                 <button className="popup-close" onClick={onClose}> × </button>
                 <div className="popup-content">
                     <button className="add-button" onClick={(e) => openAddPopup(book, e)}>
-                        <Plus size={20} />
+                        Add Book to Shelf +
                     </button>
                     <div className="popup-image">
                         <img src={book.cover_image} alt={book.title} className="cover-img" />
@@ -252,6 +304,12 @@ export default function BookPopup({ book, onClose }) {
                     <div className="popup-details">
                         <h2 className="popup-title">{book.title}</h2>
                         <p className="popup-author">{Array.isArray(book.author) ? book.author.join(", ") : book.author}</p>
+                        {/* Display loading message while status is being fetched */}
+                        {isLoadingStatus ? (
+                            <p className="popup-info">Loading book status...</p>
+                        ) : (
+                            <p className="popup-info">Bookshelf status: {bookStatus}</p>
+                        )}
                         <p className="popup-info">Page Count: {book.page_count}</p>
                         <p className="popup-info">
                             Genre: {book.genre_tags && book.genre_tags.length > 0 

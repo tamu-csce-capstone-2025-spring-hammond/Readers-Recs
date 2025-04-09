@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import {ClipLoader} from 'react-spinners';
 import { Link } from 'react-router-dom';
 import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
-import { ClipLoader } from "react-spinners";
 import BACKEND_URL from "../api";
 
 const BookTitle = ({ title }) => {
@@ -51,7 +51,7 @@ const Home = () => {
         const profileData = await profileResponse.json();
         setUser(profileData);
         fetchBookshelfData(profileData.id, token);
-        fetchRecommendations(profileData.id);  
+        fetchRecommendations(profileData.id);
       } catch (error) {
         console.error('Error fetching profile or bookshelf data:', error);
       } finally {
@@ -215,11 +215,11 @@ const Home = () => {
                 <BookOpen className="section-icon" size={32} />
                 <h2 className="section-title">Recommended For You</h2>
                 <button className="refresh-btn">↻</button>
-                <div className="flex items-center justify-center mt-4">
-                <ClipLoader color="black" loading={loadingRecommendations || loadingBookshelf} size={50} />
-                </div>
+              </div>
+              <div className="loading-circle">
+                <ClipLoader color="white" loading={loadingRecommendations || loadingBookshelf} size={100} />
+              </div>
             </div>
-          </div>
           </div>
   
           {/* Right side - Currently Reading and Last Finished */}
@@ -440,6 +440,7 @@ const Home = () => {
                       </div>
                       <div className="book-info">
                         <BookTitle title={bookshelf.currentRead.title} />
+                        <BookTitle title={bookshelf.currentRead.title} />
                         <p className="book-author">{bookshelf.currentRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="progress-info">
                           <span className="progress-percentage">{bookProgress}%</span>
@@ -483,6 +484,7 @@ const Home = () => {
                         </div>
                       </div>
                       <div className="book-info">
+                        <BookTitle title={bookshelf.lastRead.title} />
                         <BookTitle title={bookshelf.lastRead.title} />
                         <p className="book-author">{bookshelf.lastRead.author?.[0] ?? 'Unknown author'}</p>
                         <div className="rating-thumbs">

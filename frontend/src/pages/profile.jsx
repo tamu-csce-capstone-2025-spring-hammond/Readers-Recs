@@ -17,6 +17,48 @@ const Profile = () => {
 
   
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No token found');
+        setLoading(false);
+        return;
+      }
+      try {
+        const profileResponse = await fetch('http://localhost:8000/user/profile', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
+        const profileData = await profileResponse.json();
+        setUser(profileData);
+        fetchBookshelfData(profileData.id, token);
+      } catch (error) {
+        console.error('Error fetching profile or bookshelf data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchBookshelfData = async (userId, token) => {
+      try {
+        const endpoints = [
+          { key: 'currentRead', url: `books/currently-reading` },
+          { key: 'booksRead', url: `books/read` },
+          { key: 'toReadShelf', url: `books/to-read` },
+        ];
+        for (const { key, url } of endpoints) {
+          const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setBookshelf((prev) => ({ ...prev, [key]: data }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching bookshelf data:', error);
+      }
+    };
     fetchUserProfile();
   }, []);
 
@@ -86,6 +128,33 @@ const Profile = () => {
     setEditProfilePopup(false);
   }
 
+  const handleDeleteBook = async (bookId, shelfKey) => {
+    // if (!user) return;
+    console.log("In delete book function")
+    const token = localStorage.getItem('access_token');
+    try {
+      const response = await fetch(`http://localhost:8000/shelf/api/user/${user.id}/bookshelf/${bookId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Remove book from local state
+        console.log("BOOK DELETED")
+        alert(`Deleted book!`);
+        setBookshelf((prev) => ({
+          ...prev,
+          [shelfKey]: prev[shelfKey].filter((book) => book._id !== bookId),
+        }));
+      } else {
+        console.error('Failed to delete book:', data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting book:', error);
+    }
+  }
+
+
   const titleLength = bookshelf.currentRead?.title.length || 0;
   const fontSize = `${Math.max(16, Math.min(28, titleLength / 4))}px`;
 
@@ -131,7 +200,7 @@ const Profile = () => {
                   {bookshelf[key].map((book, index) => (
                     <div key={`${key}-${index}`} className="book-cover-profile">
                       <img src={book.cover_image} alt={book.title} />
-                      <button className="book-delete-button">X</button> {/* onClick={() => handleDeleteBook(book.id)} */}
+                      <button className="book-delete-button" onClick={() => handleDeleteBook(book._id, key)}>X</button>
                       <div className="book-title">{book.title}</div>
                     </div>
                   ))}
