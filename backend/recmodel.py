@@ -54,16 +54,20 @@ def process_reading_history(user_id):
         process_user_rating(user_id, book_id, rating)
 
 def update_genre_weights_only(user_id, interested_genres):
-    genre_weights = retrieve_genre_weights(user_id)
+    genre_weights = dict()
     for genre in interested_genres:
             genre_weights[genre] = genre_weights.get(genre, 0) + 1
 
-    update_genre_weights(user_id, genre_weights) 
+    print("USERID:", user_id)
+    print("new genre_weights:", genre_weights)
+    print("updating genre_weights:", update_genre_weights(user_id, genre_weights))
+    print("retrieve gw:", retrieve_genre_weights(user_id))
 
 
 def process_wishlist(user_id):
     to_read_shelf = get_unread_books(user_id)
     books_to_read = []
+    print("To read:", to_read_shelf)
     for book in to_read_shelf:
         book_id = book["book_id"]
         book_obj = books_collection.find_one({"_id": book_id})
@@ -165,10 +169,10 @@ def process_user_rating(user_id, book_id, rating):
         update_user_embedding(user_id, new_embedding.tolist())
 
 
-def update_user_gw(user_id, genre_weights):
-    """Update the user's genre weights in the database."""
-    redis_client.set(f"genre_weights:{user_id}", json.dumps(genre_weights))
-    update_genre_weights(user_id, genre_weights)
+# def update_user_gw(user_id, genre_weights):
+#     """Update the user's genre weights in the database."""
+#     redis_client.set(f"genre_weights:{user_id}", json.dumps(genre_weights))
+#     update_genre_weights(user_id, genre_weights)
 
 
 def update_user_embedding(user_id, new_embedding):
@@ -219,7 +223,7 @@ def update_book_embeddings(books):
 
 
 def generate_recs(user_id, top_n=6):
-    print("generating recs")
+    print("USERID IN RECS:", user_id)
     user_embedding = retrieve_user_embedding(user_id)
     # print("user emb:", user_embedding)
     genre_weights = retrieve_genre_weights(user_id)
@@ -272,10 +276,14 @@ def generate_recs(user_id, top_n=6):
     # recommendations.sort(key=lambda x: x[1], reverse=True)
 
     # return [book for book, _ in recommendations[:top_n]]
-
+    use_similarities = True
+    if np.all(user_embedding == 0):
+        use_similarities = False
     similarities = cosine_similarity(user_embedding.reshape(1, -1), book_embeddings)[0]
 
     recommendations = []
+    print("genre_weights:", genre_weights)
+    
     for book, sim in zip(valid_books, similarities):
         genre_score = sum(
             genre_weights.get(genre, 0) for genre in book.get("genre_tags", [])
@@ -351,7 +359,7 @@ def recommend_books(user_id):
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
     # print("starting gw: ", retrieve_genre_weights(user_id))
-    update_embedding(user_id, np.zeros(384).tolist())
+    update_embedding(user_id, np.zeros(384))
     # print("starting embedding: ", retrieve_embedding(user_id))
     # print("2 ***************************")
     process_reading_history(user_id)
@@ -362,7 +370,7 @@ def recommend_books(user_id):
 
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)
-    return generate_recs(user_id=user_id)
+    return True
 
 
 # Example usage:
@@ -371,11 +379,12 @@ def onboarding_recommendations(user_id, interests):
 # process_reading_history(user_id)
 # print(recommend_books(user_id))
 
-user_id = "67e4821400344e912e331e32"
+# user_id = "67f58b311c43cef5572babc2"
 
-interested_genres = ["Science Fiction", "Fantasy", "Romance"]
+# interested_genres = ["Science Fiction", "Fantasy", "Romance"]
 
-recs = onboarding_recommendations(user_id, interested_genres)
+# result = onboarding_recommendations(user_id, interested_genres)
 
-for rec in recs:
-    print(rec["title"])
+# print("result:", result)
+# print("recs being generated")
+# print(recommend_books(user_id))

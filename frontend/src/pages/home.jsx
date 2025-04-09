@@ -5,6 +5,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BookPopup from '../components/discussion';
 
 const BookTitle = ({ title }) => {
   const titleLength = title.length;
@@ -139,7 +140,7 @@ const Home = () => {
 
       try {
         console.log("Fetching recs");
-        console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
+        // console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
         const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations`);
         
         if (!response.ok) throw new Error('Failed to fetch recommendations');
@@ -611,7 +612,7 @@ const Home = () => {
         </div>
       </div>
       {showPopUp && selectedBook && (
-        <BookPopUp 
+        <BookPopup
           book={selectedBook} 
           onClose={handleClosePopup}
           userId={user?.id}

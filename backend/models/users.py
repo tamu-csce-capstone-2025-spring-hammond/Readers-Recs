@@ -175,7 +175,7 @@ def update_genre_weights(user_id, new_genre_weights):
 
     if not isinstance(new_genre_weights, dict):
         return "Error: Genre weights must be a dictionary."
-
+    # print(existing_user)
     if not all(
         isinstance(k, str) and isinstance(v, (int, float))
         for k, v in new_genre_weights.items()
@@ -199,6 +199,8 @@ def retrieve_genre_weights(user_id):
     user = users_collection.find_one({"_id": user_id})
     if not user:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
+    # print("USER:", user)
+    print("Genre weights:", user["genre_weights"])
     if user:
         return user["genre_weights"] if user else dict()
     else:

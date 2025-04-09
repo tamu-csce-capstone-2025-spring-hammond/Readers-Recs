@@ -138,6 +138,7 @@ const Login = ({ setShowGenreModal, setIsFirstTimeUser }) => {
           }
           
           // Navigate to home page
+          navigate("/profile")
           navigate("/home");
         } else {
           console.error("Failed to check if user exists");

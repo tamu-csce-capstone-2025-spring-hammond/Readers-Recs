@@ -16,7 +16,8 @@ const GenreSelectionModal = ({ onComplete }) => {
     "Classics",
     "Self-Help",
     "Religion",
-    "Nonfiction"
+    "Nonfiction",
+    "Science Fiction",
   ];
 
   const handleGenreSelect = (genre) => {
@@ -33,6 +34,22 @@ const GenreSelectionModal = ({ onComplete }) => {
       if (!token) {
         console.error("No access token found");
         return;
+      }
+
+      // API Call for Recommendations
+      const rec_response = await fetch(`http://localhost:8000/recs/api/user/onboarding/recommendations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({genres: selectedGenres})
+      });
+      if (rec_response.ok) {
+        console.log("Genres added to rec model successfully");
+      } else {
+        console.log(rec_response);
+        console.error("Failed to add :(");
       }
 
       // to be implemented

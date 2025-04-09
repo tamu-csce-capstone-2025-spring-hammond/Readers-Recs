@@ -163,9 +163,9 @@ def get_read_books(user_id):
 
 def get_unread_books(user_id):
     try:
-        # Validate user_id
-        if not is_valid_object_id("Users", user_id):
-            return "Error: Invalid user_id."
+    # Validate user_id
+        # if not is_valid_object_id("Users", user_id):
+        #     return "Error: Invalid user_id."
 
         # Get all books read by the user
         books = list(
