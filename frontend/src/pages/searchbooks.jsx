@@ -30,6 +30,7 @@ const SearchBooks = () => {
       if (res.ok) {
         const data = await res.json();
         setCurrentReading(data);
+        console.log("Current Reading:", data);
       } else {
         setCurrentReading(null);
       }
@@ -54,22 +55,26 @@ const SearchBooks = () => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch user profile");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+  
+        const data = await response.json();
+  
+        setUserId(data.id);
+        localStorage.setItem("userId", data.id);
+  
+        await fetchCurrentReading(data.id, token);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
       }
+    };
+  
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+    
 
-      const data = await response.json();
-
-      setUserId(data.id); // Extract and set the user ID
-      localStorage.setItem("userId", data.id)
-
-      await fetchCurrentReading(data.id, token);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-
-  fetchUserProfile();
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -117,7 +122,7 @@ const SearchBooks = () => {
       'If He Had Been with Me',
       'Tomorrow, and Tomorrow, and Tomorrow',
       'Tuesdays with Morrie',
-      'The Anthropocene Reviewed',
+      'The Anthropocene Reviewed: Essays on a Human-Centered Planet',
       'Never Let Me Go'
     ];
   
@@ -158,6 +163,7 @@ const SearchBooks = () => {
   const closeAddPopup = () => setAddPopupBook(null);
 
   const updateBookshelf = async (book, status, rating="mid") => {
+    console.log(currentReading)
     try {
       const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
