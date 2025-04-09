@@ -70,9 +70,11 @@ const SearchBooks = () => {
       }
     };
   
+  useEffect(() => {
     fetchUserProfile();
   }, []);
-  
+    
+
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -120,7 +122,7 @@ const SearchBooks = () => {
       'If He Had Been with Me',
       'Tomorrow, and Tomorrow, and Tomorrow',
       'Tuesdays with Morrie',
-      'The Anthropocene Reviewed',
+      'The Anthropocene Reviewed: Essays on a Human-Centered Planet',
       'Never Let Me Go'
     ];
   
