@@ -15,9 +15,28 @@ const SearchBooks = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [currentReading, setCurrentReading] = useState(null);
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
   const handleFilterChange = (e) => setFilterType(e.target.value);
+
+  // NOT WORKING :(
+  const fetchCurrentReading = async (userId, token) => {
+    try {
+      const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentReading(data);
+      } else {
+        setCurrentReading(null);
+      }
+    } catch (err) {
+      console.error("Error fetching currently reading book:", err);
+    }
+  };
 
   const fetchUserProfile = async () => {
     const token = localStorage.getItem("access_token");
@@ -43,6 +62,8 @@ const SearchBooks = () => {
 
       setUserId(data.id); // Extract and set the user ID
       localStorage.setItem("userId", data.id)
+
+      await fetchCurrentReading(data.id, token);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -213,6 +234,8 @@ const SearchBooks = () => {
           onClose={closeAddPopup}
           updateBookshelf={updateBookshelf}
           position={addPopupBook.position}
+          currentReading={currentReading}
+          setCurrentReading={setCurrentReading}
         />
       )}
     </div>

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import "../style/style.css";
 import RatingPopup from "./book-rating";
+import CurrentReadConflict from "./current-read-conflict";
 
-export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
+
+export default function AddPopUp({ book, onClose, updateBookshelf, position, currentReading, setCurrentReading }) {
     const handleUpdateBookshelf = async (book, status, rating) => {
         const response = await updateBookshelf(book, status, rating);
         if (response.ok) {
@@ -12,7 +14,8 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
         }
         onClose();
     };
-
+    const [showConflict, setShowConflict] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState(null);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const handleFinishedClick = () => {
         console.log("HANDLE FINSH CLICK")
@@ -23,6 +26,16 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
         setShowRatingPopup(false);
         handleUpdateBookshelf(book, "read", rating)
         onClose();
+    };
+    const handleConfirmConflict = () => {
+        setShowConflict(false);
+        handleUpdateBookshelf(book, pendingStatus, "mid");
+        setCurrentReading(book);
+    };
+    const handleCancelConflict = () => {
+        setShowConflict(false);
+        setPendingStatus(null);
+        onClose(); // close the whole add popup
     };
 
     return (
@@ -40,7 +53,20 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
                 <button className="add-popup-close" onClick={onClose}> × </button>
                 <div className="things-to-add-to">
                     <div className="add-current">
-                        <button className="plus-button" onClick={() => handleUpdateBookshelf(book, "currently-reading", "mid")}> + </button>
+                        <button className="plus-button"
+                            onClick={() => {
+                                if (
+                                    currentReading &&
+                                    currentReading.id !== book.id &&
+                                    currentReading._id !== book.id
+                                ) {
+                                setPendingStatus("currently-reading");
+                                setShowConflict(true);
+                                } else {
+                                    handleUpdateBookshelf(book, "currently-reading", "mid");
+                                }
+                            }}
+                        > + </button>
                         <p>Currently Reading</p>
                     </div>
                     <div className="add-to-read">
@@ -58,6 +84,12 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position }) {
                 currentRating={null}
                 onClose={() => setShowRatingPopup(false)}
                 onRatingClick={handleRatingClick}
+            />
+            <CurrentReadConflict
+                open={showConflict}
+                currentTitle={currentReading?.title}
+                onConfirm={handleConfirmConflict}
+                onCancel={handleCancelConflict}
             />
         </>
     );
