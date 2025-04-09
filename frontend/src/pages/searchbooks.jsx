@@ -37,38 +37,41 @@ const SearchBooks = () => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      console.error("No access token found.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8000/user/profile", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user profile");
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("access_token");
+  
+      if (!token) {
+        console.error("No access token found.");
+        return;
       }
-
-      const data = await response.json();
-
-      setUserId(data.id); // Extract and set the user ID
-      localStorage.setItem("userId", data.id)
-
-      await fetchCurrentReading(data.id, token);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-
-  fetchUserProfile();
+  
+      try {
+        const response = await fetch("http://localhost:8000/user/profile", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+  
+        const data = await response.json();
+  
+        setUserId(data.id);
+        localStorage.setItem("userId", data.id);
+  
+        await fetchCurrentReading(data.id, token);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+  
+    fetchUserProfile();
+  }, []);
+  
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -157,6 +160,7 @@ const SearchBooks = () => {
   const closeAddPopup = () => setAddPopupBook(null);
 
   const updateBookshelf = async (book, status, rating="mid") => {
+    console.log(currentReading)
     try {
       const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
