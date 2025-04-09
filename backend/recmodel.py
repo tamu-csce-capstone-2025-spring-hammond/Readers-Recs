@@ -55,16 +55,11 @@ def process_reading_history(user_id):
 
 
 def update_genre_weights_only(user_id, interested_genres):
-    genre_weights = dict()
+    genre_weights = retrieve_genre_weights(user_id)
     for genre in interested_genres:
-        split_genres = [g.strip() for g in genre.split("/")]
-        for g in split_genres:
-            genre_weights[g] = genre_weights.get(g, 0) + 1
+        genre_weights[genre] = genre_weights.get(genre, 0) + 1
 
-    # print("USERID:", user_id)
-    # print("new genre_weights:", genre_weights)
-    print("updating genre_weights:", update_genre_weights(user_id, genre_weights))
-    # print("retrieve gw:", retrieve_genre_weights(user_id))
+    update_genre_weights(user_id, genre_weights)
 
 
 def process_wishlist(user_id):
@@ -356,7 +351,13 @@ def generate_recs(user_id, top_n=6, count=1):
     if len(filtered_books) < num_needed:
         random_books = filtered_books
     else:
+<<<<<<< HEAD
         random_books = random.sample(filtered_books, num_needed)
+=======
+        random_books = (
+            filtered_books  # If fewer than 4 options, select all remaining books
+        )
+>>>>>>> fb6c659 (linting & requirements update)
 
     # Combine the best 2 books with the randomly selected 4 books
     final_recommendations = best_books + random_books
@@ -408,7 +409,11 @@ def is_duplicate(book1, book2):
     return False
 
 
+<<<<<<< HEAD
 def recommend_books(user_id, count):
+=======
+def recommend_books(user_id):
+>>>>>>> fb6c659 (linting & requirements update)
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
     # print("starting gw: ", retrieve_genre_weights(user_id))
@@ -420,6 +425,7 @@ def recommend_books(user_id, count):
     process_wishlist(user_id)
     # print("4 ***************************")
     return generate_recs(user_id=user_id, count=1)
+
 
 
 def onboarding_recommendations(user_id, interests):

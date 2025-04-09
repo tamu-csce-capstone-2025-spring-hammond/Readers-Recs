@@ -87,34 +87,4 @@ class BookCollection:
             return self.books.copy()  # Return a copy to prevent modifications
 
 
-# # load_books.py
-
-# import json
-
-
-# class BookCollection:
-#     _instance = None
-
-#     def __new__(cls):
-#         if cls._instance is None:
-#             cls._instance = super(BookCollection, cls).__new__(cls)
-#             cls._instance.books = None
-#             cls._instance._load_books()
-#         return cls._instance
-
-#     def _load_books(self):
-#         try:
-#             with open("books_cache.json", "r") as f:
-#                 content = f.read().strip()
-#                 if not content:
-#                     print("Warning: Book data file is empty.")
-#                     self.books = []
-#                 else:
-#                     print("Loading book file into memory...")
-#                     self.books = json.loads(content)
-#         except (FileNotFoundError, json.JSONDecodeError) as e:
-#             print(f"Error loading books: {e}")
-#             self.books = []
-
-
 # books = BookCollection()
