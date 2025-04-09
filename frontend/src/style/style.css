@@ -409,10 +409,17 @@ h3 {
   background-color: white;
   width: 330px;
   aspect-ratio: 3/4;
-  border-radius: 3px;
+  border-radius: 0px;
   border: 20px solid #0e3523;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px;
+}
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 0px;
 }
 
 .book-details {
@@ -508,6 +515,8 @@ h3 {
   gap: 10px;
   margin-top: auto;
   padding: 10px 0;
+  max-height: 200px;
+  position: relative;
 }
 
 .message-input {
@@ -530,6 +539,9 @@ h3 {
 }
 
 .send-button {
+  bottom: 0;
+  right: 0;
+  position: absolute;
   background-color: #2A664D;
   border: none;
   border-radius: 50%;
@@ -1976,11 +1988,26 @@ footer {
   gap: 10px;
   align-items: flex-start;
 }
-.popup-discussion .popup-pfp {
+.popup-discussion .profile-picture {
   width: 80px;
   height: 80px;
-  background-color: white;
+  min-width: 80px;
+  min-height: 80px;
   border-radius: 50%;
+  overflow: hidden;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.popup-discussion .profile-img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 .popup-discussion .popup-post-details {
   display: flex;

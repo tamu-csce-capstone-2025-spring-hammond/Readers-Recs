@@ -112,8 +112,8 @@ const Chat = () => {
             {book ? (
               <>
                 <h2 className="book-title">{book.title}</h2>
-                <p className="book-author">{book.author}, {book.year || ''}</p>
-                <p className="book-description">{book.summary || ''}</p>
+                <p className="book-author">{book.author} {book.year ? `, ${book.year}` : ''}</p>
+                <p className="book-description">{book.summary?.split(' ').slice(0, 100).join(' ') + (book.summary?.split(' ').length > 100 ? '...' : '')}</p>
               </>
             ) : (
               <p>Loading book information...</p>
@@ -138,11 +138,11 @@ const Chat = () => {
           </div>
 
           <form className="message-input-form" onSubmit={handleSendMessage}>
-            <input
+            <textarea
               type="text"
               value={message}
               onChange={handleMessageChange}
-              placeholder="Type Message Here"
+              placeholder="Start chatting ..."
               className="message-input"
             />
             <button type="submit" className="send-button">

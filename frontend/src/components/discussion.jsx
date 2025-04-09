@@ -354,7 +354,7 @@ export default function BookPopup({ book, onClose, userId }) {
                                 <div className="popup-post-header">
                                 <div className="profile-picture">
                                     {post.profile_picture ? (
-                                        <img src={post.profile_picture} alt="Profile" className="profile-picture" />
+                                        <img src={post.profile_picture} alt="Profile" className="profile-picture-img" />
                                     ) : (
                                         <div className="default-pfp" />
                                     )}
