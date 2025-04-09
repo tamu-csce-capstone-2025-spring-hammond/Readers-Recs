@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.7a164c06.css",
+    "main.js": "/static/js/main.2994e340.js",
+    "static/js/453.8ab44547.chunk.js": "/static/js/453.8ab44547.chunk.js",
+    "static/media/brownbooks.jpg": "/static/media/brownbooks.782a367c6a500f433370.jpg",
+    "static/media/libpic.jpg": "/static/media/libpic.2847aeb12b305f8bdac9.jpg",
+    "static/media/logo.png": "/static/media/logo.c393b50430b7088625c6.png",
+    "static/media/virust.ttf": "/static/media/virust.80ac16e492e518ce785d.ttf",
+    "index.html": "/index.html",
+    "main.7a164c06.css.map": "/static/css/main.7a164c06.css.map",
+    "main.2994e340.js.map": "/static/js/main.2994e340.js.map",
+    "453.8ab44547.chunk.js.map": "/static/js/453.8ab44547.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7a164c06.css",
+    "static/js/main.2994e340.js"
+  ]
+}
