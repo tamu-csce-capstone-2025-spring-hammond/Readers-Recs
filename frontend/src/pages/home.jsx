@@ -4,6 +4,8 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
+import BookPopup from '../components/discussion';
+import { ClipLoader } from "react-spinners";
 import BACKEND_URL from "../api";
 
 const BookTitle = ({ title }) => {
@@ -31,6 +33,9 @@ const Home = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [loadingBookshelf, setLoadingBookshelf] = useState(true);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showPopUp, setShowPopUp] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(1);
 
   // Animate elements on page load
   useEffect(() => {
