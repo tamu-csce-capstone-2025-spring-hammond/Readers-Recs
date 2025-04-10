@@ -18,7 +18,7 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position, cur
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const handleFinishedClick = () => {
         setShowRatingPopup(true);
-    };
+    };      
     const handleRatingClick = (rating) => {
         console.log("Selected rating:", rating);
         setShowRatingPopup(false);
@@ -66,11 +66,11 @@ export default function AddPopUp({ book, onClose, updateBookshelf, position, cur
                     <p>Currently Reading</p>
                 </div>
                 <div className="add-to-read">
-                    <button className="plus-button-discussion" onClick={() => handleUpdateBookshelf("to-read")}> + </button>
+                    <button className="plus-button-discussion" onClick={() => handleUpdateBookshelf(book, "to-read", "mid")}> + </button>
                     <p>To-Read Shelf</p>
                 </div>
                 <div className="add-shelf">
-                    <button className="plus-button-discussion" onClick={() => handleUpdateBookshelf("read")}> + </button>
+                    <button className="plus-button-discussion" onClick={() => handleFinishedClick()}> + </button>
                     <p>Finished Reading</p>
                 </div>
             </div>
