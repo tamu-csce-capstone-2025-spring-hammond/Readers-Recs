@@ -2687,4 +2687,101 @@ input[type=file] {
 .cancel-button:hover {
   background-color: #f47970;
   color: #0e3523;
+}
+
+.bookpopup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bookpopup-container {
+  background: #7e4f34;
+  width: 90%;
+  max-height: 90vh;
+  padding: 50px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow-y: auto;
+}
+.bookpopup-container .bookpopup-content {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+}
+.bookpopup-container .bookpopup-content .bookpopup-image {
+  width: 150px;
+  height: auto;
+  background-color: #f0f0f0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.bookpopup-container .bookpopup-content .bookpopup-image .bookpopup-cover-img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.bookpopup-container .bookpopup-content .bookpopup-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 5px;
+  text-align: left;
+  color: #EBE8E1;
+}
+.bookpopup-container .bookpopup-content .bookpopup-details .bookpopup-title {
+  font-size: 32px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+}
+.bookpopup-container .bookpopup-content .bookpopup-details .bookpopup-author {
+  font-size: 24px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+.bookpopup-container .bookpopup-content .bookpopup-details .bookpopup-info {
+  font-size: 16px;
+  font-family: "Open Sans", sans-serif;
+  line-height: 1;
+}
+.bookpopup-container .bookpopup-description {
+  width: 100%;
+  margin-top: 20px;
+  font-size: 16px;
+  font-family: "Open Sans", sans-serif;
+  text-align: left;
+  color: #EBE8E1;
+  margin-bottom: 20px;
+}
+.bookpopup-container .bookpopup-close {
+  background: none;
+  border: none;
+  font-size: 48px;
+  cursor: pointer;
+  color: #EBE8E1;
+  position: absolute;
+  top: 5px;
+  right: 25px;
+}
+.bookpopup-container .bookpopup-close:hover, .bookpopup-container .bookpopup-close:focus {
+  color: #2A664D;
 }/*# sourceMappingURL=style.css.map */

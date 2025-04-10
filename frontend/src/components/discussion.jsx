@@ -327,7 +327,7 @@ export default function BookPopup({ book, onClose, userId }) {
                         {isLoadingStatus ? (
                             <p className="popup-info">Loading book status...</p>
                         ) : (
-                            <p className="popup-info">Bookshelf status: {bookStatus}</p>
+                            <p className="popup-info">Bookshelf status: {bookStatus?.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</p>
                         )}
                         <p className="popup-info">Page Count: {book.page_count}</p>
                         <p className="popup-info">
