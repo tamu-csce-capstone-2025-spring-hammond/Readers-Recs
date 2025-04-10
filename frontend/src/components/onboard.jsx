@@ -16,7 +16,8 @@ const GenreSelectionModal = ({ onComplete }) => {
     "Classics",
     "Self-Help",
     "Religion",
-    "Nonfiction"
+    "Nonfiction",
+    "Science Fiction",
   ];
 
   const handleGenreSelect = (genre) => {
@@ -35,6 +36,22 @@ const GenreSelectionModal = ({ onComplete }) => {
         return;
       }
 
+      // API Call for Recommendations
+      const rec_response = await fetch(`http://localhost:8000/recs/api/user/onboarding/recommendations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({genres: selectedGenres})
+      });
+      if (rec_response.ok) {
+        console.log("Genres added to rec model successfully");
+      } else {
+        console.log(rec_response);
+        console.error("Failed to add :(");
+      }
+
       // to be implemented
       // Make API call to save the genres
       const response = await fetch('http://localhost:8000/user/save-genres', {
@@ -48,6 +65,8 @@ const GenreSelectionModal = ({ onComplete }) => {
 
       if (response.ok) {
         console.log("Genres saved successfully");
+        window.location.href = "/home";
+
         if (onComplete) onComplete();
       } else {
         console.error("Failed to save genres");
@@ -57,6 +76,7 @@ const GenreSelectionModal = ({ onComplete }) => {
       console.error("Error saving genres:", error);
       if (onComplete) onComplete();
     }
+   
   };
 
   return (

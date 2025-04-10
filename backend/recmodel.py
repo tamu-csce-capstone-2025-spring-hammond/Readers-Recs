@@ -65,6 +65,7 @@ def update_genre_weights_only(user_id, interested_genres):
 def process_wishlist(user_id):
     to_read_shelf = get_unread_books(user_id)
     books_to_read = []
+    print("To read:", to_read_shelf)
     for book in to_read_shelf:
         book_id = book["book_id"]
         book_obj = books_collection.find_one({"_id": book_id})
@@ -76,6 +77,7 @@ def process_wishlist(user_id):
         print("USER NOT FOUND")
     for book in books_to_read:
         genres = book["genre_tags"]
+        print("BOOK GENRES:", genres)
         weight_change = 0.5
         genre_weights = retrieve_genre_weights(user_id)
         if isinstance(genre_weights, str):
@@ -87,10 +89,11 @@ def process_wishlist(user_id):
             else:
                 genre_weights[genre] += weight_change
 
-        # print("genre weights:", genre_weights)
-        update_genre_weights(user_id, genre_weights)
+        print("NEW genre weights:", genre_weights)
+        print("UPDATING...:", update_genre_weights(user_id, genre_weights))
+
         # print(update_user_gw(user_id, genre_weights))
-        # print("genre weights:", retrieve_genre_weights(user_id))
+        print("genre weights:", retrieve_genre_weights(user_id))
 
         # Embedding update
         user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
@@ -144,8 +147,7 @@ def process_user_rating(user_id, book_id, rating):
 
     # print(update_user_gw(user_id, genre_weights))
     # print("User new genre weights:", retrieve_genre_weights(user_id))
-    retrieve_genre_weights(user_id)
-
+    update_genre_weights(user_id, genre_weights)
     # Embedding update
     if rating == "pos":
         user_embedding = retrieve_user_embedding(user_id)  # Retrieve embedding from DB
@@ -166,10 +168,10 @@ def process_user_rating(user_id, book_id, rating):
         update_user_embedding(user_id, new_embedding.tolist())
 
 
-def update_user_gw(user_id, genre_weights):
-    """Update the user's genre weights in the database."""
-    redis_client.set(f"genre_weights:{user_id}", json.dumps(genre_weights))
-    update_genre_weights(user_id, genre_weights)
+# def update_user_gw(user_id, genre_weights):
+#     """Update the user's genre weights in the database."""
+#     redis_client.set(f"genre_weights:{user_id}", json.dumps(genre_weights))
+#     update_genre_weights(user_id, genre_weights)
 
 
 def update_user_embedding(user_id, new_embedding):
@@ -223,7 +225,8 @@ def update_book_embeddings(books):
             )
 
 
-def generate_recs(user_id, top_n=6):
+def generate_recs(user_id, top_n=6, count=1):
+    print("USERID IN RECS:", user_id)
     print("generating recs")
     user_embedding = retrieve_user_embedding(user_id)
     # user_embedding = np.array(retrieve_user_embedding(user_id))
@@ -279,41 +282,78 @@ def generate_recs(user_id, top_n=6):
     # recommendations.sort(key=lambda x: x[1], reverse=True)
 
     # return [book for book, _ in recommendations[:top_n]]
-
+    use_similarities = True
+    if np.all(user_embedding == 0):
+        use_similarities = False
     similarities = cosine_similarity(user_embedding.reshape(1, -1), book_embeddings)[0]
 
     recommendations = []
-    for book, sim in zip(valid_books, similarities):
-        genre_score = sum(
-            genre_weights.get(genre, 0) for genre in book.get("genre_tags", [])
-        )
-        total_score = sim + genre_score * 0.1  # Adjust weight factor as needed
-        recommendations.append((book, total_score))
+    # print("genre_weights:", genre_weights)
+
+    if use_similarities:
+        for book, sim in zip(valid_books, similarities):
+            genre_score = sum(
+                genre_weights.get(genre, 0) for genre in book.get("genre_tags", [])
+            )
+            total_score = sim + genre_score * 0.1  # Adjust weight factor as needed
+            recommendations.append((book, total_score))
+    else:
+        # print("No embedding, just genres.")
+        for book in valid_books:
+            book_genres = [g.lower() for g in book.get("genre_tags", [])]
+            genre_score = 0
+            for genre, weight in genre_weights.items():
+                genre_lower = genre.lower()
+                if any(genre_lower in book_genre for book_genre in book_genres):
+                    genre_score += weight
+            # print("GENRE TAGS:", book.get("genre_tags", []))
+            recommendations.append((book, genre_score))
 
     recommendations.sort(key=lambda x: x[1], reverse=True)
+    book_scores = [score for _, score in recommendations[:5]]
+    print(book_scores)
     best_books = [book for book, _ in recommendations[:2]]
 
     # Create a list of books to filter for duplicates
-    remaining_books = [book for book, _ in recommendations[2:20]]
+    start = 2 + (count - 1)
+    end = 40 + (count * 5)
+    remaining_books = [book for book, _ in recommendations[start:end]]
 
     # Filter out books that are considered duplicates (same author and similar title)
+    def adjustAuthor(author):
+        if isinstance(author, list):
+            author = " ".join(author)
+        author = author.lower()
+        author = re.sub(r"[^\w\s]", "", author)
+        words = author.split()
+        words.sort()
+        return " ".join(words)
+
+    seen_authors = set()
     filtered_books = []
     for book in remaining_books:
+        raw_author = book.get("author", "")
+        author = adjustAuthor(raw_author)
+        # print("AUTHOR: ", author)
+
+        if author in seen_authors:
+            continue
+
         duplicate_found = False
         for seen_book in best_books:
             if is_duplicate(book, seen_book):
                 duplicate_found = True
                 break
         if not duplicate_found:
+            seen_authors.add(author)
             filtered_books.append(book)
 
     # Ensure we have enough books to randomly select
-    if len(filtered_books) >= 4:
-        random_books = random.sample(filtered_books, 4)
+    num_needed = top_n - len(best_books)
+    if len(filtered_books) < num_needed:
+        random_books = filtered_books
     else:
-        random_books = (
-            filtered_books  # If fewer than 4 options, select all remaining books
-        )
+        random_books = random.sample(filtered_books, num_needed)
 
     # Combine the best 2 books with the randomly selected 4 books
     final_recommendations = best_books + random_books
@@ -365,23 +405,25 @@ def is_duplicate(book1, book2):
     return False
 
 
-def recommend_books(user_id):
+def recommend_books(user_id, count):
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
     # print("starting gw: ", retrieve_genre_weights(user_id))
-    update_embedding(user_id, np.zeros(384).tolist())
+    update_embedding(user_id, np.zeros(384))
     # print("starting embedding: ", retrieve_embedding(user_id))
     # print("2 ***************************")
     process_reading_history(user_id)
     # print("3 ***************************")
     process_wishlist(user_id)
     # print("4 ***************************")
-    return generate_recs(user_id=user_id)
+    return generate_recs(user_id=user_id, count=1)
+
+
 
 
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)
-    return generate_recs(user_id=user_id)
+    return True
 
 
 # Example usage:
@@ -390,11 +432,12 @@ def onboarding_recommendations(user_id, interests):
 # process_reading_history(user_id)
 # print(recommend_books(user_id))
 
-user_id = "67e4821400344e912e331e32"
+# user_id = "67f58b311c43cef5572babc2"
 
-interested_genres = ["Science Fiction", "Fantasy", "Romance"]
+# interested_genres = ["Science Fiction", "Fantasy", "Romance"]
 
-recs = onboarding_recommendations(user_id, interested_genres)
+# result = onboarding_recommendations(user_id, interested_genres)
 
-for rec in recs:
-    print(rec["title"])
+# print("result:", result)
+# print("recs being generated")
+# print(recommend_books(user_id))
