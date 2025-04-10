@@ -19,6 +19,24 @@ export default function BookPopup({ book, onClose, userId }) {
     const [replyText, setReplyText] = useState({});
     const [replyingTo, setReplyingTo] = useState(null); // the comment being replied to
     
+    const [currentReading, setCurrentReading] = useState(null);
+    const fetchCurrentReading = async (userId, token) => {
+        try {
+          const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+      
+          if (res.ok) {
+            const data = await res.json();
+            setCurrentReading(data);
+            console.log("Current Reading:", data);
+          } else {
+            setCurrentReading(null);
+          }
+        } catch (err) {
+          console.error("Error fetching currently reading book:", err);
+        }
+      };
 
     const fetchBookStatus = async () => {
         setIsLoadingStatus(true);
@@ -71,6 +89,7 @@ export default function BookPopup({ book, onClose, userId }) {
                 }
     
                 const data = await response.json();
+                await fetchCurrentReading(data.id, token);
             } catch (error) {
                 console.error("Error fetching user profile:", error);
             }
@@ -400,6 +419,8 @@ export default function BookPopup({ book, onClose, userId }) {
                     onClose={closeAddPopup}
                     updateBookshelf={updateBookshelf}
                     position={addPopupBook.position}
+                    currentReading={currentReading}
+                    setCurrentReading={setCurrentReading}
                 />
             )}
         </div>

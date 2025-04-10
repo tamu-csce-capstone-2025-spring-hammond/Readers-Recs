@@ -226,11 +226,11 @@ h3 {
 }
 .profile-bottom .progress-bar .progress-indicator {
   width: 100%;
-  background-color: #796855;
+  background: linear-gradient(0deg, #2A664D, #7e4f34);
   position: absolute;
   bottom: 0;
   border-radius: 8px;
-  transition: height 0.3s ease;
+  transition: height 0.3s ease-in-out;
 }
 .profile-bottom .profile-bottom-right {
   flex: 1;
