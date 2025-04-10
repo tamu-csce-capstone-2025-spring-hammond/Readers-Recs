@@ -332,7 +332,7 @@ def generate_recs(user_id, top_n=6, count=1):
     for book in remaining_books:
         raw_author = book.get("author", "")
         author = adjustAuthor(raw_author)
-        print("AUTHOR: ", author)
+        # print("AUTHOR: ", author)
 
         if author in seen_authors:
             continue
@@ -351,13 +351,7 @@ def generate_recs(user_id, top_n=6, count=1):
     if len(filtered_books) < num_needed:
         random_books = filtered_books
     else:
-<<<<<<< HEAD
         random_books = random.sample(filtered_books, num_needed)
-=======
-        random_books = (
-            filtered_books  # If fewer than 4 options, select all remaining books
-        )
->>>>>>> fb6c659 (linting & requirements update)
 
     # Combine the best 2 books with the randomly selected 4 books
     final_recommendations = best_books + random_books
@@ -409,11 +403,7 @@ def is_duplicate(book1, book2):
     return False
 
 
-<<<<<<< HEAD
 def recommend_books(user_id, count):
-=======
-def recommend_books(user_id):
->>>>>>> fb6c659 (linting & requirements update)
     # print("1 ***************************")
     update_genre_weights(user_id, dict())
     # print("starting gw: ", retrieve_genre_weights(user_id))
