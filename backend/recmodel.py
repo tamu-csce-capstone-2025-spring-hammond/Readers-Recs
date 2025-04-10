@@ -21,7 +21,7 @@ from models.users import (
 from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 
 # Initialize the book collection on startup
-book_collection = BookCollection()
+# book_collection = BookCollection()
 
 # load_dotenv(override=True)
 # uri = os.getenv("MONGO_URI")
@@ -235,7 +235,8 @@ def generate_recs(user_id, top_n=6, count=1):
     genre_weights = retrieve_genre_weights(user_id)
     # print("gw:", genre_weights)
     print("retrieving books...")
-    books = book_collection.get_books()  # Get books from memory
+    # books = book_collection.get_books()  # Get books from memory
+    books = list(books_collection.find({}))
     print(f"Total books retrieved: {len(books)}")
 
     update_book_embeddings(books)
