@@ -4,7 +4,7 @@ import { ChevronRight, BookOpen, Clock, Award, PlusCircle, ThumbsUp, ThumbsDown,
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import UpdateProgress from '../components/updateprogress';
-import BookPopup from '../components/discussion';
+import BookPopup from '../components/book-info';
 import { ClipLoader } from "react-spinners";
 import BACKEND_URL from "../api";
 

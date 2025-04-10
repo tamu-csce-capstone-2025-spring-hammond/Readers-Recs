@@ -53,7 +53,15 @@ const Profile = () => {
           });
           if (response.ok) {
             const data = await response.json();
-            setBookshelf((prev) => ({ ...prev, [key]: data }));
+            if (key === "currentRead" && data) {
+              const pageRes = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
+              if (pageRes.ok) {
+                const pageData = await pageRes.json();
+                data.current_page = pageData.page_number;
+                data.progress = Math.round((pageData.page_number / data.page_count) * 100);
+              }
+            }
+            setBookshelf((prev) => ({ ...prev, [key]: data }));            
           }
         }
       } catch (error) {
@@ -98,7 +106,15 @@ const Profile = () => {
         });
         if (response.ok) {
           const data = await response.json();
-          setBookshelf((prev) => ({ ...prev, [key]: data }));
+          if (key === "currentRead" && data) {
+            const pageRes = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${data._id}/current-page`);
+            if (pageRes.ok) {
+              const pageData = await pageRes.json();
+              data.current_page = pageData.page_number;
+              data.progress = Math.round((pageData.page_number / data.page_count) * 100);
+            }
+          }
+          setBookshelf((prev) => ({ ...prev, [key]: data }));          
         }
       }
     } catch (error) {
@@ -182,7 +198,7 @@ const Profile = () => {
                 <div className="current-book-cover-progress">
                   <img src={bookshelf.currentRead.cover_image} alt={bookshelf.currentRead.title} className="book-cover-profile current" />
                   <div className="progress-bar">
-                    <div className="progress-indicator" style={{ height: `${bookshelf.currentRead.progress}%` }}></div>
+                    <div className="progress-indicator" style={{ height: `${bookshelf.currentRead?.progress ?? 0}%`  }}></div>
                   </div>
                 </div>
                 <div className="current-book-title" style={{ fontSize }}>

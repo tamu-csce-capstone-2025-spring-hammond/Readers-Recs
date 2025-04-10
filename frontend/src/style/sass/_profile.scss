@@ -148,11 +148,11 @@
     
     .progress-indicator {
       width: 100%;
-      background-color: $-brown;
+      background: linear-gradient(0deg, $-green, $-rust-brown);
       position: absolute;
       bottom: 0;
       border-radius: 8px;
-      transition: height 0.3s ease;
+      transition: height 0.3s ease-in-out;
     }
   }
 
