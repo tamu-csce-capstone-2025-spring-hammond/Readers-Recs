@@ -229,6 +229,8 @@ def generate_recs(user_id, top_n=6, count=1):
     print("USERID IN RECS:", user_id)
     print("generating recs")
     user_embedding = retrieve_user_embedding(user_id)
+    # user_embedding = np.array(retrieve_user_embedding(user_id))
+
     # print("user emb:", user_embedding)
     genre_weights = retrieve_genre_weights(user_id)
     # print("gw:", genre_weights)
@@ -415,6 +417,7 @@ def recommend_books(user_id, count):
     process_wishlist(user_id)
     # print("4 ***************************")
     return generate_recs(user_id=user_id, count=1)
+
 
 
 

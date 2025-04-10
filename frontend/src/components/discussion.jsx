@@ -1,15 +1,13 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus } from 'lucide-react';
 import '../style/style.css';
 import AddPopUp from '../components/add-to-bookshelf-discussion';
+import BACKEND_URL from "../api";
 
 export default function BookPopup({ book, onClose, userId }) {
     const [addPopupBook, setAddPopupBook] = useState(null);
     const [bookStatus, setBookStatus] = useState(null);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true); 
-
-    // const [userId, setUserId] = useState(null);
     const [isAddingPost, setIsAddingPost] = useState(false);
     const [newPostTitle, setNewPostTitle] = useState('');
     const [newPostContent, setNewPostContent] = useState('');
@@ -17,11 +15,15 @@ export default function BookPopup({ book, onClose, userId }) {
     const [newComment, setNewComment] = useState('');
     // local state for testing posts
     const [posts, setPosts] = useState(book.posts || []);
+
+    const [replyText, setReplyText] = useState({});
+    const [replyingTo, setReplyingTo] = useState(null); // the comment being replied to
     
+
     const fetchBookStatus = async () => {
         setIsLoadingStatus(true);
         try {
-            const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf/${book._id}/status`, {
+            const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${book._id}/status`, {
                 method: "GET",
             });
 
@@ -46,95 +48,203 @@ export default function BookPopup({ book, onClose, userId }) {
             setIsLoadingStatus(false); // Set loading state to false when done
         }
     };
-    
-    useEffect(() => {
-        // const fetchUserProfile = async () => {
-        //     const token = localStorage.getItem("access_token");
-    
-        //     if (!token) {
-        //         console.error("No access token found.");
-        //         return;
-        //     }
-    
-        //     try {
-        //         const response = await fetch("http://localhost:8000/user/profile", {
-        //             method: "GET",
-        //             headers: {
-        //                 Authorization: `Bearer ${token}`,
-        //             },
-        //         });
-    
-        //         if (!response.ok) {
-        //             throw new Error("Failed to fetch user profile");
-        //         }
-    
-        //         const data = await response.json();
-        //         setUserId(data.id);
-        //         fetchBookStatus(data.id); // Ensure the user ID is set properly
-        //     } catch (error) {
-        //         console.error("Error fetching user profile:", error);
-        //     }
-        // };
 
-        fetchBookStatus();
-        
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const token = localStorage.getItem("access_token");
+    
+            if (!token) {
+                console.error("No access token found.");
+                return;
+            }
+    
+            try {
+                const response = await fetch(`${BACKEND_URL}/user/profile`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user profile");
+                }
+    
+                const data = await response.json();
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            }
+        };
+    
+        fetchUserProfile();
     }, []); // Run only on component mount
+
+    // Fetch posts
+    const fetchPosts = useCallback(async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`);
+            const data = await response.json();
+            if (response.ok) {
+              setPosts(data);
+            } else {
+              console.error('Error fetching posts:', data.error);
+            }
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+        }
+      }, [book._id]);
+  
+      useEffect(() => {
+          fetchPosts();
+      }, [fetchPosts]);
+  
+      // Fetch comments
+      const fetchComments = async (postId, postIndex) => {
+          try {
+              const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments`);
+              const data = await response.json();
+              if (response.ok) {
+                  const fixedComments = data.map(comment => ({
+                      ...comment,
+                      content: comment.comment_text
+                  }));
+                  const updatedPosts = [...posts];
+                  updatedPosts[postIndex].comments = fixedComments;
+                  setPosts(updatedPosts);
+              } else {
+                  console.error('Error fetching comments:', data.error);
+              }
+          } catch (error) {
+              console.error('Error fetching comments:', error);
+          }
+      };
     
     const toggleComments = (postIndex) => {
-        setIsCommentsVisible(prevState => ({
-            ...prevState,
-            [postIndex]: !prevState[postIndex],
+        const post = posts[postIndex];
+        if (!isCommentsVisible[postIndex]) {
+            fetchComments(post._id, postIndex);
+        }
+        setIsCommentsVisible(prev => ({
+            ...prev,
+            [postIndex]: !prev[postIndex],
         }));
     };
 
-    const handleAddPost = () => {
-        setIsAddingPost(true);
+    const handleAddNewPost = async () => {
+      if (!newPostTitle || !newPostContent) return;
+  
+      try {
+          const response = await fetch(`${BACKEND_URL}/api/books/${book._id}/posts`, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                  user_id: userId,
+                  title: newPostTitle,
+                  post_text: newPostContent,
+              }),
+          });
+  
+          if (!response.ok) {
+              const text = await response.text();
+              console.error("Error creating post:", text);
+              return;
+          }
+  
+          const data = await response.json();
+          console.log("Post created:", data);
+  
+          setNewPostTitle('');
+          setNewPostContent('');
+          setIsAddingPost(false);
+          await fetchPosts();
+      } catch (error) {
+          console.error('Error creating post:', error);
+      }
+    };
+     
+    const handleAddComment = async (postIndex) => {
+        const post = posts[postIndex];
+        const commentText = newComment[postIndex];
+  
+        if (!commentText || !commentText.trim()) return;
+  
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/posts/${post._id}/comments`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    comment_text: commentText,
+                    post_id: post._id,
+                }),
+            });
+  
+            if (response.ok) {
+                console.log('Comment created');
+                
+                await fetchComments(post._id, postIndex);
+                setNewComment(prev => ({
+                    ...prev,
+                    [postIndex]: ''
+                }));
+            } else {
+                const text = await response.text();
+                console.error('Error creating comment:', text);
+            }
+        } catch (error) {
+            console.error('Error creating comment:', error);
+        }
     };
 
+    const handleReplySubmit = async (postId, parentCommentId) => {
+        const reply = replyText[parentCommentId];
+        if (!reply || !reply.trim()) return;
+      
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments/${parentCommentId}/reply`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: userId,
+              comment_text: reply,
+            }),
+          });
+          
+      
+          if (response.ok) {
+            console.log('Reply created');
+            await fetchPosts(); // re-fetch posts and comments
+            setReplyText(prev => ({ ...prev, [parentCommentId]: '' }));
+            setReplyingTo(null);
+          } else {
+            const data = await response.json();
+            console.error('Error creating reply:', data.error);
+          }
+        } catch (error) {
+          console.error('Error creating reply:', error);
+        }
+      };      
+      
+  
     const handleCancelNewPost = () => {
         setIsAddingPost(false);
         setNewPostTitle('');
         setNewPostContent('');
     };
 
-    const handleAddNewPost = () => {
-        const newPost = {
-            username: "Test User", // test data
-            title: newPostTitle,
-            content: newPostContent,
-            comments: [],
-        };
-        setPosts([newPost, ...posts]); // test state
-        handleCancelNewPost();
-    };
-
-    const handleAddComment = (postIndex) => {
-        const updatedPosts = [...posts];
-        const newCommentData = {
-            content: newComment,
-            username: "Test User", // test data
-        };
-        updatedPosts[postIndex].comments.push(newCommentData);
-        setPosts(updatedPosts);
-        setNewComment('');
-    };
-
-    const handleCommentChange = (e) => {
-        setNewComment(e.target.value);
-    };
-
-
     const openAddPopup = (book, event) => {
         event.stopPropagation();
         const rect = event.currentTarget.getBoundingClientRect();
         setAddPopupBook({ book, position: { top: rect.top, left: rect.right } });
     };
-    
+
     const closeAddPopup = () => setAddPopupBook(null);
 
     const updateBookshelf = async (book, status) => {
         try {
-            const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+            const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -145,18 +255,40 @@ export default function BookPopup({ book, onClose, userId }) {
                     rating: "mid",
                 }),
             });
-    
             if (response.ok) {
                 fetchBookStatus(); // Re-fetch the book status after updating
             }
-
             return response;
 
         } catch (error) {
-        console.error(`Error updating bookshelf (${status}):`, error);
-        return { ok: false };
+            console.error(`Error updating bookshelf (${status}):`, error);
+            return { ok: false };
         }
     };
+
+    const handleCommentChange = (postIndex, value) => {
+      setNewComment(prev => ({
+          ...prev,
+          [postIndex]: value
+      }));
+    };
+
+    const renderComments = (comments, postId) => {
+        return comments.map((comment, idx) => (
+          <div key={idx} className="popup-comment">
+            <p><strong>{comment.username || "Anonymous"}:</strong> {comment.content || comment.comment_text}</p>
+      
+            {/* Recursive render of replies */}
+            {comment.replies && comment.replies.length > 0 && (
+              <div className="popup-replies">
+                {renderComments(comment.replies, postId)}
+              </div>
+            )}
+          </div>
+        ));
+    };
+      
+  
 
     return (
         <div className="popup-overlay">
@@ -194,7 +326,7 @@ export default function BookPopup({ book, onClose, userId }) {
 
                 {/* Discussion Section */}
                 <div className="popup-discussion">
-                    <button className="add-post-btn" onClick={handleAddPost}>+</button>
+                <button className="add-post-btn" onClick={() => setIsAddingPost(true)}>+</button>
                     {isAddingPost && (
                         <div className="add-post-form">
                             <input
@@ -220,30 +352,32 @@ export default function BookPopup({ book, onClose, userId }) {
                         posts.map((post, index) => (
                             <div key={index} className="popup-post">
                                 <div className="popup-post-header">
-                                    <div className="popup-pfp"></div>
+                                <div className="profile-picture">
+                                    {post.profile_picture ? (
+                                        <img src={post.profile_picture} alt="Profile" className="profile-picture-img" />
+                                    ) : (
+                                        <div className="default-pfp" />
+                                    )}
+                                </div>
                                     <div className="popup-post-details">
                                         <p className="popup-username">{post.username}</p>
                                         <p className="popup-post-title">{post.title}</p>
-                                        <p className="popup-post-content">{post.content}</p>
+                                        <p className="popup-post-content">{post.post_text}</p>
                                         <button className="comment-btn" onClick={() => toggleComments(index)}>
                                             {isCommentsVisible[index] ? "▲" : "▼"}
                                         </button>
                                         {isCommentsVisible[index] && (
                                             <div className="popup-comments">
                                                 {post.comments && post.comments.length > 0 ? (
-                                                    post.comments.map((comment, idx) => (
-                                                        <div key={idx} className="popup-comment">
-                                                            <p><strong>{comment.username}:</strong> {comment.content}</p>
-                                                        </div>
-                                                    ))
+                                                    renderComments(post.comments, post._id)
                                                 ) : (
                                                     <p>No comments yet. Be the first to comment!</p>
                                                 )}
                                                 <div className="comment-form">
-                                                    <textarea
-                                                        value={newComment}
-                                                        onChange={handleCommentChange}
-                                                        placeholder="Add a comment..."
+                                                  <textarea
+                                                      value={newComment[index] || ''}
+                                                      onChange={(e) => handleCommentChange(index, e.target.value)}
+                                                      placeholder="Add a comment..."
                                                     />
                                                     <div className="comment-btns">
                                                         <button onClick={() => handleAddComment(index)}>Submit</button>

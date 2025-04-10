@@ -91,54 +91,6 @@ def get_user_profile():
     return jsonify(user_profile), 200
 
 
-@user_bp.route("/check-email-exists", methods=["GET"])
-def check_email_exists():
-    email = request.args.get("email")
-    if not email:
-        return jsonify({"error": "Email parameter is required"}), 400
-
-    user = read_user_by_email(email)
-
-    # print("DEBUG: Queried Email:", email)
-    # print("DEBUG: User Found:", user)
-    exists = False if user == "User not found." or user is None else True
-    return jsonify({"exists": exists})
-
-
-@user_bp.route("/save-genres", methods=["POST"])
-def save_genres():
-    """
-    Save selected genres to the user's interests using the model-level `add_interest`.
-    """
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return jsonify({"error": "Missing or invalid Authorization header"}), 401
-
-    access_token = auth_header.split(" ")[1]
-
-    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
-    token_info_response = requests.get(token_info_url)
-    token_info = token_info_response.json()
-
-    if "email" not in token_info:
-        return jsonify({"error": "Invalid token"}), 401
-
-    user = read_user_by_email(token_info["email"])
-    if not user or isinstance(user, str):
-        return jsonify({"error": "User not found"}), 404
-
-    user_id = user["_id"]
-
-    data = request.get_json()
-    genres = data.get("genres", [])
-    if not isinstance(genres, list) or not genres:
-        return jsonify({"error": "Genres must be a non-empty list"}), 400
-
-    for genre in genres:
-        add_interest(user_id, genre)
-
-    return jsonify({"message": "Genres saved successfully"}), 200
-
 @user_bp.route("/profile/<user_id>", methods=["GET"])
 def get_user_by_id(user_id):
     """
@@ -195,4 +147,53 @@ def edit_profile(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/check-email-exists", methods=["GET"])
+def check_email_exists():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "Email parameter is required"}), 400
+
+    user = read_user_by_email(email)
+
+    # print("DEBUG: Queried Email:", email)
+    # print("DEBUG: User Found:", user)
+    exists = False if user == "User not found." or user is None else True
+    return jsonify({"exists": exists})
+
+
+@user_bp.route("/save-genres", methods=["POST"])
+def save_genres():
+    """
+    Save selected genres to the user's interests using the model-level `add_interest`.
+    """
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+    access_token = auth_header.split(" ")[1]
+
+    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
+    token_info_response = requests.get(token_info_url)
+    token_info = token_info_response.json()
+
+    if "email" not in token_info:
+        return jsonify({"error": "Invalid token"}), 401
+
+    user = read_user_by_email(token_info["email"])
+    if not user or isinstance(user, str):
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = user["_id"]
+
+    data = request.get_json()
+    genres = data.get("genres", [])
+    if not isinstance(genres, list) or not genres:
+        return jsonify({"error": "Genres must be a non-empty list"}), 400
+
+    for genre in genres:
+        add_interest(user_id, genre)
+
+    return jsonify({"message": "Genres saved successfully"}), 200
 
