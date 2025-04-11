@@ -82,6 +82,9 @@ def get_read_books_api(user_id):
             books_read = list()
             for book in books:
                 b = read_book_by_bookId(book["book_id"])
+                if isinstance(b, str):
+                    print("Error with retrieving book: ", b)
+                    continue
                 rating = book.get("rating", "mid")
                 b["rating"] = rating
                 b = {
@@ -91,6 +94,7 @@ def get_read_books_api(user_id):
                     for key, value in b.items()
                 }
                 books_read.append(b)
+            # print(len(books_read))
             return jsonify(books_read), 200
         else:
             return jsonify({"error": books}), 400
