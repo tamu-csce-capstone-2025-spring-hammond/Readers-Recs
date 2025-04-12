@@ -148,10 +148,10 @@ const Home = () => {
     const userId = user?.id;
     const bookId = bookshelf.currentRead._id;
     const totalPages = bookshelf.currentRead.page_count;
-  
     const newPageNumber = Math.round((newProgress / 100) * totalPages);
   
     try {
+      // Update progress
       const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/current-page`, {
         method: 'PUT',
         headers: {
@@ -164,10 +164,31 @@ const Home = () => {
       if (!response.ok) throw new Error('Failed to update progress');
   
       setBookProgress(newProgress);
-      setBookshelf((prev) => ({
-        ...prev,
-        currentRead: { ...prev.currentRead, current_page: newPageNumber },
-      }));
+  
+      if (newProgress === 100) {
+        const finishResponse = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf/${bookId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify({ status: "read" }),
+        });
+        if (!finishResponse.ok) throw new Error('Failed to mark book as read');
+        setBookshelf((prev) => ({
+          ...prev,
+          currentRead: null,
+          lastRead: {
+            ...prev.currentRead,
+            current_page: newPageNumber,
+          },
+        }));
+      } else {
+        setBookshelf((prev) => ({
+          ...prev,
+          currentRead: { ...prev.currentRead, current_page: newPageNumber },
+        }));
+      }
   
     } catch (error) {
       console.error('Error updating progress:', error);
@@ -175,6 +196,7 @@ const Home = () => {
       setShowUpdateProgress(false);
     }
   };
+  
 
   const handleRatingClick = async (newRating) => {
     if (!user || !bookshelf.lastRead) return;
