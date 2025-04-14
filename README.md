@@ -13,6 +13,8 @@ Enhancing Book Discovery & Interaction with ML-Driven Recommendations
   - [Backend](#backend)
     - [Database API Connection](#database-api-connection)
     - [ML Model](#ml-model)
+   - [ML Model](#ml-model)
+   - [Database Calls](#database-calls)
   - [Frontend](#frontend)
   - [Entering the Virtual Environment](#entering-the-virtual-environment)
 - [Testing](#testing)
@@ -51,13 +53,17 @@ npm install react react-router-dom
 ## Backend
 ### Database API Connection
 ```
-python -m backend.main
+cd backend
+python -m main
 ```
-
 ### ML Model
 ```
 cd backend
 python .\book-rec-model.py
+```
+### Database Calls
+```
+python -m backend.main
 ```
 
 ## Frontend
