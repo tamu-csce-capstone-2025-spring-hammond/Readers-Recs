@@ -420,8 +420,6 @@ def recommend_books(user_id, count):
     return generate_recs(user_id=user_id, count=1)
 
 
-
-
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)
     return True
