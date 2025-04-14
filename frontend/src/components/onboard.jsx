@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BACKEND_URL from "../api";
 
 const GenreSelectionModal = ({ onComplete }) => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const GenreSelectionModal = ({ onComplete }) => {
       }
 
       // API Call for Recommendations
-      const rec_response = await fetch(`http://localhost:8000/recs/api/user/onboarding/recommendations`, {
+      const rec_response = await fetch(`${BACKEND_URL}/recs/api/user/onboarding/recommendations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -54,7 +55,7 @@ const GenreSelectionModal = ({ onComplete }) => {
 
       // to be implemented
       // Make API call to save the genres
-      const response = await fetch('http://localhost:8000/user/save-genres', {
+      const response = await fetch('${BACKEND_URL}/user/save-genres', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -26,7 +26,7 @@ const Profile = () => {
         return;
       }
       try {
-        const profileResponse = await fetch('http://localhost:8000/user/profile', {
+        const profileResponse = await fetch(`${BACKEND_URL}/user/profile`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (!profileResponse.ok) throw new Error('Failed to fetch user profile');
@@ -48,7 +48,7 @@ const Profile = () => {
           { key: 'toReadShelf', url: `books/to-read` },
         ];
         for (const { key, url } of endpoints) {
-          const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/${url}`, {
+          const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/${url}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           if (response.ok) {
@@ -150,7 +150,7 @@ const Profile = () => {
     console.log("In delete book function")
     const token = localStorage.getItem('access_token');
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${user.id}/bookshelf/${bookId}`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${user.id}/bookshelf/${bookId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
