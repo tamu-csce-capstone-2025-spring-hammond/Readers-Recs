@@ -5,10 +5,16 @@ from flask_cors import CORS
 # from bson import ObjectId
 import requests
 
-from backend.models.users import create_user, read_user_by_email
+from models.users import (
+    create_user,
+    read_user_by_email,
+    update_user_settings,
+    read_user_by_username,
+)
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
+CORS(user_bp, origins=["http://localhost:3000"])  # added debugging
 
 
 @user_bp.route("/profile", methods=["GET"])
@@ -28,6 +34,7 @@ def get_user_profile():
     token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
     token_info_response = requests.get(token_info_url)
     token_info = token_info_response.json()
+    print("Token Info:", token_info)
 
     if "email" not in token_info:
         return token_info_response.json()
@@ -78,6 +85,115 @@ def get_user_profile():
         "email": user.get("email_address", ""),
         "profile_picture": user.get("profile_image", ""),
         "created_at": user.get("created_at", ""),
+        "username": user.get("username", ""),
     }
 
     return jsonify(user_profile), 200
+
+
+@user_bp.route("/profile/<user_id>", methods=["GET"])
+def get_user_by_id(user_id):
+    """
+    Fetch a user's profile by user_id (NOT by access token).
+    """
+    from backend.models.users import read_user_by_id
+
+    user = read_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return (
+        jsonify(
+            {
+                "id": str(user["_id"]),
+                "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                "profile_picture": user.get("profile_image", ""),
+            }
+        ),
+        200,
+    )
+
+
+@user_bp.route("/profile/<user_id>/edit-profile", methods=["POST"])
+def edit_profile(user_id):
+    try:
+        data = request.get_json()
+
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        username = data.get("username", "")
+        profile_image = data.get("profile_image", "")
+
+        # if there is a username, validate that it is unique
+        if username:
+            existing_user = read_user_by_username(username)
+            if existing_user and str(existing_user["_id"]) != user_id:
+                return jsonify({"error": "Username already exists."}), 400
+            if existing_user and str(existing_user["_id"]) == user_id:
+                existing_user = None
+
+        result = update_user_settings(
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            profile_image=profile_image,
+        )
+
+        if result.startswith("Error"):
+            return jsonify({"error": result}), 400
+
+        return jsonify({"message": "Profile updated successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/check-email-exists", methods=["GET"])
+def check_email_exists():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "Email parameter is required"}), 400
+
+    user = read_user_by_email(email)
+
+    # print("DEBUG: Queried Email:", email)
+    # print("DEBUG: User Found:", user)
+    exists = False if user == "User not found." or user is None else True
+    return jsonify({"exists": exists})
+
+
+@user_bp.route("/save-genres", methods=["POST"])
+def save_genres():
+    """
+    Save selected genres to the user's interests using the model-level `add_interest`.
+    """
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+    access_token = auth_header.split(" ")[1]
+
+    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={access_token}"
+    token_info_response = requests.get(token_info_url)
+    token_info = token_info_response.json()
+
+    if "email" not in token_info:
+        return jsonify({"error": "Invalid token"}), 401
+
+    user = read_user_by_email(token_info["email"])
+    if not user or isinstance(user, str):
+        return jsonify({"error": "User not found"}), 404
+
+    user_id = user["_id"]
+
+    data = request.get_json()
+    genres = data.get("genres", [])
+    if not isinstance(genres, list) or not genres:
+        return jsonify({"error": "Genres must be a non-empty list"}), 400
+
+    for genre in genres:
+        add_interest(user_id, genre)
+
+    return jsonify({"message": "Genres saved successfully"}), 200
+

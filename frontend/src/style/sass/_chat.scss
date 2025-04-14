@@ -30,10 +30,16 @@
   background-color: white;
   width: 330px;
   aspect-ratio: 3/4;
-  border-radius: 3px;
+  border-radius: 0px;
   border: 20px solid $-dark-green;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0px;
+  }
 }
 
 .book-details {
@@ -136,6 +142,8 @@
   gap: 10px;
   margin-top: auto;
   padding: 10px 0;
+  max-height: 200px;
+  position: relative;
 }
 
 .message-input {
@@ -156,6 +164,9 @@
 }
 
 .send-button {
+  bottom: 0;
+  right: 0;
+  position: absolute;
   background-color: $-green;
   border: none;
   border-radius: 50%;

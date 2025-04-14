@@ -1,11 +1,11 @@
 # backend/schemas.py
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import List, Optional
+from typing import Dict, List, Optional
 from bson import ObjectId
 from datetime import datetime, date
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
-from zoneinfo import ZoneInfo
+import pytz
 
 
 class PyObjectId(ObjectId):
@@ -36,7 +36,7 @@ class BookSchema(BaseModel):
     page_count: int = Field(default=0)
     genre: str = Field(default="Unknown Genre")
     publication_date: date = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago")).date()
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago")).date()
     )
     isbn: str = Field(default="000000000")
     isbn13: str = Field(default="0000000000000")
@@ -76,7 +76,7 @@ class UserSchema(BaseModel):
     interests: List[str] = Field(default_factory=list)
     profile_image: str = Field(default="default_profile_image.jpg")
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
-    genre_weights: List[dict[str, float]] = Field(default_factory=list)
+    genre_weights: Dict[str, float] = Field(default_factory=dict)
     embedding: List[float] = Field(default_factory=list)
     # genre_tags: List[str] = Field(default_factory=list)
 
@@ -95,7 +95,7 @@ class UserBookshelfSchema(BaseModel):
     )
     page_number: int = Field(default=0)
     date_added: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
     date_started: Optional[datetime] = None
     date_finished: Optional[datetime] = None
@@ -112,10 +112,10 @@ class PostSchema(BaseModel):
     title: str = Field(default="Untitled Post")
     post_text: str = Field(default="No content provided.")
     date_posted: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
     date_edited: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
     tags: List[str] = Field(default_factory=list)
 
@@ -129,13 +129,13 @@ class CommentSchema(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     post_id: PyObjectId = Field(default_factory=PyObjectId)
     user_id: PyObjectId = Field(default_factory=PyObjectId)
-    parent_comment_id: int = Field(default=0)
+    parent_comment_id: Optional[PyObjectId] = None
     comment_text: str = Field(default="No content provided.")
     date_posted: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
     date_edited: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
 
     model_config = ConfigDict(populate_by_name=True)
@@ -150,10 +150,10 @@ class ChatMessageSchema(BaseModel):
     user_id: PyObjectId = Field(default_factory=PyObjectId)
     message_text: str = Field(default="No content provided.")
     date_posted: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
     date_edited: datetime = Field(
-        default_factory=lambda: datetime.now(ZoneInfo("America/Chicago"))
+        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago"))
     )
 
     model_config = ConfigDict(populate_by_name=True)

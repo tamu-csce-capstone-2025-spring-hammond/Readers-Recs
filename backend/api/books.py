@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
-from backend.database import collections
+from database import collections
 
 books_bp = Blueprint("books", __name__)
 CORS(books_bp)

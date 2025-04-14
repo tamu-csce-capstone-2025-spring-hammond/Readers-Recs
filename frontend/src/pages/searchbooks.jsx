@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Book } from 'lucide-react';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import BookPopUp from '../components/discussion';
 import AddPopUp from '../components/add-to-bookshelf';
+import BACKEND_URL from "../api";
 
 const SearchBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,9 +15,29 @@ const SearchBooks = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [addPopupBook, setAddPopupBook] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [currentReading, setCurrentReading] = useState(null);
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
   const handleFilterChange = (e) => setFilterType(e.target.value);
+
+  // NOT WORKING :(
+  const fetchCurrentReading = async (userId, token) => {
+    try {
+      const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentReading(data);
+        console.log("Current Reading:", data);
+      } else {
+        setCurrentReading(null);
+      }
+    } catch (err) {
+      console.error("Error fetching currently reading book:", err);
+    }
+  };
 
   const fetchUserProfile = async () => {
     const token = localStorage.getItem("access_token");
@@ -27,26 +48,33 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/user/profile", {
+      const response = await fetch(`${BACKEND_URL}/user/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch user profile");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+  
+        const data = await response.json();
+  
+        setUserId(data.id);
+        localStorage.setItem("userId", data.id);
+  
+        await fetchCurrentReading(data.id, token);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
       }
+    };
+  
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+    
 
-      const data = await response.json();
-
-      setUserId(data.id); // Extract and set the user ID
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-
-  fetchUserProfile();
 
   const fetchBooks = useCallback(async () => {
     if (!searchQuery) {
@@ -59,7 +87,7 @@ const SearchBooks = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
+        `${BACKEND_URL}/api/books?query=${encodeURIComponent(searchQuery)}&type=${filterType}`
       );
 
       const data = await response.json();
@@ -89,6 +117,40 @@ const SearchBooks = () => {
     return () => clearTimeout(timerId);
   }, [fetchBooks]);
 
+  useEffect(() => {
+    const defaultBooks = [
+      'If He Had Been with Me',
+      'Tomorrow, and Tomorrow, and Tomorrow',
+      'Tuesdays with Morrie',
+      'The Anthropocene Reviewed: Essays on a Human-Centered Planet',
+      'Never Let Me Go'
+    ];
+  
+    const fetchDefaultBooks = async () => {
+      try {
+        const fetchedBooks = await Promise.all(
+          defaultBooks.map(async (title) => {
+            const response = await fetch(
+              `http://localhost:8000/api/books?query=${encodeURIComponent(title)}&type=title`
+            );
+            const data = await response.json();
+            return Array.isArray(data) ? data[0] : null;
+          })
+        );
+  
+        const validBooks = fetchedBooks.filter(Boolean); // remove any nulls
+        setBooks(validBooks);
+      } catch (err) {
+        console.error("Error fetching default books:", err);
+      }
+    };
+  
+    if (!searchQuery.trim()) {
+      fetchDefaultBooks();
+    }
+  }, [searchQuery]);
+  
+
   const openPopup = (book) => setSelectedBook(book);
   const closePopup = () => setSelectedBook(null);
 
@@ -100,9 +162,10 @@ const SearchBooks = () => {
 
   const closeAddPopup = () => setAddPopupBook(null);
 
-  const updateBookshelf = async (book, status) => {
+  const updateBookshelf = async (book, status, rating="mid") => {
+    console.log(currentReading)
     try {
-      const response = await fetch(`http://localhost:8000/shelf/api/user/${userId}/bookshelf`, {
+      const response = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/bookshelf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,6 +173,7 @@ const SearchBooks = () => {
         body: JSON.stringify({
           book_id: book.id || book._id,
           status: status,
+          rating: rating
         }),
       });
 
@@ -139,7 +203,7 @@ const SearchBooks = () => {
       </div>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'black' }}>{error}</p>}
 
       <div className="search-results">
         {books.length > 0 ? (
@@ -163,19 +227,21 @@ const SearchBooks = () => {
             </div>
           ))
         ) : (
-          !loading && <p className="no-results">No books found.</p>
+          !loading && <p className="no-results"></p>
         )}
       </div>
 
       <Navbar />
 
-      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} />}
+      {selectedBook && <BookPopUp book={selectedBook} onClose={closePopup} userId={userId} />}
       {addPopupBook && (
         <AddPopUp
           book={addPopupBook.book}
           onClose={closeAddPopup}
           updateBookshelf={updateBookshelf}
           position={addPopupBook.position}
+          currentReading={currentReading}
+          setCurrentReading={setCurrentReading}
         />
       )}
     </div>

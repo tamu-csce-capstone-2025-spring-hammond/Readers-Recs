@@ -3,8 +3,8 @@ from bson.objectid import ObjectId
 from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
-from backend.schemas import BookSchema
-from backend.database import collections
+from schemas import BookSchema
+from database import collections
 from pymongo.errors import PyMongoError
 import numpy as np
 
@@ -96,7 +96,6 @@ def read_book_field(book_id, field):
 
 
 def read_book_by_bookId(book_id):
-    # value can be isbn, isbn13, or title
     try:
         obj_id = ObjectId(book_id)
     except Exception:

@@ -1,12 +1,21 @@
-# python testing
+# python testing & cache
 .pytest_cache
+__pycache__/
+*.pyc
+||||||| merged common ancestors
 backend/__pycache__
 backend/models/__pycache__
 tests/__pycache__
 .coverage
+htmlcov/
 
 # local environment files
 .env*.local
 .env
 
 .vscode
+
+node_modules/
+
+backend/venv/*
+backend/venv

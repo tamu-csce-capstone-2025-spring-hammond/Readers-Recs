@@ -1,8 +1,13 @@
 from flask import Flask, request
 from flask_cors import CORS
-from backend.api.books import books_bp
-from backend.api.user import user_bp
-from backend.api.bookshelf import shelf_bp
+from api.books import books_bp
+from api.user import user_bp
+from api.bookshelf import shelf_bp
+from api.recommendations import recommendation_bp
+from api.posts import discussion_bp
+from api.comments import comments_bp
+from api.chat_messages import chat_bp
+import os
 
 app = Flask(__name__)
 
@@ -10,14 +15,27 @@ app = Flask(__name__)
 CORS(
     app,
     resources={
-        r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}
+        r"/*": {
+            "origins": [
+                "http://localhost:3000",
+                "https://*.vercel.app",
+                "https://readers-recs-backend.onrender.com",
+                "readers-recs-production.up.railway.app",
+            ],
+            "supports_credentials": True,
+        }
     },
 )
+
 
 # Register API Blueprints
 app.register_blueprint(books_bp, url_prefix="/api")
 app.register_blueprint(user_bp, url_prefix="/user")
 app.register_blueprint(shelf_bp, url_prefix="/shelf")
+app.register_blueprint(recommendation_bp, url_prefix="/recs")
+app.register_blueprint(discussion_bp, url_prefix="/api/books")
+app.register_blueprint(comments_bp, url_prefix="/api/posts")
+app.register_blueprint(chat_bp, url_prefix="/api/chat")
 
 
 # Explicit handling for preflight OPTIONS requests
@@ -28,4 +46,5 @@ def before_request():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(debug=True, host="0.0.0.0", port=port)

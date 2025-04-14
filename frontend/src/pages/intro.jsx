@@ -5,7 +5,6 @@ import { Home, Search, MessageCircle, User, BookOpen, UserPlus, BookMarked, Chev
 import logo from '../assets/logo.png'; 
 import brownBooks from '../assets/brownbooks.jpg';
 
-
 const Intro = () => {
   useEffect(() => {
     const fadeElements = document.querySelectorAll('.fade-in');
