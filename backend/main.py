@@ -19,8 +19,13 @@ CORS(
             "origins": [
                 "http://localhost:3000",
                 "https://*.vercel.app",
+                "https://readers-recs-one.vercel.app",
+                "https://readers-recs-git-apis-dev-kaitlyngrifs-projects.vercel.app/",
+                "https://readers-recs-git-development-kaitlyngrifs-projects.vercel.app/",
+                "https://readers-recs-git-development-kaitlyngrifs-projects.vercel.app",
+                "https://csce412kgriffin.xyz",
                 "https://readers-recs-backend.onrender.com",
-                "readers-recs-production.up.railway.app",
+                "https://readers-recs-production.up.railway.app",
             ],
             "supports_credentials": True,
         }
@@ -47,4 +52,4 @@ def before_request():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+    app.run(debug=False, host="0.0.0.0", port=port) # set debug=True for local testing
