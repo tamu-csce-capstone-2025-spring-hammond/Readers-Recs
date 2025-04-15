@@ -33,7 +33,7 @@ def parse_date(date_val):
     try:
         return datetime.fromisoformat(date_val)
     except(TypeError, ValueError):
-        return None
+        return datetime.min
 @shelf_bp.route("/api/user/<user_id>/books/lastread", methods=["GET"])
 def get_last_read_book(user_id):
     """
@@ -46,9 +46,20 @@ def get_last_read_book(user_id):
             books_with_finish_date = [
                 book for book in books if book.get("date_finished") is not None
             ]
+            # for b in books_with_finish_date:
+            #     print("Finished:", b.get("date_finished"), "| ID:", b.get("_id"), " | Date added:", b.get("date_added"))
+
 
             # Sort books by date_finished in descending order (most recent first)
-            books_with_finish_date.sort(key=lambda x: parse_date(x["date_finished"]), reverse=True)
+            books_with_finish_date.sort(
+                key=lambda x: (
+                    parse_date(x.get("date_finished")),
+                    x.get("_id").generation_time if isinstance(x.get("_id"), ObjectId) else datetime.min
+                ),
+                reverse=True,
+            )
+
+
 
             if books_with_finish_date:
                 # Get the most recent book

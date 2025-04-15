@@ -214,7 +214,7 @@ def retrieve_genre_weights(user_id):
     if not user:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
     # print("USER:", user)
-    print("Genre weights:", user["genre_weights"])
+    # print("Genre weights:", user["genre_weights"])
     if user:
         return user["genre_weights"] if user else dict()
     else:
