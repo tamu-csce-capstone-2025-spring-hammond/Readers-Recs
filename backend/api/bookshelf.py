@@ -27,7 +27,13 @@ def objectid_to_str(obj):
         return str(obj)
     raise TypeError(f"Object of type {type(obj).__name__} is not ObjectId")
 
-
+def parse_date(date_val):
+    if isinstance(date_val, datetime):
+        return date_val
+    try:
+        return datetime.fromisoformat(date_val)
+    except(TypeError, ValueError):
+        return None
 @shelf_bp.route("/api/user/<user_id>/books/lastread", methods=["GET"])
 def get_last_read_book(user_id):
     """
@@ -42,7 +48,7 @@ def get_last_read_book(user_id):
             ]
 
             # Sort books by date_finished in descending order (most recent first)
-            books_with_finish_date.sort(key=lambda x: x["date_finished"], reverse=True)
+            books_with_finish_date.sort(key=lambda x: parse_date(x["date_finished"]), reverse=True)
 
             if books_with_finish_date:
                 # Get the most recent book
@@ -254,23 +260,25 @@ def update_bookshelf_status(user_id, book_id):
         date_finished = None
         date_started = None
         if new_status == "read":
-            date_finished = datetime.now().date()
-        else:
-            date_started = datetime.now().date()
+            date_finished = datetime.now().date().isoformat()
+        # else:
+        #     date_started = datetime.now().date()
 
         result = update_user_bookshelf_status(
             user_id,
             book_id,
             new_status,
             date_finished=date_finished,
-            date_started=date_started,
         )
 
         if "Error" not in result:
+            print("result:", result)
             return jsonify({"message": "Book status updated."}), 200
         else:
+            print("ERROR: ", result)
             return jsonify({"error": result}), 400
     except Exception as e:
+        print("EXCEPTIPON:", e)
         return jsonify({"error": str(e)}), 500
 
 

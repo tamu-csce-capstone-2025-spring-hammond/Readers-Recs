@@ -175,6 +175,7 @@ const Home = () => {
           body: JSON.stringify({ status: "read" }),
         });
         if (!finishResponse.ok) throw new Error('Failed to mark book as read');
+        
         setBookshelf((prev) => ({
           ...prev,
           currentRead: null,
