@@ -79,7 +79,7 @@ def create_user_bookshelf(
         return f"Error: {str(e)}"
 
 
-def update_user_bookshelf_status(user_id, book_id, new_status):
+def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=None):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
@@ -94,7 +94,7 @@ def update_user_bookshelf_status(user_id, book_id, new_status):
 
         # Update the status
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": book_id}, {"$set": {"status": new_status}}
+            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": {"status": new_status, "date_finished": date_finished}}
         )
 
         if result.matched_count:

@@ -65,7 +65,7 @@ def update_genre_weights_only(user_id, interested_genres):
 def process_wishlist(user_id):
     to_read_shelf = get_unread_books(user_id)
     books_to_read = []
-    print("To read:", to_read_shelf)
+    # print("To read:", to_read_shelf)
     for book in to_read_shelf:
         book_id = book["book_id"]
         book_obj = books_collection.find_one({"_id": book_id})
@@ -77,7 +77,7 @@ def process_wishlist(user_id):
         print("USER NOT FOUND")
     for book in books_to_read:
         genres = book["genre_tags"]
-        print("BOOK GENRES:", genres)
+        # print("BOOK GENRES:", genres)
         weight_change = 0.5
         genre_weights = retrieve_genre_weights(user_id)
         if isinstance(genre_weights, str):
@@ -89,11 +89,12 @@ def process_wishlist(user_id):
             else:
                 genre_weights[genre] += weight_change
 
-        print("NEW genre weights:", genre_weights)
-        print("UPDATING...:", update_genre_weights(user_id, genre_weights))
+        # print("NEW genre weights:", genre_weights)
+        # print("UPDATING...:", update_genre_weights(user_id, genre_weights))
+        update_genre_weights(user_id, genre_weights)
 
         # print(update_user_gw(user_id, genre_weights))
-        print("genre weights:", retrieve_genre_weights(user_id))
+        # print("genre weights:", retrieve_genre_weights(user_id))
 
         # Embedding update
         user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
@@ -418,8 +419,6 @@ def recommend_books(user_id, count):
     process_wishlist(user_id)
     # print("4 ***************************")
     return generate_recs(user_id=user_id, count=1)
-
-
 
 
 def onboarding_recommendations(user_id, interests):

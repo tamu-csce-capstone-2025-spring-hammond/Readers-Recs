@@ -15,14 +15,11 @@ export default function BookPopup({ book, onClose, userId }) {
     const [newComment, setNewComment] = useState('');
     // local state for testing posts
     const [posts, setPosts] = useState(book.posts || []);
-
-    const [replyText, setReplyText] = useState({});
-    const [replyingTo, setReplyingTo] = useState(null); // the comment being replied to
     
     const [currentReading, setCurrentReading] = useState(null);
     const fetchCurrentReading = async (userId, token) => {
         try {
-          const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+          const res = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/books/currently-reading`, {
             headers: { Authorization: `Bearer ${token}` },
           });
       
@@ -170,14 +167,16 @@ export default function BookPopup({ book, onClose, userId }) {
               console.error("Error creating post:", text);
               return;
           }
-  
-          const data = await response.json();
-          console.log("Post created:", data);
-  
+
           setNewPostTitle('');
           setNewPostContent('');
+
+          const data = await response.json();
+          console.log("Post created:", data);
+
           setIsAddingPost(false);
           await fetchPosts();
+          
       } catch (error) {
           console.error('Error creating post:', error);
       }
@@ -217,36 +216,6 @@ export default function BookPopup({ book, onClose, userId }) {
         }
     };
 
-    const handleReplySubmit = async (postId, parentCommentId) => {
-        const reply = replyText[parentCommentId];
-        if (!reply || !reply.trim()) return;
-      
-        try {
-          const response = await fetch(`${BACKEND_URL}/api/posts/${postId}/comments/${parentCommentId}/reply`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              user_id: userId,
-              comment_text: reply,
-            }),
-          });
-          
-      
-          if (response.ok) {
-            console.log('Reply created');
-            await fetchPosts(); // re-fetch posts and comments
-            setReplyText(prev => ({ ...prev, [parentCommentId]: '' }));
-            setReplyingTo(null);
-          } else {
-            const data = await response.json();
-            console.error('Error creating reply:', data.error);
-          }
-        } catch (error) {
-          console.error('Error creating reply:', error);
-        }
-      };      
-      
-  
     const handleCancelNewPost = () => {
         setIsAddingPost(false);
         setNewPostTitle('');
@@ -275,7 +244,7 @@ export default function BookPopup({ book, onClose, userId }) {
                 }),
             });
             if (response.ok) {
-                fetchBookStatus(); // Re-fetch the book status after updating
+                fetchBookStatus();
             }
             return response;
 
