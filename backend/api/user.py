@@ -14,7 +14,6 @@ from models.users import (
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
-CORS(user_bp, origins=["http://localhost:3000"])  # added debugging
 
 
 @user_bp.route("/profile", methods=["GET"])
@@ -196,4 +195,3 @@ def save_genres():
         add_interest(user_id, genre)
 
     return jsonify({"message": "Genres saved successfully"}), 200
-

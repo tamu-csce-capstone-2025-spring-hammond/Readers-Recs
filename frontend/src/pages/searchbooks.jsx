@@ -23,7 +23,7 @@ const SearchBooks = () => {
   // NOT WORKING :(
   const fetchCurrentReading = async (userId, token) => {
     try {
-      const res = await fetch(`http://localhost:8000/shelf/api/user/${userId}/books/currently-reading`, {
+      const res = await fetch(`${BACKEND_URL}/shelf/api/user/${userId}/books/currently-reading`, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -131,7 +131,7 @@ const SearchBooks = () => {
         const fetchedBooks = await Promise.all(
           defaultBooks.map(async (title) => {
             const response = await fetch(
-              `http://localhost:8000/api/books?query=${encodeURIComponent(title)}&type=title`
+              `${BACKEND_URL}/api/books?query=${encodeURIComponent(title)}&type=title`
             );
             const data = await response.json();
             return Array.isArray(data) ? data[0] : null;
