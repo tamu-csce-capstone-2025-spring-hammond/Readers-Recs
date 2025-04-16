@@ -1,5 +1,5 @@
 # backend/schemas.py
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Dict, List, Optional
 from bson import ObjectId
 from datetime import datetime, date
@@ -35,9 +35,7 @@ class BookSchema(BaseModel):
     title: str = Field(default="Unknown Title")
     page_count: int = Field(default=0)
     genre: str = Field(default="Unknown Genre")
-    publication_date: date = Field(
-        default_factory=lambda: datetime.now(pytz.timezone("America/Chicago")).date()
-    )
+    publication_date: Optional[date] = None
     isbn: str = Field(default="000000000")
     isbn13: str = Field(default="0000000000000")
     cover_image: str = Field(default="default_cover_image.jpg")
@@ -50,6 +48,25 @@ class BookSchema(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
 
+    @field_validator("publication_date", mode="before")
+    def ensure_date(cls, v):
+        if isinstance(v, datetime):
+            # Strip time
+            v = v.date()
+
+        # Handle string input (e.g., from JSON)
+        if isinstance(v, str):
+            try:
+                v = datetime.fromisoformat(v).date()
+            except ValueError:
+                raise ValueError("Invalid date string format for publication_date")
+
+        # If the date is in the future (likely due to default), return None
+        if isinstance(v, date) and v > date.today():
+            return None
+
+        return v
+        
 
 # -----------------------------------------------
 # USERS SCHEMA
