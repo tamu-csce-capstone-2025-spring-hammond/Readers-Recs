@@ -6,6 +6,7 @@ from database import collections
 from models.books import books_collection
 from recmodel import update_book_embeddings, is_duplicate
 from sklearn.metrics.pairwise import cosine_similarity
+from models.users import retrieve_genre_weights
 
 
 def split_user_bookshelf(user_id):
@@ -23,8 +24,8 @@ def split_user_bookshelf(user_id):
     return valid_books[:midpoint], valid_books[midpoint:]
 
 
-def simulate_onboarding(training_books):
-    genre_weights = {}
+def simulate_onboarding(user_id, training_books):
+    genre_weights = retrieve_genre_weights(user_id)
     user_embedding = np.zeros(384)
     book_objs = []
 
@@ -111,7 +112,7 @@ def process_user_rating(user_embed, user_genweight, book_id, rating):
 
 
 
-def generate_custom_recs(training_books, user_embedding, genre_weights, top_n=6):
+def generate_custom_recs(training_books, user_embedding, genre_weights, top_n=15):
     books = list(books_collection.find({}))
     print(f"Total books retrieved: {len(books)}")
     update_book_embeddings(books)
@@ -257,9 +258,11 @@ def run_test(user_id):
         print(f"NO DATA")
         return
 
-    user_embedding, genre_weights = simulate_onboarding(training_books)
+    user_embedding, genre_weights = simulate_onboarding(user_id, training_books)
     recommendations = generate_custom_recs(training_books, user_embedding, genre_weights, top_n=6)
     evaluate_predictions(user_id, test_books, recommendations)
-    
+
+
 if __name__ == "__main__":
-    run_test("67f69fb4d9f34beef0e5a301")
+    run_test("67f69fb4d9f34beef0e5a301") # katelyns
+    run_test('67f81d0dfdf727a9cd85b45d') # anna
