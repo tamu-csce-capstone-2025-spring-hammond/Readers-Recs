@@ -1,0 +1,6 @@
+User: 67c72428837b97cc04c2cb17
+Total training books: 7
+Total test books: 7
+Avg cosine similarity (train vs test): 0.2662
+Avg cosine similarity (train vs recs): 0.3405
+Ratio (train vs recs) / (train vs test): 1.2790

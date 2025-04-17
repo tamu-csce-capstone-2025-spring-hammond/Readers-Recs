@@ -297,7 +297,7 @@ def generate_recs(user_id, top_n=6, count=1):
             genre_score = sum(
                 genre_weights.get(genre, 0) for genre in book.get("genre_tags", [])
             )
-            total_score = sim + genre_score * 0.1  # Adjust weight factor as needed
+            total_score = sim + genre_score  # Adjust weight factor as needed
             recommendations.append((book, total_score))
     else:
         # print("No embedding, just genres.")
