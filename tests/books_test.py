@@ -87,13 +87,16 @@ def test_read_book_by_bookId_valid():
         == "Harry Potter and the Half-Blood Prince (Harry Potter  #6)"
     )
 
+
 def test_read_book_by_bookId_book_not_found():
     book_id = "000000000000000000000000"
     assert read_book_by_bookId(book_id) == "Book not found."
 
+
 def test_read_book_by_bookId_invalid_id_format():
     book_id = "temporary_id"
     assert "Invalid book ID format" in read_book_by_bookId(book_id)
+
 
 def test_read_book_by_identifier():
     identifier = "isbn"
@@ -260,11 +263,13 @@ def test_update_book_details_book_dne():
     result = update_book_details(book_id, title=title)
     assert result == "Error: Book not found."
 
+
 def test_update_book_details_invalid_id_format():
     book_id = "temporary_id"
     title = "Updated Test Book"
     result = update_book_details(book_id, title=title)
     assert result == "Error: Invalid ObjectId format."
+
 
 # Also implicitly tests create_book and remove_book
 def test_add_and_remove_book_author():

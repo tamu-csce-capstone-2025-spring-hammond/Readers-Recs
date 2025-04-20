@@ -21,4 +21,3 @@ collections = {
     "User_Bookshelf": db["User_Bookshelf"],
     "Users": db["Users"],
 }
-

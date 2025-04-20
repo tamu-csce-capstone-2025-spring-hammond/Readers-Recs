@@ -7,6 +7,7 @@ backend/models/__pycache__
 tests/__pycache__
 .coverage
 htmlcov/
+report.html
 
 # local environment files
 .env*.local

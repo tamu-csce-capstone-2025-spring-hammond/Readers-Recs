@@ -29,10 +29,6 @@ def create_chat_message(book_id, user_id, message_text):
         data.pop("_id", None)
         result = chat_messages_collection.insert_one(data)
         return str(result.inserted_id)
-    except ValidationError as e:
-        return f"Schema Validation Error: {str(e)}"
-    except DuplicateKeyError:
-        return "Error: Duplicate chat message!"
     except Exception as e:
         return f"Error: {str(e)}"
 

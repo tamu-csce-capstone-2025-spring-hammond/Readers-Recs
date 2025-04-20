@@ -94,7 +94,8 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
 
         # Update the status
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": {"status": new_status, "date_finished": date_finished}}
+            {"user_id": user_id, "book_id": ObjectId(book_id)},
+            {"$set": {"status": new_status, "date_finished": date_finished}},
         )
 
         if result.matched_count:
