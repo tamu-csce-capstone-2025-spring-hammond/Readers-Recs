@@ -119,11 +119,11 @@ def test_invalid_ids_for_post():
 # -- CREATE_POST schema‐validation error (tags must be list[str]) --
 def test_create_post_schema_error(user_and_book):
     uid, bid = user_and_book
-    # passing None for tags → [None] → ValidationError
+    # passing None for tags, ValidationError
     err = create_post(uid, bid, "T", "X", None)
     assert err.startswith("Schema Validation Error:")
 
-    # passing an integer for tags → [123] → ValidationError
+    # passing an integer for tags, ValidationError
     err2 = create_post(uid, bid, "T", "X", 123)
     assert err2.startswith("Schema Validation Error:")
 

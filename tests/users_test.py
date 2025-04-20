@@ -15,20 +15,14 @@ from backend.models.users import (
     update_demographics,
     remove_demographic,
     delete_user,
-    # update_genre_weights,
-    # retrieve_genre_weights,
-    # update_embedding,
-    # retrieve_embedding,
+    update_genre_weights,
+    retrieve_genre_weights,
+    update_embedding,
+    retrieve_embedding,
 )
+from pymongo.results import UpdateResult
 
 users_collection = collections["Users"]
-
-
-# Additional tests to write:
-#  - update_genre_weights
-#  - retrieve_genre_weights
-#  - update_embedding
-#  - retrieve_embedding
 
 
 def test_create_update_and_delete_user():
@@ -361,6 +355,322 @@ def test_delete_user_doesnt_exist():
 def test_delete_user_invalid_objectid():
     result = delete_user("1111111111111111111111")
     assert result == "Error: Invalid ObjectId format."
+
+
+def test_retrieve_genre_weights_default_empty_and_not_found():
+    # new user has empty genre_weights
+    user_id = create_user(
+        first_name="Genre",
+        last_name="Test",
+        username="genre_test",
+        email_address="genre_test@example.com",
+        oauth={"access_token": "token", "refresh_token": "token"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        assert retrieve_genre_weights(user_id) == {}
+        # valid but nonexistent user
+        fake = str(ObjectId())
+        assert retrieve_genre_weights(fake) == "User not found"
+    finally:
+        delete_user(user_id)
+
+
+def test_update_genre_weights_errors_and_success():
+    # invalid user
+    fake = str(ObjectId())
+    assert update_genre_weights(fake, {"fantasy": 1.0}) == "Error: User not found."
+
+    # create real user
+    user_id = create_user(
+        first_name="Genre",
+        last_name="Update",
+        username="genre_update",
+        email_address="genre_update@example.com",
+        oauth={"access_token": "token2", "refresh_token": "token2"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        # bad type
+        assert (
+            update_genre_weights(user_id, ["not", "a", "dict"])
+            == "Error: Genre weights must be a dictionary."
+        )
+        # bad contents
+        assert (
+            update_genre_weights(user_id, {"fantasy": "high"})
+            == "Error: Genre keys must be strings and weights must be numerical values."
+        )
+
+        # successful update
+        weights = {"fantasy": 2.5, "sci-fi": 1.0}
+        assert (
+            update_genre_weights(user_id, weights) == "Success. Genre weights updated."
+        )
+        assert retrieve_genre_weights(user_id) == weights
+
+        # no change
+        assert (
+            update_genre_weights(user_id, weights)
+            == "Error: Genre weights were not updated, or no changes detected."
+        )
+    finally:
+        delete_user(user_id)
+
+
+def test_retrieve_embedding_default_and_after_update():
+    # new user, no embedding
+    user_id = create_user(
+        first_name="Embed",
+        last_name="Test",
+        username="embed_test",
+        email_address="embed_test@example.com",
+        oauth={"access_token": "tok3", "refresh_token": "tok3"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        # default: no embedding stored
+        assert retrieve_embedding(user_id) is None
+
+        # update_embedding invalid user
+        fake = str(ObjectId())
+        assert update_embedding(fake, [0.1]) == "Error: User not found."
+
+        # invalid payloads
+        assert (
+            update_embedding(user_id, "notalist")
+            == "Error: Embedding must be a list of numerical values."
+        )
+        assert (
+            update_embedding(user_id, [1, "two"])
+            == "Error: Embedding must be a list of numerical values."
+        )
+
+        # valid update, now returns the list
+        result: UpdateResult = update_embedding(user_id, [0.1, 0.2, 0.3])
+        assert isinstance(result, UpdateResult) and result.modified_count == 1
+        assert retrieve_embedding(user_id) == [0.1, 0.2, 0.3]
+
+        # overwrite with empty list, treated as “no embedding”
+        result2: UpdateResult = update_embedding(user_id, [])
+        assert isinstance(result2, UpdateResult) and result2.modified_count == 1
+        assert retrieve_embedding(user_id) is None
+
+        # no-op on same empty, still no embedding
+        result3: UpdateResult = update_embedding(user_id, [])
+        assert isinstance(result3, UpdateResult) and result3.modified_count == 0
+        assert retrieve_embedding(user_id) is None
+
+    finally:
+        delete_user(user_id)
+
+
+def test_update_embedding_user_not_found():
+    # Proper 24‑hex ID that doesn't exist
+    fake = "bad_id"
+    assert update_embedding(fake, "New") == "Error: Invalid ObjectId format."
+
+
+def test_update_genre_weights_invalid_id_format():
+    # Malformed ObjectId in update_genre_weights should surface the InvalidId message
+    bad = "not_hex"
+    res = update_genre_weights(bad, {"fantasy": 1.0})
+    assert res == "Error: Invalid ObjectId format."
+
+
+def test_update_user_settings_invalid_id_format():
+    # Malformed ObjectId in update_user_settings should surface the InvalidId message
+    bad = "not_hex"
+    res = update_user_settings(bad, first_name="X")
+    assert res == "Error: Invalid ObjectId format."
+
+
+def test_update_user_settings_no_fields_provided():
+    user_id = create_user(
+        first_name="NoField",
+        last_name="Test",
+        username="nofield_test",
+        email_address="nofield@example.com",
+        oauth={"access_token": "tok_nf", "refresh_token": "tok_nf"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        # No kwargs at all
+        assert update_user_settings(user_id) == "Error: No update fields provided."
+        # Provided only blank/whitespace names
+        assert (
+            update_user_settings(user_id, first_name="   ", last_name="\t")
+            == "Error: No update fields provided."
+        )
+    finally:
+        delete_user(user_id)
+
+
+def test_update_user_settings_username_already_taken():
+    # Create two users
+    u1 = create_user(
+        first_name="User",
+        last_name="One",
+        username="unique_one",
+        email_address="one@example.com",
+        oauth={"access_token": "tok1", "refresh_token": "tok1"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    u2 = create_user(
+        first_name="User",
+        last_name="Two",
+        username="unique_two",
+        email_address="two@example.com",
+        oauth={"access_token": "tok2", "refresh_token": "tok2"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        # Attempt to change u1's username to u2's
+        assert (
+            update_user_settings(u1, username="unique_two")
+            == "Error: Username already taken."
+        )
+    finally:
+        delete_user(u1)
+        delete_user(u2)
+
+
+def test_update_user_settings_trim_and_multi_field_update():
+    user_id = create_user(
+        first_name="OrigFirst",
+        last_name="OrigLast",
+        username="origuser",
+        email_address="orig@example.com",
+        oauth={"access_token": "tok3", "refresh_token": "tok3"},
+        profile_image="http://orig.img",
+        interests=[],
+        demographics={},
+    )
+    try:
+        res = update_user_settings(
+            user_id,
+            first_name="  NewFirst  ",
+            last_name="\tNewLast\n",
+            username=" newuser ",
+            profile_image=" https://new.img/path ",
+        )
+        assert res == "User settings updated successfully."
+
+        updated = read_user(user_id)
+        assert updated["first_name"] == "NewFirst"
+        assert updated["last_name"] == "NewLast"
+        assert updated["username"] == "newuser"
+        assert updated["profile_image"] == "https://new.img/path"
+    finally:
+        delete_user(user_id)
+
+
+def test_update_user_settings_invalid_field_types():
+    user_id = create_user(
+        first_name="TypeTest",
+        last_name="User",
+        username="typetest",
+        email_address="typetest@example.com",
+        oauth={"access_token": "tok4", "refresh_token": "tok4"},
+        profile_image="",
+        interests=[],
+        demographics={},
+    )
+    try:
+        # Passing an int for username should hit a strip() AttributeError
+        err = update_user_settings(user_id, username=12345)
+        assert err.startswith("Error:")
+        assert "has no attribute 'strip'" in err
+    finally:
+        delete_user(user_id)
+
+
+def test_create_user_invalid_email_schema_error():
+    # Email must be a valid EmailStr
+    res = create_user(
+        first_name="Bad",
+        last_name="Email",
+        username="bademail",
+        email_address="not-an-email",
+        oauth={"access_token": "t", "refresh_token": "t"},
+        profile_image="",
+        interests=[],
+        demographics={"age": 25},
+    )
+    assert res.startswith("Schema Validation Error:")
+
+
+def test_create_user_invalid_demographics_schema_error():
+    # Demographics.age must be an int
+    res = create_user(
+        first_name="Bad",
+        last_name="Demo",
+        username="baddemo",
+        email_address="baddemo@example.com",
+        oauth={"access_token": "t2", "refresh_token": "t2"},
+        profile_image="",
+        interests=[],
+        demographics={"age": "not-an-int"},
+    )
+    assert res.startswith("Schema Validation Error:")
+
+
+def test_update_user_invalid_id_format():
+    # Malformed ObjectId in update_user
+    res = update_user("not_a_valid_id", first_name="X")
+    assert res == "Error: Invalid ObjectId format."
+
+
+def test_update_user_validation_error_on_email():
+    # First create a valid user
+    uid = create_user(
+        first_name="Up",
+        last_name="Date",
+        username="update_test",
+        email_address="update_test@example.com",
+        oauth={"access_token": "u1", "refresh_token": "u1"},
+        profile_image="",
+        interests=[],
+        demographics={"age": 30},
+    )
+    try:
+        # Now attempt to set an invalid email
+        res = update_user(uid, email_address="still-not-email")
+        assert res.startswith("Schema Validation Error:")
+    finally:
+        delete_user(uid)
+
+
+def test_update_user_validation_error_on_demographics():
+    # Create valid user
+    uid = create_user(
+        first_name="Up",
+        last_name="Demo",
+        username="update_demo",
+        email_address="update_demo@example.com",
+        oauth={"access_token": "u2", "refresh_token": "u2"},
+        profile_image="",
+        interests=[],
+        demographics={"age": 30},
+    )
+    try:
+        # Attempt to inject a bad demographics field
+        res = update_user(uid, demographics={"age": "NaN"})
+        assert res.startswith("Schema Validation Error:")
+    finally:
+        delete_user(uid)
 
 
 @pytest.fixture(autouse=True)

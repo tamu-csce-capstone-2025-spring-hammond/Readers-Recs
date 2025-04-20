@@ -118,7 +118,7 @@ def update_user(user_id, **kwargs):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
 
 
@@ -168,7 +168,7 @@ def update_user_settings(
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except (ValueError, TypeError):
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -202,6 +202,8 @@ def update_genre_weights(user_id, new_genre_weights):
 
         return "Success. Genre weights updated."
 
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -227,6 +229,11 @@ def update_embedding(user_id, new_embedding):
     Expects new_embedding to be an array (list) of floats.
     """
     u_id = user_id
+    if not isinstance(user_id, ObjectId):
+        try:
+            u_id = ObjectId(user_id)
+        except (ValueError, InvalidId):
+            return "Error: Invalid ObjectId format."
     existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
         existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
@@ -243,10 +250,6 @@ def update_embedding(user_id, new_embedding):
         {"_id": u_id},
         {"$set": {"embedding": new_embedding}},
     )
-    # if result.modified_count == 0:
-    #     print("Embedding was not updated.")
-    # else:
-    #     print("Success. Updated user embedding.")
     return result
 
 

@@ -43,7 +43,10 @@ def test_invalid_book_id():
 
 def test_invalid_embedding_type(book_id):
     for bad in ("string", 123, {"a": 1}, None):
-        assert update_book_embedding(book_id, bad) == "Embedding must be a list or NumPy array."
+        assert (
+            update_book_embedding(book_id, bad)
+            == "Embedding must be a list or NumPy array."
+        )
 
 
 def test_success_with_list(book_id):
@@ -85,7 +88,9 @@ def test_empty_list_embedding(book_id):
 
 def test_empty_list_after_nonempty(book_id):
     # First set a non-empty embedding
-    assert update_book_embedding(book_id, [0.5, 0.6]) == "Embedding updated successfully."
+    assert (
+        update_book_embedding(book_id, [0.5, 0.6]) == "Embedding updated successfully."
+    )
     # Now clearing it to empty should succeed
     res = update_book_embedding(book_id, [])
     assert res == "Embedding updated successfully."
