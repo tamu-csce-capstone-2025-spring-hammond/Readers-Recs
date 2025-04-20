@@ -1,6 +1,5 @@
 import pytest, uuid
 from bson import ObjectId
-from bson.errors import InvalidId
 from backend.models.posts import (
     create_post, read_post, read_post_field,
     update_post, delete_post, get_all_posts_for_book

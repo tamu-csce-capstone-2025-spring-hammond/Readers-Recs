@@ -22,6 +22,3 @@ collections = {
     "Users": db["Users"],
 }
 
-
-def close_connection():
-    client.close()
