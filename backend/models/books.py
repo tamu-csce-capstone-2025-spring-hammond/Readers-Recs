@@ -1,5 +1,6 @@
 # database/models/books.py
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
@@ -92,7 +93,7 @@ def read_book_field(book_id, field):
         else:
             return "Field not found"
     else:
-        return "Book not found"
+        return "Book not found."
 
 
 def read_book_by_bookId(book_id):
@@ -210,7 +211,7 @@ def update_book_details(book_id: str, **kwargs):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except InvalidId:
         return "Error: Invalid ObjectId format."
 
 
@@ -345,5 +346,5 @@ def delete_book(book_id):
         books_collection.delete_one({"_id": book_id})
         return "Book and related records deleted successfully."
 
-    except ValueError:
-        return "Error: Invalid ObjectId format."
+    except InvalidId:
+        return "Invalid book ID format"

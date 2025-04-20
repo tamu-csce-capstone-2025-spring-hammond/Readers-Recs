@@ -4,6 +4,7 @@ from datetime import datetime
 from backend.database import collections
 from backend.models.books import (
     read_book_field,
+    read_book_by_bookId,
     read_book_by_identifier,
     read_book_title,
     read_book_author,
@@ -72,6 +73,27 @@ def test_read_book_field_invalid_id():
     field = "title"
     assert read_book_field(book_id, field) == "Invalid book ID format"
 
+
+def test_read_book_field_book_not_found():
+    book_id = "000000000000000000000000"
+    field = "title"
+    assert read_book_field(book_id, field) == "Book not found."
+
+
+def test_read_book_by_bookId_valid():
+    book_id = "67c2bf84443c76002b50a956"
+    assert (
+        read_book_by_bookId(book_id)["title"]
+        == "Harry Potter and the Half-Blood Prince (Harry Potter  #6)"
+    )
+
+def test_read_book_by_bookId_book_not_found():
+    book_id = "000000000000000000000000"
+    assert read_book_by_bookId(book_id) == "Book not found."
+
+def test_read_book_by_bookId_invalid_id_format():
+    book_id = "temporary_id"
+    assert "Invalid book ID format" in read_book_by_bookId(book_id)
 
 def test_read_book_by_identifier():
     identifier = "isbn"
@@ -191,10 +213,10 @@ def test_create_update_and_delete_book():
     """Helper function to create a test book and return its ID."""
     # create the book
     title = "Test Book"
-    author = ["Test Author"]
+    author = "Test Author"
     page_count = 100
     genre = "Test Genre"
-    tags = ["test", "book"]
+    tags = "test"
     publication_date = "2025-01-01"
     isbn = "111111111"
     isbn13 = "1111111111111"
@@ -231,6 +253,18 @@ def test_create_update_and_delete_book():
     assert books_collection.find_one({"_id": ObjectId(book_id)}) is None
     assert result == "Book and related records deleted successfully."
 
+
+def test_update_book_details_book_dne():
+    book_id = "000000000000000000000000"
+    title = "Updated Test Book"
+    result = update_book_details(book_id, title=title)
+    assert result == "Error: Book not found."
+
+def test_update_book_details_invalid_id_format():
+    book_id = "temporary_id"
+    title = "Updated Test Book"
+    result = update_book_details(book_id, title=title)
+    assert result == "Error: Invalid ObjectId format."
 
 # Also implicitly tests create_book and remove_book
 def test_add_and_remove_book_author():
