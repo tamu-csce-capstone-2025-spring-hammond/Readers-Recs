@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from bson import ObjectId
 from datetime import datetime
 from backend.database import collections
@@ -29,28 +30,6 @@ from backend.models.books import (
 )
 
 books_collection = collections["Books"]
-
-# Additional tests to write:
-#  - read_book_by_identifier ValidationError
-#  - update_book_details invalid book_id
-#  - update_book_details ValidationError
-#  - update_book_details ValueError
-#  - add_book_author invalid book_id
-#  - add_book_author invalid author
-#  - add_book_author duplicate author
-#  - add_book_tag invalid book_id
-#  - add_book_tag invalid tag
-#  - add_book_tag duplicate tag
-#  - remove_book_author invalid book_id
-#  - remove_book_author invalid author
-#  - remove_book_author author not found
-#  - remove_book_tag invalid book_id
-#  - remove_book_tag invalid tag
-#  - remove_book_tag tag not found
-#  - delete_book invalid book_id
-#  - delete_book book not found
-#  - delete_book book has comments
-#  - delete_book book is in bookshelves
 
 
 def test_read_book_field_valid():
@@ -370,3 +349,193 @@ def cleanup_test_books():
     books_collection.delete_many(
         {"isbn": {"$in": ["111111111", "2222222222", "3333333333"]}}
     )
+
+@pytest.fixture
+def test_book():
+    # create a fresh book with a unique ISBN/ISBN13
+    isbn = uuid.uuid4().hex[:9]
+    isbn13 = uuid.uuid4().hex[:13]
+    book_id = create_book(
+        title="Test Book",
+        author="Author1",
+        page_count=50,
+        genre="Test",
+        tags=["tag1"],
+        publication_date="2025-01-01",
+        isbn=isbn,
+        isbn13=isbn13,
+        cover_image="",
+        language="en",
+        publisher="Pub",
+        summary="Summary",
+        genre_tags=["genre"],
+    )
+    yield book_id
+    # clean up
+    delete_book(book_id)
+
+def test_update_book_details_validation_error(test_book):
+    # invalid type for page_count
+    res = update_book_details(test_book, page_count="not-an-int")
+    assert res.startswith("Schema Validation Error:")
+
+def test_add_book_author_invalid_id():
+    assert add_book_author("not_an_id", "New Author") == "Invalid book ID."
+
+def test_add_book_author_empty_name(test_book):
+    assert add_book_author(test_book, "") == "Author name cannot be empty."
+
+def test_add_book_author_duplicate(test_book):
+    # "Author1" was already set as the author
+    assert add_book_author(test_book, "Author1") == "Author was already in the list or book not found."
+
+def test_remove_book_author_invalid_id():
+    assert remove_book_author("12345", "Author1") == "Invalid book ID."
+
+def test_remove_book_author_empty_name(test_book):
+    assert remove_book_author(test_book, "") == "Author name cannot be empty."
+
+def test_remove_book_author_not_found(test_book):
+    assert remove_book_author(test_book, "DoesNotExist") == "Author not found in the list or book not found."
+
+def test_add_book_tag_invalid_id():
+    assert add_book_tag("foo", "newtag") == "Invalid book ID."
+
+def test_add_book_tag_empty_name(test_book):
+    assert add_book_tag(test_book, "") == "Tag cannot be empty."
+
+def test_add_book_tag_duplicate(test_book):
+    # "tag1" was already set as the tag
+    assert add_book_tag(test_book, "tag1") == "Tag was already in the list or book not found."
+
+def test_remove_book_tag_invalid_id():
+    assert remove_book_tag("foo", "tag1") == "Invalid book ID."
+
+def test_remove_book_tag_empty_name(test_book):
+    assert remove_book_tag(test_book, "") == "Tag cannot be empty."
+
+def test_remove_book_tag_not_found(test_book):
+    assert remove_book_tag(test_book, "no_such_tag") == "Tag not found in the list or book not found."
+
+def test_delete_book_invalid_format():
+    # invalid ObjectId string
+    assert delete_book("not-a-hex-id") == "Invalid book ID format"
+
+def test_delete_book_not_found():
+    # valid format but no such book
+    fake = str(ObjectId())
+    assert delete_book(fake) == "Error: Book not found."
+
+def test_create_book_schema_validation_error():
+    # tags must be list[str], passing None triggers a ValidationError
+    result = create_book(
+        "ErrTest", ["A"], 1, "G", None,
+        "2025-01-01", "test_sch_001", "test_sch_0013",
+        "", "en", "Pub", "S", []
+    )
+    assert result.startswith("Schema Validation Error:")
+
+def test_create_book_value_error_on_date():
+    # invalid date format triggers the ValueError branch
+    result = create_book(
+        "ErrTest", ["A"], 1, "G", ["t"],
+        "01/01/2025", "test_val_002", "test_val_0023",
+        "", "en", "Pub", "S", []
+    )
+    assert result == "Error: Invalid date format. Use YYYY-MM-DD."
+
+def test_create_book_duplicate_key_error():
+    # ensure unique indexes on isbn and isbn13
+    books_collection.create_index("isbn", unique=True)
+    books_collection.create_index("isbn13", unique=True)
+
+    isbn = "test_dup_003"
+    isbn13 = "test_dup_0033"
+    # first insert should succeed
+    first = create_book(
+        "DupTest", ["A"], 1, "G", ["t"],
+        "2025-01-01", isbn, isbn13,
+        "", "en", "Pub", "S", []
+    )
+    assert isinstance(first, str) and len(first) == 24
+
+    # second insert should hit duplicate key
+    second = create_book(
+        "DupTest", ["A"], 1, "G", ["t"],
+        "2025-01-01", isbn, isbn13,
+        "", "en", "Pub", "S", []
+    )
+    assert second == "Error: ISBN or ISBN-13 must be unique!"
+
+def test_read_book_by_bookId_invalid_format():
+    res = read_book_by_bookId("not_a_valid")
+    assert "Invalid book ID format" in res
+
+def test_read_book_by_bookId_not_found():
+    fake = str(ObjectId())
+    res = read_book_by_bookId(fake)
+    assert res == "Book not found."
+
+def test_read_book_by_bookId_schema_validation_error():
+    # insert a doc with invalid publication_date to trigger schema error
+    bad_id = ObjectId()
+    bad_doc = {
+        "_id": bad_id,
+        "author": ["A"],
+        "title": "T",
+        "page_count": 10,
+        "genre": "G",
+        "tags": ["t"],
+        "publication_date": "not-a-date",
+        "isbn": "test_err_004",
+        "isbn13": "test_err_0043",
+        "cover_image": "",
+        "language": "en",
+        "publisher": "",
+        "summary": "",
+        "genre_tags": [],
+        "embedding": [],
+    }
+    books_collection.insert_one(bad_doc)
+    try:
+        res = read_book_by_bookId(str(bad_id))
+        assert res.startswith("Schema Validation Error:")
+    finally:
+        books_collection.delete_one({"_id": bad_id})
+
+def test_read_book_by_identifier_invalid_identifier():
+    res = read_book_by_identifier("whatever", "foo")
+    assert res == "Error: Invalid identifier. Use 'title', 'isbn', or 'isbn13'."
+
+def test_read_book_by_identifier_not_found():
+    res = read_book_by_identifier("test_nf_005", "isbn")
+    assert res == "Book not found."
+
+def test_read_book_by_identifier_schema_validation_error():
+    # insert bad_doc, then query by its isbn
+    bad_id = ObjectId()
+    isbn = "test_err_006"
+    isbn13 = "test_err_0063"
+    bad_doc = {
+        "_id": bad_id,
+        "author": ["A"],
+        "title": "T",
+        "page_count": 10,
+        "genre": "G",
+        "tags": ["t"],
+        "publication_date": "not-a-date",
+        "isbn": isbn,
+        "isbn13": isbn13,
+        "cover_image": "",
+        "language": "en",
+        "publisher": "",
+        "summary": "",
+        "genre_tags": [],
+        "embedding": [],
+    }
+    books_collection.insert_one(bad_doc)
+    try:
+        res = read_book_by_identifier(isbn, "isbn")
+        assert res.startswith("Schema Validation Error:")
+    finally:
+        books_collection.delete_one({"_id": bad_id})
