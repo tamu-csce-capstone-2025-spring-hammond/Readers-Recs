@@ -89,7 +89,13 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
         is_valid_object_id("Books", book_id)
 
         # Validate new_status
-        if new_status not in ["to read", "currently reading", "read", "to-read", "currently-reading"]:
+        if new_status not in [
+            "to read",
+            "currently reading",
+            "read",
+            "to-read",
+            "currently-reading",
+        ]:
             return "Error: Invalid status value."
 
         # Update the status
@@ -199,13 +205,13 @@ def rate_book(user_id, book_id, new_rating):
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
-        if user_bookshelf_collection.count_documents({
-            "user_id": user_id,
-            "book_id": ObjectId(book_id),
-            "status": "read"
-        }) == 0:
+        if (
+            user_bookshelf_collection.count_documents(
+                {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
+            )
+            == 0
+        ):
             return "Error: Book has not been read yet."
-
 
         # Validate new_rating
         if new_rating not in ["pos", "neg", "mid"]:

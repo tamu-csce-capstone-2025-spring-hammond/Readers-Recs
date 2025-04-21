@@ -20,6 +20,7 @@ from backend.models.users import create_user, delete_user
 from backend.models.books import create_book, delete_book
 import pytz
 
+
 @pytest.fixture
 def user_and_book():
     u = uuid.uuid4().hex
@@ -54,7 +55,6 @@ def user_and_book():
     delete_book(bid)
 
 
-
 def test_update_user_bookshelf_status_edge_cases(user_and_book):
     uid, bid = user_and_book
     # malformed ids should return generic errors
@@ -62,7 +62,10 @@ def test_update_user_bookshelf_status_edge_cases(user_and_book):
     assert update_user_bookshelf_status(uid, "bad", "read").startswith("Error:")
     # well-formed but nonexistent book id, invalid book_id
     fake = str(ObjectId())
-    assert update_user_bookshelf_status(uid, fake, "read") == "UserBookshelf entry not found."
+    assert (
+        update_user_bookshelf_status(uid, fake, "read")
+        == "UserBookshelf entry not found."
+    )
 
 
 def test_rate_book_errors_and_success(user_and_book):
@@ -82,7 +85,6 @@ def test_rate_book_errors_and_success(user_and_book):
     assert rate_book(uid, bid, "neg") == "UserBookshelf rating updated successfully."
 
 
-
 def test_delete_user_bookshelf_errors(user_and_book):
     uid, bid = user_and_book
     # invalid user_id
@@ -92,6 +94,7 @@ def test_delete_user_bookshelf_errors(user_and_book):
     # well-formed but no entry
     fake_bid = str(ObjectId())
     assert delete_user_bookshelf(uid, fake_bid) == "Error: Invalid book_id."
+
 
 def test_retrieve_user_bookshelf_invalid_and_valid(user_and_book):
     uid, bid = user_and_book
@@ -103,7 +106,9 @@ def test_retrieve_user_bookshelf_invalid_and_valid(user_and_book):
     # add a "read" entry and verify retrieval
     sid = create_user_bookshelf(uid, bid, status="read")
     books = retrieve_user_bookshelf(uid)
-    assert isinstance(books, list) and all(item.get("status") == "read" for item in books)
+    assert isinstance(books, list) and all(
+        item.get("status") == "read" for item in books
+    )
     delete_user_bookshelf(uid, bid)
 
 
@@ -136,7 +141,9 @@ def test_get_read_books_empty_and_invalid(user_and_book):
     # with a read entry
     sid = create_user_bookshelf(uid, bid, status="read")
     reads = get_read_books(uid)
-    assert isinstance(reads, list) and len(reads) == 1 and reads[0].get("status") == "read"
+    assert (
+        isinstance(reads, list) and len(reads) == 1 and reads[0].get("status") == "read"
+    )
     delete_user_bookshelf(uid, bid)
 
 
@@ -147,7 +154,11 @@ def test_get_unread_books_empty_and_valid(user_and_book):
     # with an unread entry (to-read)
     sid = create_user_bookshelf(uid, bid, status="to-read")
     unread = get_unread_books(uid)
-    assert isinstance(unread, list) and len(unread) == 1 and unread[0].get("status") == "to-read"
+    assert (
+        isinstance(unread, list)
+        and len(unread) == 1
+        and unread[0].get("status") == "to-read"
+    )
     delete_user_bookshelf(uid, bid)
 
 
@@ -171,11 +182,11 @@ def test_rate_book_before_and_after_read_and_invalid_rating(user_and_book):
     # malformed ids
     assert rate_book("bad", bid, "pos").startswith("Error:")
     assert rate_book(uid, "bad", "pos") == "Error: Invalid user_id or book_id."
-    
+
     # valid read but invalid rating
     create_user_bookshelf(uid, bid, status="read")
     assert rate_book(uid, bid, "wrong") == "Error: Invalid rating value."
-    
+
     # valid ratings
     assert rate_book(uid, bid, "pos") == "UserBookshelf rating updated successfully."
     entry = retrieve_user_bookshelf(uid)[0]
@@ -190,21 +201,28 @@ def test_create_user_bookshelf_invalid_inputs():
     assert create_user_bookshelf("bad", fake) == "Error: Invalid user_id or book_id."
     assert create_user_bookshelf(fake, "bad") == "Error: Invalid user_id."
 
+
 def test_update_user_bookshelf_status_invalid_status(user_and_book):
     uid, bid = user_and_book
     create_user_bookshelf(uid, bid)
     result = update_user_bookshelf_status(uid, bid, "invalid")
     assert result == "Error: Invalid status value."
 
+
 def test_get_unread_books_invalid_user():
     assert get_unread_books("bad") == []
+
 
 def test_update_page_number_errors(user_and_book):
     uid, bid = user_and_book
     assert update_page_number("bad", bid, 10) == "Error: Invalid user_id or book_id."
     assert update_page_number(uid, "bad", 10) == "Error: Invalid user_id or book_id."
-    assert update_page_number(uid, bid, -5) == "Error: Invalid page number. It must be a non-negative integer."
+    assert (
+        update_page_number(uid, bid, -5)
+        == "Error: Invalid page number. It must be a non-negative integer."
+    )
     assert update_page_number(uid, bid, 10) == "UserBookshelf entry not found."
+
 
 def test_get_page_number_errors(user_and_book):
     uid, bid = user_and_book
@@ -212,12 +230,14 @@ def test_get_page_number_errors(user_and_book):
     assert get_page_number(uid, "bad") == "Error: Invalid user_id or book_id."
     assert get_page_number(uid, bid) == "UserBookshelf entry not found."
 
+
 def test_get_page_number_valid(user_and_book):
     uid, bid = user_and_book
     create_user_bookshelf(uid, bid, status="currently-reading")
     update_page_number(uid, bid, 42)
     page = get_page_number(uid, bid)
     assert page == 42
+
 
 def test_create_user_bookshelf_duplicate(user_and_book):
     uid, bid = user_and_book
@@ -243,7 +263,9 @@ def test_get_bookshelf_status_invalid_id_type():
 def test_get_unread_books_force_exception(monkeypatch):
     def raise_error(user_id):
         raise Exception("forced failure")
+
     from backend.models import user_bookshelf
+
     monkeypatch.setattr(user_bookshelf.user_bookshelf_collection, "find", raise_error)
     result = get_unread_books("some_user")
     assert result.startswith("Error: forced failure")
@@ -258,7 +280,10 @@ def test_rate_book_no_read_entry(user_and_book):
 def test_update_page_number_float(user_and_book):
     uid, bid = user_and_book
     create_user_bookshelf(uid, bid, status="currently-reading")
-    assert update_page_number(uid, bid, 12.5) == "Error: Invalid page number. It must be a non-negative integer."
+    assert (
+        update_page_number(uid, bid, 12.5)
+        == "Error: Invalid page number. It must be a non-negative integer."
+    )
 
 
 def test_get_currently_reading_books_returns_none(user_and_book):
@@ -281,11 +306,14 @@ def test_update_user_bookshelf_status_success(user_and_book):
     # Confirm the update via model function
     assert get_bookshelf_status(uid, bid) == "read"
 
+
 def test_create_user_bookshelf_with_date_objects(user_and_book):
     uid, bid = user_and_book
     d = date(2024, 1, 1)
 
-    sid = create_user_bookshelf(uid, bid, status="read", date_started=d, date_finished=d)
+    sid = create_user_bookshelf(
+        uid, bid, status="read", date_started=d, date_finished=d
+    )
     assert isinstance(sid, str)
 
     result = retrieve_user_bookshelf(uid)
@@ -299,7 +327,9 @@ def test_create_user_bookshelf_with_datetime_objects(user_and_book):
     uid, bid = user_and_book
     dt = datetime(2023, 5, 15, 12, 30)
 
-    sid = create_user_bookshelf(uid, bid, status="read", date_started=dt, date_finished=dt)
+    sid = create_user_bookshelf(
+        uid, bid, status="read", date_started=dt, date_finished=dt
+    )
     assert isinstance(sid, str)
 
     result = retrieve_user_bookshelf(uid)
@@ -333,6 +363,7 @@ def test_get_bookshelf_status_generic_error(monkeypatch, user_and_book):
     result = get_bookshelf_status(uid, bid)
     assert result.startswith("Error: Broken find")
 
+
 def test_get_unread_books_generic_error(monkeypatch):
     def fail_find(*_):
         raise Exception("Unread error")
@@ -343,6 +374,7 @@ def test_get_unread_books_generic_error(monkeypatch):
     )
     result = get_unread_books("user")
     assert result.startswith("Error: Unread error")
+
 
 def test_get_currently_reading_books_generic_error(monkeypatch):
     valid_user_id = str(ObjectId())

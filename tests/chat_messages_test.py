@@ -13,6 +13,7 @@ from backend.models.chat_messages import (
 from backend.models.users import create_user, delete_user
 from backend.models.books import create_book, delete_book
 
+
 @pytest.fixture
 def user_and_book():
     """Create a unique user and book, then clean up afterward."""
@@ -46,6 +47,7 @@ def user_and_book():
     delete_user(uid)
     delete_book(bid)
 
+
 def test_crud_chat_messages(user_and_book):
     """Test basic create / read / update / delete cycle."""
     uid, bid = user_and_book
@@ -76,6 +78,7 @@ def test_crud_chat_messages(user_and_book):
     assert res == "Message deleted successfully."
     after = read_chat_message(mid)
     assert after in ["Message not found.", "Error: Invalid message_id."]
+
 
 def test_chat_message_error_paths(user_and_book):
     """Test all the exception / invalid-input branches."""

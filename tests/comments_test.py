@@ -14,7 +14,7 @@ from backend.models.comments import (
     delete_comment,
     delete_comments_by_post,
     get_all_comments_for_post,
-    serialize_comment
+    serialize_comment,
 )
 from backend.models.users import create_user, delete_user
 from backend.models.books import create_book, delete_book
@@ -30,19 +30,31 @@ def user_post():
         username=f"testuser_{u}",
         email_address=f"test_{u}@example.com",
         oauth={"access_token": u, "refresh_token": u},
-        profile_image="", interests=[], demographics={}
+        profile_image="",
+        interests=[],
+        demographics={},
     )
     bid = create_book(
-        title="CommentTest", author=["Author"], page_count=100,
-        genre="Fiction", tags=["test"], publication_date="2025-01-01",
-        isbn=u[:9], isbn13=u[:13], cover_image="", language="en",
-        publisher="Pub", summary="Summary", genre_tags=["fiction"]
+        title="CommentTest",
+        author=["Author"],
+        page_count=100,
+        genre="Fiction",
+        tags=["test"],
+        publication_date="2025-01-01",
+        isbn=u[:9],
+        isbn13=u[:13],
+        cover_image="",
+        language="en",
+        publisher="Pub",
+        summary="Summary",
+        genre_tags=["fiction"],
     )
     pid = create_post(uid, bid, "Post Title", "Post Content", ["tag"])
     yield uid, bid, pid
     delete_post(pid)
     delete_user(uid)
     delete_book(bid)
+
 
 def test_create_read_update_delete_comment(user_post):
     uid, _, pid = user_post
@@ -62,7 +74,12 @@ def test_create_read_update_delete_comment(user_post):
 
     assert delete_comment(cid) == "Comment deleted successfully."
     deleted_result = read_comment(cid)
-    assert deleted_result in ["Comment not found.", "Error: Invalid ObjectId format.", "Error: Invalid comment_id."]
+    assert deleted_result in [
+        "Comment not found.",
+        "Error: Invalid ObjectId format.",
+        "Error: Invalid comment_id.",
+    ]
+
 
 def test_nested_comments(user_post):
     uid, _, pid = user_post
@@ -79,6 +96,7 @@ def test_nested_comments(user_post):
     delete_comment(reply_id)
     delete_comment(parent_id)
 
+
 def test_comment_exceptions():
     bad_id = "bad"
     fake_id = ObjectId("000000000000000000000000")
@@ -92,7 +110,9 @@ def test_comment_exceptions():
     # schema validation errors
     result = create_comment(fake_id, fake_id, None)
     assert result.startswith("Schema Validation Error:") or result.startswith("Error:")
-    assert create_comment(fake_id, fake_id, "Valid", parent_comment_id=[123]).startswith("Error:")
+    assert create_comment(
+        fake_id, fake_id, "Valid", parent_comment_id=[123]
+    ).startswith("Error:")
 
     assert read_comment(bad_id).startswith("Error:")
     read_result = read_comment(fake_id)
@@ -100,12 +120,16 @@ def test_comment_exceptions():
 
     assert read_comment_field(bad_id, "comment_text").startswith("Error:")
     read_field_result = read_comment_field(fake_id, "comment_text")
-    assert read_field_result in ["Comment not found.", "Error: Invalid comment_id.", "Field 'comment_text' not found in comment."]
+    assert read_field_result in [
+        "Comment not found.",
+        "Error: Invalid comment_id.",
+        "Field 'comment_text' not found in comment.",
+    ]
 
     nonexistent_field_result = read_comment_field(fake_id, "nonexistent_field")
     assert nonexistent_field_result in [
         "Field 'nonexistent_field' not found in comment.",
-        "Error: Invalid comment_id."
+        "Error: Invalid comment_id.",
     ]
 
     assert update_comment(bad_id, "new").startswith("Error:")
@@ -113,14 +137,22 @@ def test_comment_exceptions():
     assert update_result in ["Comment not found.", "Error: Invalid comment_id."]
 
     assert delete_comment(bad_id).startswith("Error:")
-    assert delete_comment(fake_id) in ["Comment not found.", "Error: Invalid comment_id."]
+    assert delete_comment(fake_id) in [
+        "Comment not found.",
+        "Error: Invalid comment_id.",
+    ]
 
     assert delete_comments_by_post(bad_id).startswith("Error:")
-    assert delete_comments_by_post(fake_id) in ["Error: Invalid post_id.", "No comments found for this post."]
+    assert delete_comments_by_post(fake_id) in [
+        "Error: Invalid post_id.",
+        "No comments found for this post.",
+    ]
+
 
 def test_get_all_comments_for_post_invalid():
     result = get_all_comments_for_post("bad")
     assert result in ["Error: Invalid ObjectId format.", "Error: Invalid post_id."]
+
 
 def test_serialize_comment_format():
     comment_data = {
