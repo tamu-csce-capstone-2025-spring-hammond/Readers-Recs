@@ -1,0 +1,4 @@
+User: 67c6b5c9c826c0c276d67f3a
+Total training books: 5
+Total test books: 6
+Genre Coverage Score: 0.1898148148148148

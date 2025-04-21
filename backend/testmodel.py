@@ -116,23 +116,24 @@ def generate_custom_recs(training_books, user_embedding, genre_weights, top_n=6)
     books = list(books_collection.find({}))
     print(f"Total books retrieved: {len(books)}")
     update_book_embeddings(books)
-    # books_read = {book["book_id"] for book in retrieve_user_bookshelf(user_id)}
-    # books_to_read = {book["book_id"] for book in get_unread_books(user_id)}
-    book_embeddings = np.array([np.array(book["embedding"]) for book in books])
+    #book_embeddings = np.array([np.array(book["embedding"]) for book in books])
+    book_embeddings = []
+    valid_books = []
 
-    valid_books = books
-
-    # for book in books:
-    #     if book["_id"] not in books_read and book["_id"] not in books_to_read:
-    #         valid_books.append(book)
-
-    # # Debugging output
-    # print(
-    #     f"user_embedding shape: {user_embedding.shape if user_embedding is not None else 'None'}"
-    # )
-    # print(
-    #     f"book_embeddings shape: {book_embeddings.shape if book_embeddings is not None else 'None'}"
-    # )
+    for book in books:
+        emb = book.get("embedding")
+        if isinstance(emb, list) and len(emb) == 384:
+            try:
+                vec = np.array(emb, dtype=np.float64)
+                book_embeddings.append(vec)
+                valid_books.append(book)
+            except Exception as e:
+                print(f"Skipping book {book['_id']} due to bad embedding: {e}")
+        else:
+            print(f"Skipping book {book['_id']}: Invalid embedding shape/type.")
+            
+    book_embeddings = np.stack(book_embeddings) if book_embeddings else np.zeros((1, 384))
+    
 
     # Check if user_embedding is None or empty
     if user_embedding is None or user_embedding.size == 0:
@@ -148,15 +149,6 @@ def generate_custom_recs(training_books, user_embedding, genre_weights, top_n=6)
         print("Error: book_embeddings is empty or None")
         return []
 
-    # book_embeddings = np.array(book_embeddings, dtype=np.float64)  # Convert once after collecting
-
-    # Debugging output
-    # print(f"Number of books: {len(book_embeddings)}")
-    # print(f"First few book embeddings: {book_embeddings[:5] if len(book_embeddings) > 0 else 'No embeddings'}")
-
-    # similarities = cosine_similarity(user_embedding.reshape(1, -1), book_embeddings)[0]
-    # recommendations = [(book, sim) for book, sim in zip(books, similarities) if book["_id"] not in books_read]
-    # recommendations.sort(key=lambda x: x[1], reverse=True)
 
     # return [book for book, _ in recommendations[:top_n]]
     use_similarities = True
@@ -239,7 +231,29 @@ def generate_custom_recs(training_books, user_embedding, genre_weights, top_n=6)
 
     return final_recommendations
 
-def evaluate_predictions(user_id, train_books, test_books, recommendations):
+def genre_coverage_score(genre_weights, recommendations):
+    if not genre_weights or not recommendations:
+        return 0.0
+
+    max_weight = max(genre_weights.values()) if genre_weights else 1
+    max_tags_per_book = max(len(book.get("genre_tags", [])) for book in recommendations) or 1
+    max_possible_score_per_book = max_weight * max_tags_per_book
+
+    total_score = 0
+    count = 0
+
+    for book in recommendations:
+        genres = book.get("genre_tags", [])
+        score = sum(genre_weights.get(genre, 0) for genre in genres)
+        total_score += score
+        count += 1
+
+    raw_average_score = total_score / count if count else 0.0
+    normalized_score = raw_average_score / max_possible_score_per_book if max_possible_score_per_book else 0.0
+
+    return normalized_score
+
+def evaluate_predictions(user_id, train_books, test_books, recommendations, genre_weights):
     train_embeddings = []
     for book in train_books:
         train_book = books_collection.find_one({"_id": book["book_id"]})
@@ -280,18 +294,28 @@ def evaluate_predictions(user_id, train_books, test_books, recommendations):
         ratio = sim_trainrec_mean / sim_traintest_mean if sim_traintest_mean != 0 else float('inf')
         print(f"Ratio (train vs recs) / (train vs test): {ratio:.4f}")
     
+    # embedding_score = embedding_coverage_score(test_books, recommendations)
+    # print(f"Embedding Coverage Score: {embedding_score:.4f}")
+    genre_score = genre_coverage_score(genre_weights, recommendations)
+    print(f"Genre Coverage Score: {genre_score:.4f}")
+
+    
     output_lines.append(f"User: {user_id}")
     output_lines.append(f"Total training books: {len(train_books)}")
     output_lines.append(f"Total test books: {len(test_books)}")
-    output_lines.append(f"Avg cosine similarity (train vs test): {np.mean(sim_traintest):.4f}")
-    output_lines.append(f"Avg cosine similarity (train vs recs): {np.mean(sim_trainrec):.4f}")
-    output_lines.append(f"Ratio (train vs recs) / (train vs test): {ratio:.4f}")
-    with open(f"user_similarity_logs/{user_id}.txt", "w") as f:
+    output_lines.append(f"Genre Coverage Score: {genre_score}")
+    # output_lines.append(f"Avg cosine similarity (train vs test): {np.mean(sim_traintest):.4f}")
+    # output_lines.append(f"Avg cosine similarity (train vs recs): {np.mean(sim_trainrec):.4f}")
+    # output_lines.append(f"Ratio (train vs recs) / (train vs test): {ratio:.4f}")
+    
+    
+    
+    with open(f"genre_similarity_logs/{user_id}.txt", "w") as f:
         for line in output_lines:
             print(line)
             f.write(line + "\n")
                
-    return ratio
+    return genre_score
 
     # if test_embeddings and rec_embeddings:
     #     test_matrix = np.array(test_embeddings)
@@ -335,18 +359,18 @@ def run_test(user_id):
     # print(user_embedding)
     # print(genre_weights)
     recommendations = generate_custom_recs(training_books, user_embedding, genre_weights)
-    return evaluate_predictions(user_id, training_books, test_books, recommendations)
+    return evaluate_predictions(user_id, training_books, test_books, recommendations, genre_weights)
 
 
 if __name__ == "__main__":
     # users_collection = collections["Users"]
     import os
-    os.makedirs("user_similarity_logs", exist_ok=True)
+    os.makedirs("genre_similarity_logs", exist_ok=True)
     users = list(users_collection.find({}))
     ucount = 0
     rsum = 0
     for user in users:
-        path = f"user_similarity_logs/{user['_id']}.txt"
+        path = f"genre_similarity_logs/{user['_id']}.txt"
         if os.path.exists(path):
             print(f"Skipping user {user['_id']} (log already exists)")
             continue
@@ -359,56 +383,8 @@ if __name__ == "__main__":
     print("\n")
     print("USER COUNT: ", ucount)
     print("\n")
-    print("AVERAGE RATIO: ", rsum/ucount)
+    print("AVERAGE GENRE SCORE RATIO: ", rsum/ucount)
     
         
     # run_test("67f69fb4d9f34beef0e5a301") # katelyns
     # run_test('67f81d0dfdf727a9cd85b45d') # anna
-
-
-
-
-
-
-
-######## TEST SCRIPT PYTHON ##########
-# import random
-# import numpy as np
-# from database import collections
-# from models.books import books_collection, read_book_field
-# from recmodel import update_book_embeddings, is_duplicate, generate_recs
-# from sklearn.metrics.pairwise import cosine_similarity
-# from models.users import retrieve_genre_weights
-
-# def get_user_books(user_id):
-#     user_bookshelf_collection = collections["User_Bookshelf"]
-#     full_shelf = list(user_bookshelf_collection.find({"user_id": user_id}))
-#     return full_shelf
-
-# def evaluate_against_bookshelf(user_id, recommendations):
-#     bookshelf_books = get_user_books(user_id)
-#     shelf_embeddings = [books_collection.find_one({"_id": book["book_id"]})["embedding"]
-#                         for book in bookshelf_books
-#                         if books_collection.find_one({"_id": book["book_id"]}) and
-#                         "embedding" in books_collection.find_one({"_id": book["book_id"]})]
-#     rec_embeddings = [book["embedding"] for book in recommendations if "embedding" in book]
-#     if shelf_embeddings and rec_embeddings:
-#         shelf_matrix = np.array(shelf_embeddings)
-#         rec_matrix = np.array(rec_embeddings)
-#         similarity_matrix = cosine_similarity(rec_matrix, shelf_matrix)
-#         avg_similarity = np.mean(similarity_matrix)
-#         print(f"Average cosine similarity between recommendations and full bookshelf: {avg_similarity:.4f}")
-#     else:
-#         print("Insufficient embeddings for similarity analysis.")
-
-# def run_test(user_id):
-#     user_books = get_user_books(user_id)
-#     if not user_books:
-#         print("NO DATA")
-#         return
-#     recommendations = generate_recs(user_id=user_id, top_n=10)
-#     evaluate_against_bookshelf(user_id, recommendations)
-
-# if __name__ == "__main__":
-#     run_test("67f69fb4d9f34beef0e5a301")
-#     run_test('67f81d0dfdf727a9cd85b45d')
