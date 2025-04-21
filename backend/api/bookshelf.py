@@ -56,11 +56,7 @@ def get_last_read_book(user_id):
             books_with_finish_date.sort(
                 key=lambda x: (
                     parse_date(x.get("date_finished")),
-                    (
-                        x.get("_id").generation_time
-                        if isinstance(x.get("_id"), ObjectId)
-                        else datetime.min
-                    ),
+                    x.get("_id").generation_time if isinstance(x.get("_id"), ObjectId) else datetime.min
                 ),
                 reverse=True,
             )
