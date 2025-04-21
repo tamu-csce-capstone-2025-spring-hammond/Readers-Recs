@@ -37,6 +37,8 @@ def create_post(user_id, book_id, title, post_text, tags):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def read_post(post_id):

@@ -61,44 +61,44 @@ def get_all_discussion_posts(book_id):
         return jsonify({"error": str(e)}), 500
 
 
-@discussion_bp.route("/<book_id>/posts/<post_id>", methods=["PUT"])
-def update_discussion_post(post_id):
-    try:
-        data = request.get_json()
-        user_id = data.get("user_id")
-        title = data.get("title", "")
-        post_text = data.get("post_text", "")
-        tags = data.get("tags")
+# @discussion_bp.route("/<book_id>/posts/<post_id>", methods=["PUT"])
+# def update_discussion_post(post_id):
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("user_id")
+#         title = data.get("title", "")
+#         post_text = data.get("post_text", "")
+#         tags = data.get("tags")
 
-        post = read_post(post_id)
-        if isinstance(post, str):  # Error message
-            return jsonify({"error": post}), 404
+#         post = read_post(post_id)
+#         if isinstance(post, str):  # Error message
+#             return jsonify({"error": post}), 404
 
-        if str(post["user_id"]) != user_id:
-            return jsonify({"error": "Unauthorized"}), 403
+#         if str(post["user_id"]) != user_id:
+#             return jsonify({"error": "Unauthorized"}), 403
 
-        result = update_post(post_id, title=title, post_text=post_text, tags=tags)
-        return jsonify({"message": result}), 200
+#         result = update_post(post_id, title=title, post_text=post_text, tags=tags)
+#         return jsonify({"message": result}), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
-@discussion_bp.route("/<book_id>/posts/<post_id>", methods=["DELETE"])
-def delete_discussion_post(post_id):
-    try:
-        data = request.get_json()
-        user_id = data.get("user_id")
+# @discussion_bp.route("/<book_id>/posts/<post_id>", methods=["DELETE"])
+# def delete_discussion_post(post_id):
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("user_id")
 
-        post = read_post(post_id)
-        if isinstance(post, str):
-            return jsonify({"error": post}), 404
+#         post = read_post(post_id)
+#         if isinstance(post, str):
+#             return jsonify({"error": post}), 404
 
-        if str(post["user_id"]) != user_id:
-            return jsonify({"error": "Unauthorized"}), 403
+#         if str(post["user_id"]) != user_id:
+#             return jsonify({"error": "Unauthorized"}), 403
 
-        result = delete_post(post_id)
-        return jsonify({"message": result}), 200
+#         result = delete_post(post_id)
+#         return jsonify({"message": result}), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500

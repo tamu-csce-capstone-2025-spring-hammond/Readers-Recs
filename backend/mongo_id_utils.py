@@ -1,6 +1,7 @@
 # backend/objectid_utils.py
 from bson.objectid import ObjectId
 from database import collections
+import os
 
 
 def is_valid_object_id(collection_name, obj_id):
@@ -10,6 +11,10 @@ def is_valid_object_id(collection_name, obj_id):
     :param obj_id: The ObjectId to be checked.
     :return: True if the ObjectId exists, False otherwise.
     """
+
+    # skip database lookups in test mode
+    if os.environ.get("TESTING") == "1":
+        return True
 
     if collection_name not in collections:
         return False

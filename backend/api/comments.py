@@ -78,44 +78,44 @@ def get_single_comment(post_id, comment_id):
         return jsonify({"error": str(e)}), 500
 
 
-# UPDATE: Update a comment's text
-@comments_bp.route("/<post_id>/comments/<comment_id>", methods=["PUT"])
-def update_existing_comment(post_id, comment_id):
-    try:
-        data = request.get_json()
-        comment_text = data.get("comment_text")
+# # UPDATE: Update a comment's text
+# @comments_bp.route("/<post_id>/comments/<comment_id>", methods=["PUT"])
+# def update_existing_comment(post_id, comment_id):
+#     try:
+#         data = request.get_json()
+#         comment_text = data.get("comment_text")
 
-        if not comment_text:
-            return jsonify({"error": "Missing comment_text"}), 400
+#         if not comment_text:
+#             return jsonify({"error": "Missing comment_text"}), 400
 
-        result = update_comment(comment_id, comment_text)
-        if result == "Comment updated successfully.":
-            return jsonify({"message": result}), 200
-        return jsonify({"error": result}), 404
+#         result = update_comment(comment_id, comment_text)
+#         if result == "Comment updated successfully.":
+#             return jsonify({"message": result}), 200
+#         return jsonify({"error": result}), 404
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
-# DELETE: Delete a comment
-@comments_bp.route("/<post_id>/comments/<comment_id>", methods=["DELETE"])
-def delete_existing_comment(post_id, comment_id):
-    try:
-        data = request.get_json(silent=True) or {}
-        user_id = data.get("user_id") or request.args.get("user_id")
+# # DELETE: Delete a comment
+# @comments_bp.route("/<post_id>/comments/<comment_id>", methods=["DELETE"])
+# def delete_existing_comment(post_id, comment_id):
+#     try:
+#         data = request.get_json(silent=True) or {}
+#         user_id = data.get("user_id") or request.args.get("user_id")
 
-        if not user_id:
-            return jsonify({"error": "Missing user_id"}), 400
+#         if not user_id:
+#             return jsonify({"error": "Missing user_id"}), 400
 
-        comment = read_comment(comment_id)
-        if isinstance(comment, str):
-            return jsonify({"error": comment}), 404
+#         comment = read_comment(comment_id)
+#         if isinstance(comment, str):
+#             return jsonify({"error": comment}), 404
 
-        if str(comment["user_id"]) != user_id:
-            return jsonify({"error": "Unauthorized"}), 403
+#         if str(comment["user_id"]) != user_id:
+#             return jsonify({"error": "Unauthorized"}), 403
 
-        result = delete_comment(comment_id)
-        return jsonify({"message": result}), 200
+#         result = delete_comment(comment_id)
+#         return jsonify({"message": result}), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
