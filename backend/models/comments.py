@@ -24,11 +24,9 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
         # Validate post_id, user_id, and parent_comment_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
-        if not is_valid_object_id("Users", user_id):
-            return "Error: Invalid user_id."
+        is_valid_object_id("Users", user_id)
         # Ensure parent_comment_id exists (if it's not None, it's a reply to an existing comment)
-        if parent_comment_id and not is_valid_object_id("Comments", parent_comment_id):
-            return "Error: Invalid parent_comment_id."
+        is_valid_object_id("Comments", parent_comment_id)
 
         # Prepare comment data using CommentSchema
         comment_data = CommentSchema(

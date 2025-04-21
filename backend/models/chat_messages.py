@@ -54,11 +54,8 @@ def read_chat_message_text(message_id):
             return "Error: Invalid message_id."
 
         document = chat_messages_collection.find_one({"_id": ObjectId(message_id)})
-        if document:
-            chat_message = ChatMessageSchema(**document)
-            return chat_message.message_text
-        else:
-            return "Message not found."
+        chat_message = ChatMessageSchema(**document)
+        return chat_message.message_text
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -77,14 +74,12 @@ def update_chat_message(message_id, message_text):
         result = chat_messages_collection.update_one(
             {"_id": ObjectId(message_id)}, {"$set": update_data}
         )
-        if result.matched_count:
-            updated_document = chat_messages_collection.find_one(
-                {"_id": ObjectId(message_id)}
-            )
-            chat_message = ChatMessageSchema(**updated_document)
-            return chat_message.model_dump(by_alias=True)
-        else:
-            return "Message not found."
+        updated_document = chat_messages_collection.find_one(
+            {"_id": ObjectId(message_id)}
+        )
+        chat_message = ChatMessageSchema(**updated_document)
+        return chat_message.model_dump(by_alias=True)
+
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -95,10 +90,7 @@ def delete_chat_message(message_id):
             return "Error: Invalid message_id."
 
         result = chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
-        if result.deleted_count:
-            return "Message deleted successfully."
-        else:
-            return "Message not found."
+        return "Message deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 

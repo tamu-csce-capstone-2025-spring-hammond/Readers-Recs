@@ -5,6 +5,7 @@ __pycache__/
 backend/__pycache__
 backend/models/__pycache__
 tests/__pycache__
+__pycache__
 .coverage
 htmlcov/
 report.html

@@ -81,6 +81,21 @@ def test_create_read_update_delete_comment(user_post):
     ]
 
 
+def test_create_comment_invalid_parent_id(user_post):
+    uid, _, pid = user_post
+    bad_parent = "notarealid"
+
+    result = create_comment(pid, uid, "Reply", parent_comment_id=bad_parent)
+    assert result == "Error: Invalid ObjectId format."
+
+
+def test_create_comment_schema_validation_error(user_post):
+    uid, _, pid = user_post
+
+    result = create_comment(pid, uid, None)  # Missing comment_text
+    assert result.startswith("Schema Validation Error:")
+
+
 def test_nested_comments(user_post):
     uid, _, pid = user_post
 
@@ -168,3 +183,25 @@ def test_serialize_comment_format():
     assert isinstance(result["_id"], str)
     assert isinstance(result["post_id"], str)
     assert isinstance(result["user_id"], str)
+
+
+def test_read_comment_field_not_found(user_post):
+    uid, _, pid = user_post
+    cid = create_initial_comment(pid, uid, "This is fine.")
+
+    result = read_comment_field(cid, "not_a_real_field")
+    assert result == "Field 'not_a_real_field' not found in comment."
+
+    delete_comment(cid)
+
+
+def test_update_comment_not_found():
+    fake = str(ObjectId())
+    result = update_comment(fake, "new content")
+    assert result == "Error: Invalid comment_id."
+
+
+def test_delete_comment_not_found():
+    fake = str(ObjectId())
+    result = delete_comment(fake)
+    assert result == "Error: Invalid comment_id."

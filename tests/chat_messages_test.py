@@ -119,3 +119,26 @@ def test_chat_message_error_paths(user_and_book):
     # GET ALL for bad book
     assert get_all_chat_messages_for_book(bad_id).startswith("Error:")
     assert get_all_chat_messages_for_book(fake_oid) == []
+
+
+def test_update_chat_message_empty_input(user_and_book):
+    uid, bid = user_and_book
+
+    # Create a valid message first
+    mid = create_chat_message(bid, uid, "Original message")
+    assert isinstance(mid, str)
+
+    # Now try to update it with an empty string
+    result = update_chat_message(mid, "")
+    assert result == "Error: Chat message must contain text."
+
+    # Cleanup
+    delete_chat_message(mid)
+
+
+def test_create_chat_message_invalid_book(user_and_book):
+    uid, _ = user_and_book
+    invalid_book_id = ObjectId()
+
+    result = create_chat_message(invalid_book_id, uid, "Message for bad book")
+    assert result == "Error: Invalid book_id."

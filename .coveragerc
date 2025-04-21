@@ -1,0 +1,9 @@
+# .coveragerc
+[run]
+branch = True
+source =
+    backend
+omit =
+    */tests/*
+    */backend/filling_database/*
+    */backend/userbookshelf_data/*

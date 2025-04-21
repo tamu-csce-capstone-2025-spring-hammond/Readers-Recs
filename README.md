@@ -89,7 +89,8 @@ black .
 ## Running the Python Backend Tests
 Run the following command to generate a coverage report for the Python backend tests.
 ```
-pytest --cov=. --cov-report=html:htmlcov tests/
+pytest --cov=backend --cov-config=.coveragerc --cov-report=html:htmlcov tests/
+
 ```
 
 # Deploying
