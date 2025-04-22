@@ -3,19 +3,20 @@ import uuid
 from unittest.mock import MagicMock
 from bson import ObjectId
 import models.books as book_model
+from datetime import datetime
 
 # Patch books_collection globally
 @pytest.fixture(autouse=True)
 def mock_books_collection(monkeypatch):
     fake_id = ObjectId()
-    fake_doc = {
+    valid_doc = {
         "_id": fake_id,
         "title": "Mocked Book",
         "author": ["Author"],
         "page_count": 100,
         "genre": "Fiction",
         "tags": ["test"],
-        "publication_date": "2025-01-01",
+        "publication_date": datetime(2025, 1, 1),  # valid datetime
         "isbn": "mockisbn",
         "isbn13": "mockisbn13",
         "cover_image": "http://example.com/image.jpg",
@@ -28,11 +29,80 @@ def mock_books_collection(monkeypatch):
 
     mock_col = MagicMock()
     mock_col.insert_one.return_value.inserted_id = fake_id
-    mock_col.find_one.side_effect = lambda q, *args, **kwargs: fake_doc if ("_id" in q and q["_id"] == fake_id) or ("isbn" in q and q["isbn"] == "mockisbn") or ("title" in q and q["title"] == "Mocked Book") or ("isbn13" in q and q["isbn13"] == "mockisbn13") else None
+    mock_col.find_one.side_effect = lambda q, *args, **kwargs: valid_doc if ("_id" in q and q["_id"] == fake_id) or ("isbn" in q and q["isbn"] == "mockisbn") or ("title" in q and q["title"] == "Mocked Book") or ("isbn13" in q and q["isbn13"] == "mockisbn13") else None
     mock_col.update_one.return_value.modified_count = 1
     mock_col.delete_one.return_value.deleted_count = 1
     monkeypatch.setattr(book_model, "books_collection", mock_col)
     return str(fake_id)
+
+def test_create_book_success(monkeypatch):
+    fake_id = ObjectId()
+
+    mock_col = MagicMock()
+    mock_col.find_one.return_value = None  # Not a duplicate
+    mock_col.insert_one.return_value.inserted_id = fake_id
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    res = book_model.create_book(
+        title="Test Book",
+        author=["Author"],
+        page_count=123,
+        genre="Genre",
+        tags=["tag1"],
+        publication_date="2025-01-01",
+        isbn="isbn_123",
+        isbn13="isbn13_123",
+        cover_image="http://cover.jpg",
+        language="en",
+        publisher="Publisher",
+        summary="Summary",
+        genre_tags=["fiction"]
+    )
+    assert isinstance(res, str) and len(res) == 24  # Check ObjectId string length
+
+
+def test_create_book_schema_validation(monkeypatch):
+    # tags=None should trigger schema validation error
+    monkeypatch.setattr(book_model, "books_collection", MagicMock())
+
+    res = book_model.create_book(
+        title="Bad Book",
+        author=["Author"],
+        page_count=123,
+        genre="Genre",
+        tags=None,  # invalid
+        publication_date="2025-01-01",
+        isbn="isbn_sch",
+        isbn13="isbn13_sch",
+        cover_image="",
+        language="en",
+        publisher="Publisher",
+        summary="Summary",
+        genre_tags=[]
+    )
+    assert res.startswith("Schema Validation Error:")
+
+
+def test_create_book_invalid_date(monkeypatch):
+    monkeypatch.setattr(book_model, "books_collection", MagicMock())
+
+    res = book_model.create_book(
+        title="Invalid Date",
+        author=["Author"],
+        page_count=123,
+        genre="Genre",
+        tags=["t"],
+        publication_date="bad-date",  # invalid format
+        isbn="invalid_date",
+        isbn13="invalid_date13",
+        cover_image="",
+        language="en",
+        publisher="Publisher",
+        summary="Summary",
+        genre_tags=[]
+    )
+    assert res == "Error: Invalid date format. Use YYYY-MM-DD."
+
 
 def test_read_book_field_valid(mock_books_collection):
     assert book_model.read_book_field(mock_books_collection, "title") == "Mocked Book"
@@ -47,9 +117,16 @@ def test_read_book_field_book_not_found():
     assert book_model.read_book_field("000000000000000000000000", "title") == "Book not found."
 
 def test_read_book_field_schema_error(monkeypatch):
-    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: {"_id": ObjectId(), "publication_date": "not-a-date"}))
+    # read_book_field does not use schema, so test for missing field instead
+    incomplete_doc = {
+        "_id": ObjectId(),
+        "author": ["Author"],
+        "page_count": 100,
+        "genre": "Fiction"
+    }
+    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: incomplete_doc))
     result = book_model.read_book_field(str(ObjectId()), "title")
-    assert result.startswith("Schema Validation Error:")
+    assert result == "Field not found"
 
 def test_read_book_by_bookId_valid(mock_books_collection):
     assert book_model.read_book_by_bookId(mock_books_collection)["title"] == "Mocked Book"
@@ -61,7 +138,7 @@ def test_read_book_by_bookId_invalid_id_format():
     assert "Invalid book ID format" in book_model.read_book_by_bookId("temporary_id")
 
 def test_read_book_by_bookId_schema_error(monkeypatch):
-    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: {"_id": ObjectId(), "publication_date": "not-a-date"}))
+    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: {"_id": ObjectId(), "title": 123, "publication_date": "not-a-date"}))
     result = book_model.read_book_by_bookId(str(ObjectId()))
     assert result.startswith("Schema Validation Error:")
 
@@ -75,7 +152,7 @@ def test_read_book_by_identifier_invalid_identifier():
     assert book_model.read_book_by_identifier("val", "foo") == "Error: Invalid identifier. Use 'title', 'isbn', or 'isbn13'."
 
 def test_read_book_by_identifier_schema_error(monkeypatch):
-    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: {"_id": ObjectId(), "publication_date": "not-a-date"}))
+    monkeypatch.setattr(book_model, "books_collection", MagicMock(find_one=lambda q: {"_id": ObjectId(), "title": 123, "publication_date": "not-a-date"}))
     result = book_model.read_book_by_identifier("mockisbn", "isbn")
     assert result.startswith("Schema Validation Error:")
 
@@ -95,7 +172,7 @@ def test_read_book_tags(mock_books_collection):
     assert book_model.read_book_tags(mock_books_collection) == ["test"]
 
 def test_read_book_publication_date(mock_books_collection):
-    assert book_model.read_book_publication_date(mock_books_collection) == "2025-01-01"
+    assert book_model.read_book_publication_date(mock_books_collection) == datetime(2025, 1, 1)
 
 def test_read_book_isbn(mock_books_collection):
     assert book_model.read_book_isbn(mock_books_collection) == "mockisbn"
@@ -118,61 +195,240 @@ def test_read_book_summary(mock_books_collection):
 def test_read_book_genre_tags(mock_books_collection):
     assert book_model.read_book_genre_tags(mock_books_collection) == ["fiction"]
 
-def test_update_book_details_success(mock_books_collection):
-    res = book_model.update_book_details(mock_books_collection, title="New Title")
-    assert res == "Book updated successfully."
+def test_update_book_details_success(monkeypatch, mock_books_collection):
+    valid_doc = {
+        "_id": ObjectId(mock_books_collection),
+        "title": "Original Title",
+        "author": ["Author"],
+        "page_count": 100,
+        "genre": "Fiction",
+        "tags": ["test"],
+        "publication_date": datetime(2025, 1, 1),
+        "isbn": "mockisbn",
+        "isbn13": "mockisbn13",
+        "cover_image": "http://example.com/image.jpg",
+        "language": "en",
+        "publisher": "MockPub",
+        "summary": "Mock summary",
+        "genre_tags": ["fiction"],
+        "embedding": []
+    }
 
-def test_update_book_details_invalid_format():
-    res = book_model.update_book_details("nothex", title="fail")
-    assert res == "Error: Invalid ObjectId format."
+    mock_col = MagicMock()
+    mock_col.find_one.return_value = valid_doc
+    mock_col.update_one.return_value.modified_count = 1
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
 
-def test_update_book_details_not_found():
-    res = book_model.update_book_details("000000000000000000000000", title="fail")
-    assert res == "Error: Book not found."
+    result = book_model.update_book_details(str(valid_doc["_id"]), title="Updated Title")
+    assert result == "Book updated successfully."
 
-def test_add_book_author_invalid():
-    assert book_model.add_book_author("badid", "Author") == "Invalid book ID."
+def test_update_book_details_invalid_id():
+    result = book_model.update_book_details("not-a-valid-id", title="Updated")
+    assert result == "Error: Invalid ObjectId format."
 
-def test_add_book_author_empty(mock_books_collection):
-    assert book_model.add_book_author(mock_books_collection, "") == "Author name cannot be empty."
+def test_update_book_details_book_not_found(monkeypatch):
+    mock_col = MagicMock()
+    mock_col.find_one.return_value = None
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
 
-def test_add_book_author_success(mock_books_collection):
-    assert book_model.add_book_author(mock_books_collection, "New Author") == "Author added successfully."
+    result = book_model.update_book_details(str(ObjectId()), title="Updated")
+    assert result == "Error: Book not found."
 
-def test_add_book_tag_invalid():
-    assert book_model.add_book_tag("badid", "tag") == "Invalid book ID."
+def test_update_book_details_validation_error(monkeypatch):
+    valid_doc = {
+        "_id": ObjectId(),
+        "title": "T",
+        "author": ["A"],
+        "page_count": 1,
+        "genre": "G",
+        "tags": ["t"],
+        "publication_date": "not-a-date",  # <- invalid
+        "isbn": "x",
+        "isbn13": "y",
+        "cover_image": "",
+        "language": "en",
+        "publisher": "P",
+        "summary": "S",
+        "genre_tags": [],
+        "embedding": []
+    }
+    mock_col = MagicMock()
+    mock_col.find_one.return_value = valid_doc
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
 
-def test_add_book_tag_empty(mock_books_collection):
-    assert book_model.add_book_tag(mock_books_collection, "") == "Tag cannot be empty."
-
-def test_add_book_tag_success(mock_books_collection):
-    assert book_model.add_book_tag(mock_books_collection, "New Tag") == "Tag added successfully."
-
-def test_remove_book_author_empty(mock_books_collection):
-    assert book_model.remove_book_author(mock_books_collection, "") == "Author name cannot be empty."
-
-def test_remove_book_author_success(mock_books_collection):
-    assert book_model.remove_book_author(mock_books_collection, "Author") == "Author removed successfully."
-
-def test_remove_book_tag_empty(mock_books_collection):
-    assert book_model.remove_book_tag(mock_books_collection, "") == "Tag cannot be empty."
-
-def test_remove_book_tag_success(mock_books_collection):
-    assert book_model.remove_book_tag(mock_books_collection, "test") == "Tag removed successfully."
-
-def test_delete_book_invalid():
-    assert book_model.delete_book("not-an-id") == "Invalid book ID format"
-
-def test_delete_book_not_found():
-    assert book_model.delete_book("000000000000000000000000") == "Error: Book not found."
-
-def test_delete_book_success(mock_books_collection):
-    assert book_model.delete_book(mock_books_collection) == "Book and related records deleted successfully."
-
-def test_create_book_value_error():
-    result = book_model.create_book("T", ["A"], 1, "G", ["t"], "bad-date", "x", "y", "", "en", "P", "S", [])
-    assert result == "Error: Invalid date format. Use YYYY-MM-DD."
-
-def test_create_book_schema_validation_error():
-    result = book_model.create_book("T", ["A"], 1, "G", None, "2025-01-01", "x", "y", "", "en", "P", "S", [])
+    result = book_model.update_book_details(str(valid_doc["_id"]), title="Fails")
     assert result.startswith("Schema Validation Error:")
+
+def test_add_book_author_success(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 1
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    result = book_model.add_book_author(fake_id, "New Author")
+    assert result == "Author added successfully."
+
+
+def test_add_book_author_already_exists(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 0
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    result = book_model.add_book_author(fake_id, "Existing Author")
+    assert result == "Author was already in the list or book not found."
+
+
+def test_add_book_author_invalid_id():
+    result = book_model.add_book_author("bad-id", "Any Author")
+    assert result == "Invalid book ID."
+
+
+def test_add_book_author_empty_name():
+    fake_id = str(ObjectId())
+    result = book_model.add_book_author(fake_id, "")
+    assert result == "Author name cannot be empty."
+
+def test_add_book_tag_success(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 1
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    result = book_model.add_book_tag(fake_id, "New Tag")
+    assert result == "Tag added successfully."
+
+
+def test_add_book_tag_already_exists(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 0
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    result = book_model.add_book_tag(fake_id, "test")
+    assert result == "Tag was already in the list or book not found."
+
+
+def test_add_book_tag_invalid_id():
+    result = book_model.add_book_tag("bad-id", "Some Tag")
+    assert result == "Invalid book ID."
+
+
+def test_add_book_tag_empty_name():
+    fake_id = str(ObjectId())
+    result = book_model.add_book_tag(fake_id, "")
+    assert result == "Tag cannot be empty."
+
+
+def test_remove_book_author_success(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 1
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    res = book_model.remove_book_author(fake_id, "Author")
+    assert res == "Author removed successfully."
+
+
+def test_remove_book_author_not_found(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 0
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    res = book_model.remove_book_author(fake_id, "Unknown Author")
+    assert res == "Author not found in the list or book not found."
+
+
+def test_remove_book_author_invalid_id():
+    res = book_model.remove_book_author("bad", "Author")
+    assert res == "Invalid book ID."
+
+
+def test_remove_book_author_empty_name():
+    fake_id = str(ObjectId())
+    res = book_model.remove_book_author(fake_id, "")
+    assert res == "Author name cannot be empty."
+
+
+def test_remove_book_tag_success(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 1
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    res = book_model.remove_book_tag(fake_id, "tag")
+    assert res == "Tag removed successfully."
+
+
+def test_remove_book_tag_not_found(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.update_one.return_value.modified_count = 0
+    monkeypatch.setattr(book_model, "books_collection", mock_col)
+
+    res = book_model.remove_book_tag(fake_id, "missing")
+    assert res == "Tag not found in the list or book not found."
+
+
+def test_remove_book_tag_invalid_id():
+    res = book_model.remove_book_tag("bad", "tag")
+    assert res == "Invalid book ID."
+
+
+def test_remove_book_tag_empty_name():
+    fake_id = str(ObjectId())
+    res = book_model.remove_book_tag(fake_id, "")
+    assert res == "Tag cannot be empty."
+
+
+def test_delete_book_success(monkeypatch):
+    fake_id = ObjectId()
+
+    mock_books = MagicMock()
+    mock_books.find_one.return_value = {"_id": fake_id}
+    mock_books.delete_one.return_value.deleted_count = 1
+
+    mock_posts = MagicMock()
+    mock_posts.find.return_value = [{"_id": ObjectId()}]
+    mock_posts.delete_many.return_value = None
+
+    mock_comments = MagicMock()
+    mock_comments.delete_many.return_value = None
+
+    mock_chats = MagicMock()
+    mock_chats.delete_many.return_value = None
+
+    mock_shelves = MagicMock()
+    mock_shelves.delete_many.return_value = None
+
+    mock_db = {
+        "Books": mock_books,
+        "Posts": mock_posts,
+        "Comments": mock_comments,
+        "Chat_Messages": mock_chats,
+        "User_Bookshelf": mock_shelves,
+    }
+
+    monkeypatch.setattr(book_model, "collections", mock_db)
+    monkeypatch.setattr(book_model, "books_collection", mock_books)
+
+    result = book_model.delete_book(str(fake_id))
+    assert result == "Book and related records deleted successfully."
+
+
+def test_delete_book_not_found(monkeypatch):
+    fake_id = ObjectId()
+
+    mock_books = MagicMock()
+    mock_books.find_one.return_value = None
+    monkeypatch.setattr(book_model, "books_collection", mock_books)
+
+    result = book_model.delete_book(str(fake_id))
+    assert result == "Error: Book not found."
+
+
+def test_delete_book_invalid_id():
+    result = book_model.delete_book("notanid")
+    assert result == "Invalid book ID format"
+
