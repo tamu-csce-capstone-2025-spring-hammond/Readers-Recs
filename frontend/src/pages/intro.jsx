@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Home, Search, MessageCircle, User, BookOpen, UserPlus, BookMarked, ChevronDown, Target, Users, ListChecks, Scale, MessageSquare, Quote, LayoutGrid, Info, Mail, HelpCircle, Shield } from 'lucide-react';
 import logo from '../assets/logo.png'; 
 import brownBooks from '../assets/brownbooks.jpg';
+import groupPhoto from '../assets/group_photo.jpg';
 
 const Intro = () => {
   useEffect(() => {
@@ -159,7 +160,7 @@ const Intro = () => {
             <p>We believe reading should be accessible and enjoyable for everyone. By creating a community-driven platform free from commercial bias, we're helping readers of all types discover their next favorite book.</p>
           </div>
           <div className="about-image fade-in">
-          <img src={brownBooks} alt="People enjoying books" />
+          <img src={groupPhoto} alt="Book Club developer team at a poster presentation." />
           </div>
         </div>
       </section>
