@@ -2,7 +2,7 @@ import pytest
 import uuid
 from bson import ObjectId
 
-from backend.models.chat_messages import (
+from models.chat_messages import (
     create_chat_message,
     read_chat_message,
     read_chat_message_text,
@@ -10,8 +10,8 @@ from backend.models.chat_messages import (
     delete_chat_message,
     get_all_chat_messages_for_book,
 )
-from backend.models.users import create_user, delete_user
-from backend.models.books import create_book, delete_book
+from models.users import create_user, delete_user
+from models.books import create_book, delete_book
 
 
 @pytest.fixture

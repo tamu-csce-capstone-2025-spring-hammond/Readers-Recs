@@ -1,6 +1,6 @@
 import pytest, uuid
 from bson import ObjectId
-from backend.models.posts import (
+from models.posts import (
     create_post,
     read_post,
     read_post_field,
@@ -8,8 +8,8 @@ from backend.models.posts import (
     delete_post,
     get_all_posts_for_book,
 )
-from backend.models.users import create_user, delete_user
-from backend.models.books import create_book, delete_book
+from models.users import create_user, delete_user
+from models.books import create_book, delete_book
 
 
 @pytest.fixture

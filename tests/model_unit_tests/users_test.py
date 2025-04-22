@@ -1,7 +1,7 @@
 import pytest
 from bson import ObjectId
-from backend.database import collections
-from backend.models.users import (
+from database import collections
+from models.users import (
     create_user,
     read_user,
     read_user_by_username,

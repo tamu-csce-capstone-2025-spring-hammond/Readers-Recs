@@ -173,6 +173,8 @@ def get_unread_books(user_id):
         )
         return books
 
+    except InvalidId:
+        return "Error: Invalid user_id."
     except Exception as e:
         return f"Error: {str(e)}"
 

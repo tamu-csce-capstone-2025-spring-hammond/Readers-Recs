@@ -1,5 +1,6 @@
 import pytest
 from main import app
+from unittest.mock import MagicMock
 
 app.testing = True
 

@@ -4,7 +4,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime
 import pytz
-from backend.models.comments import (
+from models.comments import (
     create_comment,
     create_initial_comment,
     reply_to_comment,
@@ -16,9 +16,9 @@ from backend.models.comments import (
     get_all_comments_for_post,
     serialize_comment,
 )
-from backend.models.users import create_user, delete_user
-from backend.models.books import create_book, delete_book
-from backend.models.posts import create_post, delete_post
+from models.users import create_user, delete_user
+from models.books import create_book, delete_book
+from models.posts import create_post, delete_post
 
 
 @pytest.fixture

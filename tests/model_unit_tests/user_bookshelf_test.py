@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, date
 from bson import ObjectId
 from bson.errors import InvalidId
-from backend.models.user_bookshelf import (
+from models.user_bookshelf import (
     create_user_bookshelf,
     update_user_bookshelf_status,
     retrieve_user_bookshelf,
@@ -16,8 +16,8 @@ from backend.models.user_bookshelf import (
     get_page_number,
     delete_user_bookshelf,
 )
-from backend.models.users import create_user, delete_user
-from backend.models.books import create_book, delete_book
+from models.users import create_user, delete_user
+from models.books import create_book, delete_book
 import pytz
 
 
@@ -210,7 +210,7 @@ def test_update_user_bookshelf_status_invalid_status(user_and_book):
 
 
 def test_get_unread_books_invalid_user():
-    assert get_unread_books("bad") == []
+    assert get_unread_books("bad") == 'Error: Invalid user_id.'
 
 
 def test_update_page_number_errors(user_and_book):
@@ -260,14 +260,19 @@ def test_get_bookshelf_status_invalid_id_type():
     assert result.startswith("Error:")
 
 
+
 def test_get_unread_books_force_exception(monkeypatch):
-    def raise_error(user_id):
+    def mock_is_valid_object_id(collection, obj_id):
+        return True
+
+    def raise_error(*args, **kwargs):
         raise Exception("forced failure")
 
-    from backend.models import user_bookshelf
+    monkeypatch.setattr("models.user_bookshelf.is_valid_object_id", mock_is_valid_object_id)
+    monkeypatch.setattr("models.user_bookshelf.user_bookshelf_collection.find", raise_error)
 
-    monkeypatch.setattr(user_bookshelf.user_bookshelf_collection, "find", raise_error)
-    result = get_unread_books("some_user")
+    valid_fake_id = str(ObjectId())
+    result = get_unread_books(valid_fake_id)
     assert result.startswith("Error: forced failure")
 
 
@@ -357,7 +362,7 @@ def test_get_bookshelf_status_generic_error(monkeypatch, user_and_book):
         raise Exception("Broken find")
 
     monkeypatch.setattr(
-        "backend.models.user_bookshelf.user_bookshelf_collection.find_one",
+        "models.user_bookshelf.user_bookshelf_collection.find_one",
         fail_find,
     )
     result = get_bookshelf_status(uid, bid)
@@ -365,14 +370,17 @@ def test_get_bookshelf_status_generic_error(monkeypatch, user_and_book):
 
 
 def test_get_unread_books_generic_error(monkeypatch):
-    def fail_find(*_):
+    def mock_is_valid_object_id(collection, obj_id):
+        return True
+
+    def raise_error(*args, **kwargs):
         raise Exception("Unread error")
 
-    monkeypatch.setattr(
-        "backend.models.user_bookshelf.user_bookshelf_collection.find",
-        fail_find,
-    )
-    result = get_unread_books("user")
+    monkeypatch.setattr("models.user_bookshelf.is_valid_object_id", mock_is_valid_object_id)
+    monkeypatch.setattr("models.user_bookshelf.user_bookshelf_collection.find", raise_error)
+
+    valid_fake_id = str(ObjectId())
+    result = get_unread_books(valid_fake_id)
     assert result.startswith("Error: Unread error")
 
 
@@ -383,7 +391,7 @@ def test_get_currently_reading_books_generic_error(monkeypatch):
         raise Exception("CR error")
 
     monkeypatch.setattr(
-        "backend.models.user_bookshelf.user_bookshelf_collection.find",
+        "models.user_bookshelf.user_bookshelf_collection.find",
         fail_find,
     )
     result = get_currently_reading_books(valid_user_id)
@@ -398,7 +406,7 @@ def test_rate_book_generic_error(monkeypatch, user_and_book):
         raise Exception("Rate exploded")
 
     monkeypatch.setattr(
-        "backend.models.user_bookshelf.user_bookshelf_collection.update_one",
+        "models.user_bookshelf.user_bookshelf_collection.update_one",
         fail_update,
     )
     result = rate_book(uid, bid, "pos")
