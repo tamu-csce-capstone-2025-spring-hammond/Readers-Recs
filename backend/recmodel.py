@@ -243,7 +243,11 @@ def generate_recs(user_id, top_n=6, count=1):
     update_book_embeddings(books)
     books_read = {book["book_id"] for book in retrieve_user_bookshelf(user_id)}
     books_to_read = {book["book_id"] for book in get_unread_books(user_id)}
-    book_embeddings = np.array([np.array(book["embedding"]) for book in books])
+    book_embeddings = np.array([
+    np.array(book["embedding"], dtype=np.float64)
+    for book in books
+    if "embedding" in book and isinstance(book["embedding"], list) and len(book["embedding"]) == 384
+])
 
     valid_books = []
 
@@ -428,9 +432,9 @@ def onboarding_recommendations(user_id, interests):
 
 # Example usage:
 
-# user_id = "67c64c27835dd5190e9d458b"
+user_id = "67c64c27835dd5190e9d458b"
 # process_reading_history(user_id)
-# print(recommend_books(user_id))
+print(recommend_books(user_id, 5))
 
 # user_id = "67f58b311c43cef5572babc2"
 
