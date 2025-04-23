@@ -864,6 +864,7 @@ def test_create_user_with_birthday(monkeypatch):
 
     assert result == str(fake_id)
 
+
 def test_update_genre_weights_unexpected_exception(monkeypatch):
     import models.users as users
 

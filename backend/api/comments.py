@@ -27,7 +27,7 @@ def add_comment_to_post(post_id):
         result = create_initial_comment(post_id, user_id, comment_text)
         if "Error" in result:
             return jsonify({"error": result}), 400
-        return jsonify({"message": "Comment created", "comment_id": result}), 201
+        return jsonify({"message": "Comment created", "comment_id": str(result)}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -47,7 +47,7 @@ def reply_to_existing_comment(post_id, parent_comment_id):
         result = reply_to_comment(post_id, user_id, comment_text, parent_comment_id)
         if "Error" in result:
             return jsonify({"error": result}), 400
-        return jsonify({"message": "Reply created", "comment_id": result}), 201
+        return jsonify({"message": "Reply created", "comment_id": str(result)}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

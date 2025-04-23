@@ -7,6 +7,7 @@ backend/models/__pycache__
 tests/__pycache__
 __pycache__
 .coverage
+.coveragerc
 htmlcov/
 report.html
 
