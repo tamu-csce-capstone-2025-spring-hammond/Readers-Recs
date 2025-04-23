@@ -49,11 +49,11 @@ def read_post(post_id):
 
         post = posts_collection.find_one({"_id": ObjectId(post_id)})
         return (
-            PostSchema(**post).model_dump(by_alias=True) if post else "Post not found."
+            PostSchema(**post).model_dump(by_alias=True) if post else "Error: Post not found."
         )
 
-    except InvalidId:
-        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # Read a post's field by field name
@@ -66,10 +66,10 @@ def read_post_field(post_id, field):
         post = posts_collection.find_one(
             {"_id": ObjectId(post_id)}, {field: 1, "_id": 0}
         )
-        return post[field] if post else "Post not found."
+        return post[field] if post else "Error: Post not found."
 
-    except InvalidId:
-        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def update_post(post_id, title="", post_text="", tags=None):
@@ -98,7 +98,7 @@ def update_post(post_id, title="", post_text="", tags=None):
         if result.matched_count:
             return "Post updated successfully."
         else:
-            return "Post not found."
+            return "Error: Post not found."
 
     except Exception as e:
         return f"Error: {str(e)}"
@@ -114,10 +114,10 @@ def delete_post(post_id):
         if result.deleted_count:
             return "Post deleted successfully."
         else:
-            return "Post not found."
+            return "Error: Post not found."
 
-    except (ValueError, InvalidId):
-        return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 users_collection = collections["Users"]
