@@ -1,12 +1,13 @@
 # database/models/user_bookshelf.py
-from datetime import datetime
+from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from database import collections
-from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from schemas import UserBookshelfSchema
 from bson import ObjectId
 from mongo_id_utils import is_valid_object_id
 from bson.errors import InvalidId
+import pytz
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
@@ -19,11 +20,12 @@ user_bookshelf_collection = collections["User_Bookshelf"]
 def create_user_bookshelf(
     user_id,
     book_id,
-    status="to read",
+    status="to-read",
     page_number=0,
     date_started=None,
     date_finished=None,
     rating="mid",
+    date_added=None,
 ):
     try:
         # Validate user_id and book_id
@@ -38,19 +40,35 @@ def create_user_bookshelf(
         if existing:
             return "Error: book already present in user bookshelf."
 
-        # Convert date_added to datetime if it's a datetime.date object
-        date_added = datetime.today().date()  # Default to today's date
-        if isinstance(date_added, datetime):
-            date_added = datetime.combine(
-                date_added.date(), datetime.min.time()
-            )  # Ensure it's datetime, not date
+        central = pytz.timezone("America/Chicago")
 
-        # Convert date_started and date_finished if they are datetime.date objects
-        if date_started and isinstance(date_started, datetime):
-            date_started = datetime.combine(date_started.date(), datetime.min.time())
+        # Set default date_added if not provided
+        if date_added is None:
+            date_added = datetime.now(pytz.timezone("America/Chicago"))
 
-        if date_finished and isinstance(date_finished, datetime):
-            date_finished = datetime.combine(date_finished.date(), datetime.min.time())
+        # Convert to full datetime if date only
+        if isinstance(date_added, date) and not isinstance(date_added, datetime):
+            date_added = datetime.combine(date_added, datetime.min.time()).replace(
+                tzinfo=central
+            )
+
+        if (
+            date_started
+            and isinstance(date_started, date)
+            and not isinstance(date_started, datetime)
+        ):
+            date_started = datetime.combine(date_started, datetime.min.time()).replace(
+                tzinfo=central
+            )
+
+        if (
+            date_finished
+            and isinstance(date_finished, date)
+            and not isinstance(date_finished, datetime)
+        ):
+            date_finished = datetime.combine(
+                date_finished, datetime.min.time()
+            ).replace(tzinfo=central)
 
         # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
@@ -58,7 +76,7 @@ def create_user_bookshelf(
             book_id=book_id,
             status=status,
             page_number=page_number,
-            date_added=date_added,  # Correctly formatted date_added as datetime
+            date_added=date_added,
             date_started=date_started,
             date_finished=date_finished,
             rating=rating,
@@ -100,10 +118,17 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
         ]:
             return "Error: Invalid status value."
 
-        # Update the status
+        central = pytz.timezone("America/Chicago")
+
+        # If status is being set to "read", set date_finished to now
+        update_fields = {"status": new_status}
+
+        # Only add date_finished if moving to "read"
+        if new_status.lower() == "read":
+            update_fields["date_finished"] = datetime.now(central)
+
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)},
-            {"$set": {"status": new_status, "date_finished": date_finished}},
+            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": update_fields}
         )
 
         if result.matched_count:
@@ -284,6 +309,8 @@ def update_page_number(user_id, book_id, new_page_number):
 
     except InvalidId:
         return "Error: Invalid user_id or book_id."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def get_page_number(user_id, book_id):
@@ -308,6 +335,8 @@ def get_page_number(user_id, book_id):
             return book_entry.get("page_number", 0)
         else:
             return "UserBookshelf entry not found."
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 

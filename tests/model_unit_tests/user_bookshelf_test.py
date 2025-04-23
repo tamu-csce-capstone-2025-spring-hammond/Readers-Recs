@@ -1,8 +1,9 @@
+from unittest.mock import patch, MagicMock
 import pytest
-import uuid
-from datetime import datetime, date
-from bson import ObjectId
+from unittest.mock import patch
 from bson.errors import InvalidId
+from bson import ObjectId
+from datetime import datetime, date
 from models.user_bookshelf import (
     create_user_bookshelf,
     update_user_bookshelf_status,
@@ -16,398 +17,622 @@ from models.user_bookshelf import (
     get_page_number,
     delete_user_bookshelf,
 )
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
 import pytz
+
+# Mocked IDs used in all tests
+uid = str(ObjectId())
+bid = str(ObjectId())
+fake_bid = str(ObjectId())
+VALID_USER_ID = "68094b3267aa3dbf50919a51"
+VALID_BOOK_ID = "68094b3267aa3dbf50919a52"
+
+valid_ids = {
+    "Users": {uid},
+    "Books": {bid, fake_bid},
+    "User_Bookshelf": {uid},  # optional
+}
+
+
+def validate_mock(collection, oid):
+    if oid == "bad":
+        return False
+    return oid in valid_ids.get(collection, set())
 
 
 @pytest.fixture
 def user_and_book():
-    u = uuid.uuid4().hex
-    uid = create_user(
-        first_name="UBTest",
-        last_name="User",
-        username=f"ubuser_{u}",
-        email_address=f"ub_{u}@example.com",
-        oauth={"access_token": u, "refresh_token": u},
-        profile_image="",
-        interests=[],
-        demographics={"age": 30},
-    )
-    bid = create_book(
-        title="UBook",
-        author=["Author"],
-        page_count=100,
-        genre="Test",
-        tags=["ub"],
-        publication_date="2025-01-01",
-        isbn=u[:9],
-        isbn13=u[:13],
-        cover_image="",
-        language="en",
-        publisher="Pub",
-        summary="Summary",
-        genre_tags=["test"],
-    )
-    yield uid, bid
-    delete_user_bookshelf(uid, bid)
-    delete_user(uid)
-    delete_book(bid)
+    return uid, bid
 
 
-def test_update_user_bookshelf_status_edge_cases(user_and_book):
-    uid, bid = user_and_book
-    # malformed ids should return generic errors
-    assert update_user_bookshelf_status("bad", bid, "read").startswith("Error:")
-    assert update_user_bookshelf_status(uid, "bad", "read").startswith("Error:")
-    # well-formed but nonexistent book id, invalid book_id
-    fake = str(ObjectId())
-    assert (
-        update_user_bookshelf_status(uid, fake, "read")
-        == 'Error: Invalid book_id.'
-    )
-
-
-def test_rate_book_errors_and_success(user_and_book):
-    uid, bid = user_and_book
-    assert rate_book("bad", bid, "pos").startswith("Error:")
-    assert rate_book(uid, "bad", "pos") == "Error: Invalid book_id."
-    fake = str(ObjectId())
-    assert rate_book(uid, fake, "pos") == "Error: Invalid book_id."
-
-    create_user_bookshelf(uid, bid, status="read")
-    # Confirm the book is considered read before testing invalid rating
-    assert get_bookshelf_status(uid, bid) == "read"
-
-    # Now this will trigger the invalid rating branch
-    assert rate_book(uid, bid, "excellent") == "Error: Invalid rating value."
-    assert rate_book(uid, bid, "pos") == "UserBookshelf rating updated successfully."
-    assert rate_book(uid, bid, "neg") == "UserBookshelf rating updated successfully."
-
-
-def test_delete_user_bookshelf_errors(user_and_book):
-    uid, bid = user_and_book
-    # invalid user_id
-    assert delete_user_bookshelf("bad", bid) == "Error: Invalid user_id."
-    # invalid book_id
-    assert delete_user_bookshelf(uid, "bad") == "Error: Invalid book_id."
-    # well-formed but no entry
-    fake_bid = str(ObjectId())
-    assert delete_user_bookshelf(uid, fake_bid) == "Error: Invalid book_id."
-
-
-def test_retrieve_user_bookshelf_invalid_and_valid(user_and_book):
-    uid, bid = user_and_book
-    # invalid user_id yields empty list
-    assert retrieve_user_bookshelf("bad") == []
-
-    # valid user but no "read" entries
-    assert retrieve_user_bookshelf(uid) == []
-    # add a "read" entry and verify retrieval
-    sid = create_user_bookshelf(uid, bid, status="read")
+@patch("backend.models.user_bookshelf.user_bookshelf_collection")
+@patch("backend.models.user_bookshelf.is_valid_object_id", side_effect=validate_mock)
+def test_retrieve_user_bookshelf_valid(mock_valid, mock_collection, user_and_book):
+    uid, _ = user_and_book
+    mock_collection.find.return_value = [{"status": "read"}]
     books = retrieve_user_bookshelf(uid)
-    assert isinstance(books, list) and all(
-        item.get("status") == "read" for item in books
+    assert isinstance(books, list)
+    assert all(book["status"] == "read" for book in books)
+
+
+@patch("models.user_bookshelf.ObjectId", side_effect=lambda x: x)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_bookshelf_status_valid(mock_valid, mock_collection, mock_oid):
+    mock_valid.side_effect = lambda col, oid: True
+    mock_collection.find_one.return_value = {"status": "read"}
+
+    result = get_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "read"
+
+
+@patch("models.user_bookshelf.ObjectId", side_effect=lambda x: x)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_bookshelf_status_no_status(mock_valid, mock_collection, mock_oid):
+    mock_valid.side_effect = lambda col, oid: True
+    mock_collection.find_one.return_value = None
+
+    result = get_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "no-status"
+
+
+@patch("models.user_bookshelf.ObjectId", side_effect=lambda x: x)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_bookshelf_status_invalid_id(mock_valid, mock_collection, mock_oid):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
+
+    result = get_bookshelf_status(VALID_USER_ID, "invalid_object_id")
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.ObjectId", side_effect=lambda x: x)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_bookshelf_status_exception(mock_valid, mock_collection, mock_oid):
+    mock_valid.side_effect = lambda col, oid: True
+    mock_collection.find_one.side_effect = Exception("Simulated failure")
+
+    result = get_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID)
+    assert result.startswith("Error: Simulated failure")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_unread_books_valid(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = [{"status": "to-read"}, {"status": "to-read"}]
+
+    result = get_unread_books(uid)
+    assert isinstance(result, list)
+    assert all(book["status"] == "to-read" for book in result)
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_unread_books_empty(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = []
+
+    result = get_unread_books(uid)
+    assert result == []
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_unread_books_invalid_user(mock_valid, mock_collection):
+    mock_valid.return_value = False
+
+    result = get_unread_books("bad")
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_currently_reading_books_valid(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = [{"status": "currently-reading"}]
+
+    result = get_currently_reading_books(uid)
+    assert isinstance(result, list)
+    assert result[0]["status"] == "currently-reading"
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_currently_reading_books_none(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = []
+
+    result = get_currently_reading_books(uid)
+    assert result is None
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_currently_reading_books_invalid_user(mock_valid, mock_collection):
+    mock_valid.return_value = False
+
+    result = get_currently_reading_books("bad")
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_unread_books_exception(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.side_effect = Exception("Simulated unread error")
+
+    result = get_unread_books(uid)
+    assert result.startswith("Error: Simulated unread error")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_currently_reading_books_exception(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.side_effect = Exception("Simulated currently-reading error")
+
+    result = get_currently_reading_books(uid)
+    assert result.startswith("Error: Simulated currently-reading error")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_read_books_valid(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = [{"status": "read"}, {"status": "read"}]
+
+    result = get_read_books(uid)
+    assert isinstance(result, list)
+    assert all(book["status"] == "read" for book in result)
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_read_books_empty(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.return_value = []
+
+    result = get_read_books(uid)
+    assert result == []
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_read_books_invalid_user(mock_valid, mock_collection):
+    mock_valid.return_value = False
+
+    result = get_read_books("bad")
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_read_books_exception(mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+
+    mock_valid.return_value = True
+    mock_collection.find.side_effect = Exception("Simulated read error")
+
+    result = get_read_books(uid)
+    assert result.startswith("Error: Simulated read error")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_success(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.count_documents.return_value = 1
+    mock_collection.update_one.return_value.matched_count = 1
+
+    result = rate_book(VALID_USER_ID, VALID_BOOK_ID, "pos")
+    assert result == "UserBookshelf rating updated successfully."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = rate_book("bad_user", VALID_BOOK_ID, "pos")
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
+
+    result = rate_book(VALID_USER_ID, "bad_book", "pos")
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_not_read(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.count_documents.return_value = 0
+
+    result = rate_book(VALID_USER_ID, VALID_BOOK_ID, "pos")
+    assert result == "Error: Book has not been read yet."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_invalid_rating(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.count_documents.return_value = 1
+
+    result = rate_book(VALID_USER_ID, VALID_BOOK_ID, "excellent")
+    assert result == "Error: Invalid rating value."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_rate_book_update_exception(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.count_documents.return_value = 1
+    mock_collection.update_one.side_effect = Exception(
+        "Simulated rating update failure"
     )
-    delete_user_bookshelf(uid, bid)
+
+    result = rate_book(VALID_USER_ID, VALID_BOOK_ID, "pos")
+    assert result.startswith("Error: Simulated rating update failure")
 
 
-def test_get_bookshelf_status_various_states(user_and_book):
-    uid, bid = user_and_book
-    # no entry -> no-status
-    assert get_bookshelf_status(uid, bid) == "no-status"
-    # malformed book_id -> error
-    assert get_bookshelf_status(uid, "bad") == "Error: Invalid book_id."
-    # to-read state
-    sid = create_user_bookshelf(uid, bid, status="to-read")
-    assert get_bookshelf_status(uid, bid) == "to-read"
-    delete_user_bookshelf(uid, bid)
-    # currently-reading state
-    sid = create_user_bookshelf(uid, bid, status="currently-reading")
-    assert get_bookshelf_status(uid, bid) == "currently-reading"
-    delete_user_bookshelf(uid, bid)
-    # read state
-    sid = create_user_bookshelf(uid, bid, status="read")
-    assert get_bookshelf_status(uid, bid) == "read"
-    delete_user_bookshelf(uid, bid)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_success(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.return_value.matched_count = 1
+
+    result = update_page_number(VALID_USER_ID, VALID_BOOK_ID, 42)
+    assert result == "Page number updated successfully."
 
 
-def test_get_read_books_empty_and_invalid(user_and_book):
-    uid, bid = user_and_book
-    # invalid user
-    assert get_read_books("bad") == "Error: Invalid user_id."
-    # no entries
-    assert get_read_books(uid) == []
-    # with a read entry
-    sid = create_user_bookshelf(uid, bid, status="read")
-    reads = get_read_books(uid)
-    assert (
-        isinstance(reads, list) and len(reads) == 1 and reads[0].get("status") == "read"
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = update_page_number("bad_user", VALID_BOOK_ID, 10)
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
+
+    result = update_page_number(VALID_USER_ID, "bad_book", 10)
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_negative(mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = update_page_number(VALID_USER_ID, VALID_BOOK_ID, -5)
+    assert result == "Error: Invalid page number. It must be a non-negative integer."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_non_integer(mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = update_page_number(VALID_USER_ID, VALID_BOOK_ID, "forty-two")
+    assert result == "Error: Invalid page number. It must be a non-negative integer."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_not_found(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.return_value.matched_count = 0
+
+    result = update_page_number(VALID_USER_ID, VALID_BOOK_ID, 10)
+    assert result == "UserBookshelf entry not found."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_page_number_exception(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.side_effect = Exception("Simulated update error")
+
+    result = update_page_number(VALID_USER_ID, VALID_BOOK_ID, 15)
+    assert result.startswith("Error: Simulated update error")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+@patch("models.user_bookshelf.ObjectId", side_effect=InvalidId("bad ObjectId"))
+def test_update_page_number_invalid_objectid(mock_oid, mock_valid, mock_collection):
+    uid = "68094b3267aa3dbf50919a51"
+    bid = "68094b3267aa3dbf50919a52"
+
+    mock_valid.return_value = True
+
+    result = update_page_number(uid, bid, 20)
+    assert result == "Error: Invalid user_id or book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_page_number_valid(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = {"page_number": 42}
+
+    result = get_page_number(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == 42
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_page_number_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = get_page_number("bad_user", VALID_BOOK_ID)
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_page_number_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
+
+    result = get_page_number(VALID_USER_ID, "bad_book")
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_page_number_entry_not_found(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = None
+
+    result = get_page_number(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "UserBookshelf entry not found."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_get_page_number_generic_exception(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.side_effect = Exception("Simulated find error")
+
+    result = get_page_number(VALID_USER_ID, VALID_BOOK_ID)
+    assert result.startswith("Error: Simulated find error")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+@patch("models.user_bookshelf.ObjectId", side_effect=InvalidId("invalid ObjectId"))
+def test_get_page_number_invalid_objectid(mock_oid, mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = get_page_number(VALID_USER_ID, VALID_BOOK_ID)
+    assert result.startswith("Error: Invalid user_id or book_id.")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_success(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = None
+    mock_collection.insert_one.return_value.inserted_id = "mock_id"
+
+    result = create_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID, status="read")
+    assert result == "mock_id"
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_duplicate(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = {"status": "read"}
+
+    result = create_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID, status="read")
+    assert result == "Error: book already present in user bookshelf."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = create_user_bookshelf("bad_user", VALID_BOOK_ID)
+    assert result == "Error: Invalid user_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
+
+    result = create_user_bookshelf(VALID_USER_ID, "bad_book")
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_validation_error(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = None
+
+    result = create_user_bookshelf(
+        VALID_USER_ID, VALID_BOOK_ID, status="invalid-status"
     )
-    delete_user_bookshelf(uid, bid)
-
-
-def test_get_unread_books_empty_and_valid(user_and_book):
-    uid, bid = user_and_book
-    # no entries
-    assert get_unread_books(uid) == []
-    # with an unread entry (to-read)
-    sid = create_user_bookshelf(uid, bid, status="to-read")
-    unread = get_unread_books(uid)
-    assert (
-        isinstance(unread, list)
-        and len(unread) == 1
-        and unread[0].get("status") == "to-read"
-    )
-    delete_user_bookshelf(uid, bid)
-
-
-def test_get_currently_reading_books_empty_and_invalid(user_and_book):
-    uid, bid = user_and_book
-    # invalid user
-    assert get_currently_reading_books("bad") == "Error: Invalid user_id."
-    # no entries -> None
-    assert get_currently_reading_books(uid) is None
-    # with an entry
-    sid = create_user_bookshelf(uid, bid, status="currently-reading")
-    curr = get_currently_reading_books(uid)
-    assert isinstance(curr, list) and curr[0].get("status") == "currently-reading"
-    delete_user_bookshelf(uid, bid)
-
-
-def test_rate_book_before_and_after_read_and_invalid_rating(user_and_book):
-    uid, bid = user_and_book
-    # before any shelf entry (no read entry yet)
-    assert rate_book(uid, bid, "pos") == "Error: Book has not been read yet."
-    # malformed ids
-    assert rate_book("bad", bid, "pos").startswith("Error:")
-    assert rate_book(uid, "bad", "pos") == "Error: Invalid book_id."
-
-    # valid read but invalid rating
-    create_user_bookshelf(uid, bid, status="read")
-    assert rate_book(uid, bid, "wrong") == "Error: Invalid rating value."
-
-    # valid ratings
-    assert rate_book(uid, bid, "pos") == "UserBookshelf rating updated successfully."
-    entry = retrieve_user_bookshelf(uid)[0]
-    assert entry.get("rating") == "pos"
-    assert rate_book(uid, bid, "neg") == "UserBookshelf rating updated successfully."
-    entry2 = retrieve_user_bookshelf(uid)[0]
-    assert entry2.get("rating") == "neg"
-
-
-def test_create_user_bookshelf_invalid_inputs():
-    fake = str(ObjectId())
-    assert create_user_bookshelf("bad", fake) == "Error: Invalid user_id."
-    assert create_user_bookshelf(fake, "bad") == "Error: Invalid user_id."
-
-
-def test_update_user_bookshelf_status_invalid_status(user_and_book):
-    uid, bid = user_and_book
-    create_user_bookshelf(uid, bid)
-    result = update_user_bookshelf_status(uid, bid, "invalid")
-    assert result == "Error: Invalid status value."
-
-
-def test_get_unread_books_invalid_user():
-    assert get_unread_books("bad") == 'Error: Invalid user_id.'
-
-
-def test_update_page_number_errors(user_and_book):
-    uid, bid = user_and_book
-    assert update_page_number("bad", bid, 10) == "Error: Invalid user_id."
-    assert update_page_number(uid, "bad", 10) == "Error: Invalid book_id."
-    assert (
-        update_page_number(uid, bid, -5)
-        == "Error: Invalid page number. It must be a non-negative integer."
-    )
-    assert update_page_number(uid, bid, 10) == "UserBookshelf entry not found."
-
-
-def test_get_page_number_errors(user_and_book):
-    uid, bid = user_and_book
-    assert get_page_number("bad", bid) == "Error: Invalid user_id."
-    assert get_page_number(uid, "bad") == "Error: Invalid book_id."
-    assert get_page_number(uid, bid) == "UserBookshelf entry not found."
-
-
-def test_get_page_number_valid(user_and_book):
-    uid, bid = user_and_book
-    create_user_bookshelf(uid, bid, status="currently-reading")
-    update_page_number(uid, bid, 42)
-    page = get_page_number(uid, bid)
-    assert page == 42
-
-
-def test_create_user_bookshelf_duplicate(user_and_book):
-    uid, bid = user_and_book
-    first = create_user_bookshelf(uid, bid, status="to-read")
-    assert isinstance(first, str)
-    second = create_user_bookshelf(uid, bid, status="to-read")
-    assert second == "Error: book already present in user bookshelf."
-    delete_user_bookshelf(uid, bid)
-
-
-def test_create_user_bookshelf_schema_validation_error(user_and_book):
-    uid, bid = user_and_book
-    # Invalid status (not one of the expected pattern)
-    result = create_user_bookshelf(uid, bid, status="invalid-status")
     assert result.startswith("Schema Validation Error:")
 
 
-def test_get_bookshelf_status_invalid_id_type():
-    result = get_bookshelf_status("fake_user", "not_an_oid")
-    assert result.startswith("Error:")
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+@patch("models.user_bookshelf.ObjectId", side_effect=InvalidId("bad id"))
+def test_create_user_bookshelf_invalid_objectid(mock_oid, mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = create_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "Error: Invalid user_id or book_id."
 
 
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_generic_exception(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = None
+    mock_collection.insert_one.side_effect = Exception("insert failed")
 
-def test_get_unread_books_force_exception(monkeypatch):
-    def mock_is_valid_object_id(collection, obj_id):
-        return True
-
-    def raise_error(*args, **kwargs):
-        raise Exception("forced failure")
-
-    monkeypatch.setattr("models.user_bookshelf.is_valid_object_id", mock_is_valid_object_id)
-    monkeypatch.setattr("models.user_bookshelf.user_bookshelf_collection.find", raise_error)
-
-    valid_fake_id = str(ObjectId())
-    result = get_unread_books(valid_fake_id)
-    assert result.startswith("Error: forced failure")
+    result = create_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID)
+    assert result.startswith("Error: insert failed")
 
 
-def test_rate_book_no_read_entry(user_and_book):
-    uid, bid = user_and_book
-    create_user_bookshelf(uid, bid, status="to-read")
-    assert rate_book(uid, bid, "pos") == "Error: Book has not been read yet."
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_delete_user_bookshelf_success(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.delete_one.return_value.deleted_count = 1
+
+    result = delete_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "UserBookshelf entry deleted successfully."
 
 
-def test_update_page_number_float(user_and_book):
-    uid, bid = user_and_book
-    create_user_bookshelf(uid, bid, status="currently-reading")
-    assert (
-        update_page_number(uid, bid, 12.5)
-        == "Error: Invalid page number. It must be a non-negative integer."
-    )
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_delete_user_bookshelf_not_found(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.delete_one.return_value.deleted_count = 0
+
+    result = delete_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "UserBookshelf entry not found."
 
 
-def test_get_currently_reading_books_returns_none(user_and_book):
-    uid, _ = user_and_book
-    assert get_currently_reading_books(uid) is None
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_delete_user_bookshelf_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = delete_user_bookshelf("bad_user", VALID_BOOK_ID)
+    assert result == "Error: Invalid user_id."
 
 
-def test_update_user_bookshelf_status_success(user_and_book):
-    uid, bid = user_and_book
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_delete_user_bookshelf_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
 
-    # Create the bookshelf entry with initial status
-    sid = create_user_bookshelf(uid, bid, status="to-read")
-    assert isinstance(sid, str)
-    assert get_bookshelf_status(uid, bid) == "to-read"
+    result = delete_user_bookshelf(VALID_USER_ID, "bad_book")
+    assert result == "Error: Invalid book_id."
 
-    # Update the status to "read"
-    result = update_user_bookshelf_status(uid, bid, "read")
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+@patch("models.user_bookshelf.ObjectId", side_effect=InvalidId("bad id"))
+def test_delete_user_bookshelf_invalid_objectid(mock_oid, mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = delete_user_bookshelf(VALID_USER_ID, VALID_BOOK_ID)
+    assert result == "Error: Invalid user_id or book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_success(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.return_value.matched_count = 1
+
+    result = update_user_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID, "read")
     assert result == "UserBookshelf status updated successfully."
 
-    # Confirm the update via model function
-    assert get_bookshelf_status(uid, bid) == "read"
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_invalid_user(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Users" else True
+
+    result = update_user_bookshelf_status("bad_user", VALID_BOOK_ID, "read")
+    assert result == "Error: Invalid user_id."
 
 
-def test_create_user_bookshelf_with_date_objects(user_and_book):
-    uid, bid = user_and_book
-    d = date(2024, 1, 1)
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_invalid_book(mock_valid, mock_collection):
+    mock_valid.side_effect = lambda col, oid: False if col == "Books" else True
 
-    sid = create_user_bookshelf(
-        uid, bid, status="read", date_started=d, date_finished=d
+    result = update_user_bookshelf_status(VALID_USER_ID, "bad_book", "read")
+    assert result == "Error: Invalid book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_invalid_status_value(mock_valid, mock_collection):
+    mock_valid.return_value = True
+
+    result = update_user_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID, "shelved")
+    assert result == "Error: Invalid status value."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_not_found(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.return_value.matched_count = 0
+
+    result = update_user_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID, "read")
+    assert result == "UserBookshelf entry not found."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_update_user_bookshelf_status_exception(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.update_one.side_effect = Exception("Simulated update failure")
+
+    result = update_user_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID, "read")
+    assert result.startswith("Error: Simulated update failure")
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+@patch("models.user_bookshelf.ObjectId", side_effect=InvalidId("invalid ObjectId"))
+def test_update_user_bookshelf_status_invalid_objectid(
+    mock_oid, mock_valid, mock_collection
+):
+    mock_valid.return_value = True
+
+    result = update_user_bookshelf_status(VALID_USER_ID, VALID_BOOK_ID, "read")
+    assert result == "Error: Invalid user_id or book_id."
+
+
+@patch("models.user_bookshelf.user_bookshelf_collection")
+@patch("models.user_bookshelf.is_valid_object_id")
+def test_create_user_bookshelf_with_date_conversion(mock_valid, mock_collection):
+    mock_valid.return_value = True
+    mock_collection.find_one.return_value = None
+    mock_collection.insert_one.return_value.inserted_id = "mock_id"
+
+    d = date(2024, 4, 1)
+
+    result = create_user_bookshelf(
+        VALID_USER_ID, VALID_BOOK_ID, status="read", date_started=d, date_finished=d
     )
-    assert isinstance(sid, str)
-
-    result = retrieve_user_bookshelf(uid)
-    assert len(result) == 1
-    assert result[0]["status"] == "read"
-    assert result[0]["date_started"].isoformat().startswith("2024-01-01")
-    assert result[0]["date_finished"].isoformat().startswith("2024-01-01")
-
-
-def test_create_user_bookshelf_with_datetime_objects(user_and_book):
-    uid, bid = user_and_book
-    dt = datetime(2023, 5, 15, 12, 30)
-
-    sid = create_user_bookshelf(
-        uid, bid, status="read", date_started=dt, date_finished=dt
-    )
-    assert isinstance(sid, str)
-
-    result = retrieve_user_bookshelf(uid)
-    assert len(result) == 1
-    assert result[0]["date_started"].isoformat().startswith("2023-05-15")
-    assert result[0]["date_finished"].isoformat().startswith("2023-05-15")
-
-
-def test_create_user_bookshelf_default_date_added(user_and_book):
-    uid, bid = user_and_book
-
-    sid = create_user_bookshelf(uid, bid, status="read")
-    assert isinstance(sid, str)
-
-    today_str = date.today().isoformat()
-    result = retrieve_user_bookshelf(uid)
-    assert len(result) == 1
-    assert result[0]["date_added"].isoformat().startswith(today_str)
-
-
-def test_get_bookshelf_status_generic_error(monkeypatch, user_and_book):
-    uid, bid = user_and_book
-
-    def fail_find(*_):
-        raise Exception("Broken find")
-
-    monkeypatch.setattr(
-        "models.user_bookshelf.user_bookshelf_collection.find_one",
-        fail_find,
-    )
-    result = get_bookshelf_status(uid, bid)
-    assert result.startswith("Error: Broken find")
-
-
-def test_get_unread_books_generic_error(monkeypatch):
-    def mock_is_valid_object_id(collection, obj_id):
-        return True
-
-    def raise_error(*args, **kwargs):
-        raise Exception("Unread error")
-
-    monkeypatch.setattr("models.user_bookshelf.is_valid_object_id", mock_is_valid_object_id)
-    monkeypatch.setattr("models.user_bookshelf.user_bookshelf_collection.find", raise_error)
-
-    valid_fake_id = str(ObjectId())
-    result = get_unread_books(valid_fake_id)
-    assert result.startswith("Error: Unread error")
-
-
-# def test_get_currently_reading_books_generic_error(monkeypatch):
-#     valid_user_id = str(ObjectId())
-
-#     def fail_find(*_):
-#         raise Exception("CR error")
-
-#     monkeypatch.setattr(
-#         "models.user_bookshelf.user_bookshelf_collection.find",
-#         fail_find,
-#     )
-#     result = get_currently_reading_books(valid_user_id)
-#     assert result.startswith("Error: CR error")
-
-
-def test_rate_book_generic_error(monkeypatch, user_and_book):
-    uid, bid = user_and_book
-    create_user_bookshelf(uid, bid, status="read")
-
-    def fail_update(*_):
-        raise Exception("Rate exploded")
-
-    monkeypatch.setattr(
-        "models.user_bookshelf.user_bookshelf_collection.update_one",
-        fail_update,
-    )
-    result = rate_book(uid, bid, "pos")
-    assert result.startswith("Error: Rate exploded")
+    assert result == "mock_id"

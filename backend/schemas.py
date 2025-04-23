@@ -78,7 +78,6 @@ class UserSchema(BaseModel):
     demographics: DemographicSchema = Field(default_factory=DemographicSchema)
     genre_weights: Dict[str, float] = Field(default_factory=dict)
     embedding: List[float] = Field(default_factory=list)
-    # genre_tags: List[str] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
 
