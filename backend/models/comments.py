@@ -52,6 +52,8 @@ def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
         return f"Schema Validation Error: {str(e)}"
     except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def create_initial_comment(post_id, user_id, comment_text):
@@ -86,6 +88,8 @@ def read_comment(comment_id):
 
     except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # Read a comment's field by field name
@@ -106,6 +110,8 @@ def read_comment_field(comment_id, field):
 
     except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def update_comment(comment_id, comment_text):
@@ -134,6 +140,8 @@ def update_comment(comment_id, comment_text):
             return "Comment not found."
     except InvalidId:
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def delete_comment(comment_id):
@@ -149,6 +157,8 @@ def delete_comment(comment_id):
             return "Comment not found."
     except (ValueError, InvalidId):
         return "Error: Invalid comment_id."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # Used to delete all comments associated with a post when the post is deleted
@@ -166,6 +176,8 @@ def delete_comments_by_post(post_id):
 
     except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def get_all_comments_for_post(post_id):
@@ -200,6 +212,8 @@ def get_all_comments_for_post(post_id):
 
     except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # used to convert ObjectId to string and copy comment_text to content

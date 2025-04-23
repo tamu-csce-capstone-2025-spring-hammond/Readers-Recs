@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from bson import ObjectId
 from datetime import datetime
 import pytz
@@ -16,6 +16,14 @@ from models.comments import (
     serialize_comment,
 )
 import models.comments as comment_model
+from pydantic import ValidationError
+from bson.errors import InvalidId
+from schemas import CommentSchema
+
+VALID_POST_ID = "507f1f77bcf86cd799439011"
+VALID_USER_ID = "507f1f77bcf86cd799439012"
+VALID_COMMENT_TEXT = "This is a test comment"
+VALID_PARENT_ID = "507f1f77bcf86cd799439013"
 
 
 @pytest.fixture(autouse=True)
@@ -199,3 +207,140 @@ def test_delete_comment_not_found(monkeypatch):
     monkeypatch.setattr(comment_model, "comments_collection", mock_col)
     result = delete_comment(fake_id)
     assert result == "Error: Invalid comment_id."
+
+
+@patch("models.comments.comments_collection.find_one", side_effect=Exception("Crash"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_read_comment_field_exception(mock_valid, mock_find):
+    result = read_comment_field("68094b3267aa3dbf50919a52", "comment_text")
+    assert result == "Error: Crash"
+
+
+@patch("models.comments.comments_collection.delete_one", side_effect=Exception("Boom"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comment_exception(mock_valid, mock_delete):
+    result = delete_comment("68094b3267aa3dbf50919a52")
+    assert result == "Error: Boom"
+
+
+@patch(
+    "models.comments.comments_collection.delete_many", side_effect=Exception("Crash")
+)
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comments_by_post_exception(mock_valid, mock_delete):
+    result = delete_comments_by_post("68094b3267aa3dbf50919a52")
+    assert result == "Error: Crash"
+
+
+@patch(
+    "models.comments.comments_collection.find",
+    side_effect=Exception("Database failure"),
+)
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_get_all_comments_exception(mock_valid, mock_find):
+    result = get_all_comments_for_post("68094b3267aa3dbf50919a52")
+    assert result == "Error: Database failure"
+
+
+@patch("models.comments.comments_collection.insert_one")
+@patch("models.comments.CommentSchema")
+@patch("models.comments.is_valid_object_id", side_effect=InvalidId("bad id"))
+def test_create_comment_invalidid(mock_valid, mock_schema, mock_insert):
+    result = create_comment(VALID_POST_ID, VALID_USER_ID, VALID_COMMENT_TEXT)
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch(
+    "models.comments.comments_collection.insert_one",
+    side_effect=Exception("DB insert failed"),
+)
+@patch("models.comments.CommentSchema")
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_create_comment_general_exception(mock_valid, mock_schema, mock_insert):
+    result = create_comment(VALID_POST_ID, VALID_USER_ID, VALID_COMMENT_TEXT)
+    assert result == "Error: DB insert failed"
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad object id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_read_comment_invalid_objectid(mock_valid, mock_oid):
+    result = read_comment("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch(
+    "models.comments.comments_collection.find_one", side_effect=Exception("db exploded")
+)
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_read_comment_general_exception(mock_valid, mock_find):
+    result = read_comment("507f1f77bcf86cd799439011")
+    assert result == "Error: db exploded"
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad object id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_read_comment_field_invalid_objectid(mock_valid, mock_oid):
+    result = read_comment_field("507f1f77bcf86cd799439011", "comment_text")
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad object id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_update_comment_invalid_objectid(mock_valid, mock_oid):
+    result = update_comment("507f1f77bcf86cd799439011", "Updated comment")
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch(
+    "models.comments.comments_collection.update_one",
+    side_effect=Exception("Update failed"),
+)
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_update_comment_general_exception(mock_valid, mock_update):
+    result = update_comment("507f1f77bcf86cd799439011", "Updated comment")
+    assert result == "Error: Update failed"
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comment_invalidid(mock_valid, mock_oid):
+    result = delete_comment("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid comment_id."
+
+
+@patch("models.comments.ObjectId", side_effect=ValueError("value error"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comment_valueerror(mock_valid, mock_oid):
+    result = delete_comment("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid comment_id."
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comments_by_post_invalidid(mock_valid, mock_oid):
+    result = delete_comments_by_post("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch("models.comments.ObjectId", side_effect=ValueError("bad input"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_delete_comments_by_post_valueerror(mock_valid, mock_oid):
+    result = delete_comments_by_post("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid ObjectId format."
+
+
+@patch("models.comments.ObjectId", side_effect=InvalidId("bad id"))
+@patch("models.comments.is_valid_object_id", return_value=True)
+def test_get_all_comments_for_post_invalidid(mock_valid, mock_oid):
+    result = get_all_comments_for_post("507f1f77bcf86cd799439011")
+    assert result == "Error: Invalid ObjectId format."
+
+
+def test_reply_to_comment_with_none_parent():
+    result = reply_to_comment(
+        post_id="507f1f77bcf86cd799439011",
+        user_id="507f1f77bcf86cd799439012",
+        comment_text="This is a reply",
+        parent_comment_id=None,
+    )
+    assert result == "Error: parent_comment_id cannot be None for replies."
