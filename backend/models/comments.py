@@ -21,12 +21,17 @@ comments_collection = collections["Comments"]
 
 def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
     try:
+        if not comment_text or comment_text.strip() == "" or comment_text is None:
+            return "Error: comment_text cannot be empty."
+        
         # Validate post_id, user_id, and parent_comment_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
-        is_valid_object_id("Users", user_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
         # Ensure parent_comment_id exists (if it's not None, it's a reply to an existing comment)
-        is_valid_object_id("Comments", parent_comment_id)
+        if not is_valid_object_id("Comments", parent_comment_id) and parent_comment_id is not None:
+            return "Error: invalid parent_comment_id."
 
         # Prepare comment data using CommentSchema
         comment_data = CommentSchema(
@@ -60,6 +65,8 @@ def reply_to_comment(post_id, user_id, comment_text, parent_comment_id):
     """
     Creates a reply to an existing comment.
     """
+    if not parent_comment_id:
+        return "Error: parent_comment_id cannot be None for replies."
     return create_comment(post_id, user_id, comment_text, parent_comment_id)
 
 
@@ -106,6 +113,9 @@ def update_comment(comment_id, comment_text):
         # Validate comment_id
         if not is_valid_object_id("Comments", comment_id):
             return "Error: Invalid comment_id."
+        
+        if not comment_text or comment_text.strip() == "":
+            return "Error: comment_text cannot be empty."
 
         # Prepare update data including the date_edited field
         update_data = {
@@ -138,7 +148,7 @@ def delete_comment(comment_id):
         else:
             return "Comment not found."
     except (ValueError, InvalidId):
-        return "Error: Invalid ObjectId format."
+        return "Error: Invalid comment_id."
 
 
 # Used to delete all comments associated with a post when the post is deleted

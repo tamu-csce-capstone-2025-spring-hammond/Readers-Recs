@@ -85,8 +85,10 @@ def create_user_bookshelf(
 def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=None):
     try:
         # Validate user_id and book_id
-        is_valid_object_id("Users", user_id)
-        is_valid_object_id("Books", book_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
 
         # Validate new_status
         if new_status not in [
@@ -127,7 +129,8 @@ def retrieve_user_bookshelf(user_id):
 def get_bookshelf_status(user_id, book_id):
     try:
 
-        is_valid_object_id("Books", book_id)
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
 
         book = user_bookshelf_collection.find_one(
             {"user_id": user_id, "book_id": ObjectId(book_id)}
@@ -138,8 +141,6 @@ def get_bookshelf_status(user_id, book_id):
         else:
             return "no-status"
 
-    except InvalidId:
-        return "Error: Invalid book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -147,7 +148,8 @@ def get_bookshelf_status(user_id, book_id):
 def get_read_books(user_id):
     try:
         # Validate user_id
-        is_valid_object_id("Users", user_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
 
         # Get all books read by the user
         books = list(
@@ -155,8 +157,6 @@ def get_read_books(user_id):
         )
         return books
 
-    except InvalidId:
-        return "Error: Invalid user_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -173,8 +173,6 @@ def get_unread_books(user_id):
         )
         return books
 
-    except InvalidId:
-        return "Error: Invalid user_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -182,7 +180,8 @@ def get_unread_books(user_id):
 def get_currently_reading_books(user_id):
     try:
         # Validate user_id
-        is_valid_object_id("Users", user_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
 
         # Get all books read by the user
         books = list(
@@ -193,8 +192,6 @@ def get_currently_reading_books(user_id):
         if books:
             return books
 
-    except InvalidId:
-        return "Error: Invalid user_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -202,7 +199,8 @@ def get_currently_reading_books(user_id):
 def rate_book(user_id, book_id, new_rating):
     try:
         # Validate user_id and book_id
-        is_valid_object_id("Users", user_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
 
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
@@ -230,8 +228,6 @@ def rate_book(user_id, book_id, new_rating):
         else:
             return "UserBookshelf entry not found."
 
-    except InvalidId:
-        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -240,8 +236,10 @@ def rate_book(user_id, book_id, new_rating):
 def update_page_number(user_id, book_id, new_page_number):
     try:
         # Validate user_id and book_id
-        is_valid_object_id("Users", user_id)
-        is_valid_object_id("Books", book_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
 
         # Validate new_page_number
         if not isinstance(new_page_number, int) or new_page_number < 0:
@@ -291,8 +289,10 @@ def update_page_number(user_id, book_id, new_page_number):
 def get_page_number(user_id, book_id):
     try:
         # Validate user_id and book_id
-        is_valid_object_id("Users", user_id)
-        is_valid_object_id("Books", book_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
+        if not is_valid_object_id("Books", book_id):
+            return "Error: Invalid book_id."
         print("user id:", user_id)
         print("book_id:", book_id)
         # Retrieve the page number
@@ -308,15 +308,15 @@ def get_page_number(user_id, book_id):
             return book_entry.get("page_number", 0)
         else:
             return "UserBookshelf entry not found."
-
-    except InvalidId:
-        return "Error: Invalid user_id or book_id."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def delete_user_bookshelf(user_id, book_id):
     try:
         # Validate user_id and book_id
-        is_valid_object_id("Users", user_id)
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
 
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."

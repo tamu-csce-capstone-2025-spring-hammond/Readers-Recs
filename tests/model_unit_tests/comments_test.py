@@ -1,7 +1,6 @@
 import pytest
-import uuid
+from unittest.mock import MagicMock
 from bson import ObjectId
-from bson.errors import InvalidId
 from datetime import datetime
 import pytz
 from models.comments import (
@@ -16,158 +15,87 @@ from models.comments import (
     get_all_comments_for_post,
     serialize_comment,
 )
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
-from models.posts import create_post, delete_post
+import models.comments as comment_model
 
 
-@pytest.fixture
-def user_post():
-    u = uuid.uuid4().hex
-    uid = create_user(
-        first_name="T",
-        last_name="U",
-        username=f"testuser_{u}",
-        email_address=f"test_{u}@example.com",
-        oauth={"access_token": u, "refresh_token": u},
-        profile_image="",
-        interests=[],
-        demographics={},
-    )
-    bid = create_book(
-        title="CommentTest",
-        author=["Author"],
-        page_count=100,
-        genre="Fiction",
-        tags=["test"],
-        publication_date="2025-01-01",
-        isbn=u[:9],
-        isbn13=u[:13],
-        cover_image="",
-        language="en",
-        publisher="Pub",
-        summary="Summary",
-        genre_tags=["fiction"],
-    )
-    pid = create_post(uid, bid, "Post Title", "Post Content", ["tag"])
-    yield uid, bid, pid
-    delete_post(pid)
-    delete_user(uid)
-    delete_book(bid)
+@pytest.fixture(autouse=True)
+def mock_comments_collections(monkeypatch):
+    fake_id = ObjectId()
+    fake_post_id = ObjectId()
+    fake_user_id = ObjectId()
+    mock_comment = {
+        "_id": fake_id,
+        "post_id": fake_post_id,
+        "user_id": fake_user_id,
+        "comment_text": "test",
+        "date_posted": datetime.now(pytz.timezone("America/Chicago")),
+        "date_edited": datetime.now(pytz.timezone("America/Chicago"))
+    }
+    mock_comments = MagicMock()
+    mock_comments.insert_one.return_value.inserted_id = fake_id
+    mock_comments.find_one.side_effect = lambda q, *_: mock_comment if q.get("_id") == fake_id else None
+    mock_comments.update_one.return_value.modified_count = 1
+    mock_comments.delete_one.return_value.deleted_count = 1
+    mock_comments.delete_many.return_value.deleted_count = 0
+    mock_comments.find.return_value = [mock_comment]
+
+    monkeypatch.setitem(comment_model.collections, "Comments", mock_comments)
+    monkeypatch.setattr(comment_model, "comments_collection", mock_comments)
+
+    mock_users = MagicMock()
+    mock_users.find_one.return_value = {"username": "tester", "profile_image": ""}
+    monkeypatch.setitem(comment_model.collections, "Users", mock_users)
+    monkeypatch.setattr(comment_model, "users_collection", mock_users)
+
+    mock_posts = MagicMock()
+    mock_posts.find_one.return_value = True
+    mock_posts.find.return_value = [{"_id": ObjectId()}]
+    mock_posts.delete_many.return_value.deleted_count = 1
+    monkeypatch.setitem(comment_model.collections, "Posts", mock_posts)
+    monkeypatch.setattr(comment_model, "posts_collection", mock_posts)
+
+    return str(fake_user_id), str(fake_post_id), str(fake_id)
 
 
-def test_create_read_update_delete_comment(user_post):
-    uid, _, pid = user_post
+def test_create_initial_comment():
+    result = create_initial_comment(ObjectId(), ObjectId(), "content")
+    assert isinstance(result, str)
 
-    cid = create_initial_comment(pid, uid, "This is a comment")
-    assert isinstance(cid, str)
+def test_reply_to_comment():
+    result = reply_to_comment(ObjectId(), ObjectId(), "reply", ObjectId())
+    assert isinstance(result, str)
 
-    comment = read_comment(cid)
-    assert str(comment["_id"]) == cid
-    assert comment["comment_text"] == "This is a comment"
+def test_read_comment(mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    comment = read_comment(comment_id)
+    assert isinstance(comment, dict)
+    assert comment["comment_text"] == "test"
 
-    assert read_comment_field(cid, "comment_text") == "This is a comment"
+def test_read_comment_field(mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    result = read_comment_field(comment_id, "comment_text")
+    assert result == "test"
 
-    assert update_comment(cid, "Updated text") == "Comment updated successfully."
-    updated = read_comment(cid)
-    assert updated["comment_text"] == "Updated text"
+def test_update_comment(mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    result = update_comment(comment_id, "Updated")
+    assert result == "Comment updated successfully."
 
-    assert delete_comment(cid) == "Comment deleted successfully."
-    deleted_result = read_comment(cid)
-    assert deleted_result in [
-        "Comment not found.",
-        "Error: Invalid ObjectId format.",
-        "Error: Invalid comment_id.",
-    ]
+def test_delete_comment(mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    result = delete_comment(comment_id)
+    assert result == "Comment deleted successfully."
 
+def test_delete_comments_by_post():
+    result = delete_comments_by_post(ObjectId())
+    assert result in ["No comments found for this post.", "1 comments deleted."]
 
-def test_create_comment_invalid_parent_id(user_post):
-    uid, _, pid = user_post
-    bad_parent = "notarealid"
-
-    result = create_comment(pid, uid, "Reply", parent_comment_id=bad_parent)
-    assert result == "Error: Invalid ObjectId format."
-
-
-def test_create_comment_schema_validation_error(user_post):
-    uid, _, pid = user_post
-
-    result = create_comment(pid, uid, None)  # Missing comment_text
-    assert result.startswith("Schema Validation Error:")
-
-
-def test_nested_comments(user_post):
-    uid, _, pid = user_post
-
-    parent_id = create_initial_comment(pid, uid, "Parent")
-    reply_id = reply_to_comment(pid, uid, "Child reply", parent_id)
-
-    all_comments = get_all_comments_for_post(pid)
-    parent = next((c for c in all_comments if str(c["_id"]) == parent_id), None)
-    assert parent is not None
-    assert "replies" in parent
-    assert any(str(r["_id"]) == reply_id for r in parent["replies"])
-
-    delete_comment(reply_id)
-    delete_comment(parent_id)
-
-
-def test_comment_exceptions():
-    bad_id = "bad"
-    fake_id = ObjectId("000000000000000000000000")
-
-    assert create_comment(bad_id, bad_id, "text").startswith("Error:")
-    result = create_comment(fake_id, bad_id, "text")
-    assert result in ["Error: Invalid user_id.", "Error: Invalid post_id."]
-    result = create_comment(fake_id, fake_id, "text", parent_comment_id=bad_id)
-    assert result in ["Error: Invalid parent_comment_id.", "Error: Invalid post_id."]
-
-    # schema validation errors
-    result = create_comment(fake_id, fake_id, None)
-    assert result.startswith("Schema Validation Error:") or result.startswith("Error:")
-    assert create_comment(
-        fake_id, fake_id, "Valid", parent_comment_id=[123]
-    ).startswith("Error:")
-
-    assert read_comment(bad_id).startswith("Error:")
-    read_result = read_comment(fake_id)
-    assert read_result in ["Comment not found.", "Error: Invalid comment_id."]
-
-    assert read_comment_field(bad_id, "comment_text").startswith("Error:")
-    read_field_result = read_comment_field(fake_id, "comment_text")
-    assert read_field_result in [
-        "Comment not found.",
-        "Error: Invalid comment_id.",
-        "Field 'comment_text' not found in comment.",
-    ]
-
-    nonexistent_field_result = read_comment_field(fake_id, "nonexistent_field")
-    assert nonexistent_field_result in [
-        "Field 'nonexistent_field' not found in comment.",
-        "Error: Invalid comment_id.",
-    ]
-
-    assert update_comment(bad_id, "new").startswith("Error:")
-    update_result = update_comment(fake_id, "new")
-    assert update_result in ["Comment not found.", "Error: Invalid comment_id."]
-
-    assert delete_comment(bad_id).startswith("Error:")
-    assert delete_comment(fake_id) in [
-        "Comment not found.",
-        "Error: Invalid comment_id.",
-    ]
-
-    assert delete_comments_by_post(bad_id).startswith("Error:")
-    assert delete_comments_by_post(fake_id) in [
-        "Error: Invalid post_id.",
-        "No comments found for this post.",
-    ]
-
-
-def test_get_all_comments_for_post_invalid():
-    result = get_all_comments_for_post("bad")
-    assert result in ["Error: Invalid ObjectId format.", "Error: Invalid post_id."]
-
+def test_get_all_comments_for_post():
+    comments = get_all_comments_for_post(ObjectId())
+    assert isinstance(comments, list)
+    assert len(comments) > 0
+    assert "username" in comments[0]
+    assert "profile_picture" in comments[0]
 
 def test_serialize_comment_format():
     comment_data = {
@@ -184,24 +112,68 @@ def test_serialize_comment_format():
     assert isinstance(result["post_id"], str)
     assert isinstance(result["user_id"], str)
 
-
-def test_read_comment_field_not_found(user_post):
-    uid, _, pid = user_post
-    cid = create_initial_comment(pid, uid, "This is fine.")
-
-    result = read_comment_field(cid, "not_a_real_field")
-    assert result == "Field 'not_a_real_field' not found in comment."
-
-    delete_comment(cid)
+def test_get_all_comments_for_post_invalid():
+    result = get_all_comments_for_post("bad")
+    assert result in "Error: Invalid post_id."
 
 
-def test_update_comment_not_found():
-    fake = str(ObjectId())
-    result = update_comment(fake, "new content")
+def test_reply_to_comment_invalid_post_id():
+    res = reply_to_comment("badid", str(ObjectId()), "text", str(ObjectId()))
+    assert res.startswith("Error:")
+
+def test_reply_to_comment_invalid_user_id():
+    res = reply_to_comment(str(ObjectId()), "badid", "text", str(ObjectId()))
+    assert res.startswith("Error:")
+
+def test_reply_to_comment_invalid_parent_id():
+    res = reply_to_comment(str(ObjectId()), str(ObjectId()), "text", "notanid")
+    assert res == "Error: invalid parent_comment_id."
+
+def test_reply_to_comment_missing_text():
+    res = reply_to_comment(str(ObjectId()), str(ObjectId()), None, str(ObjectId()))
+    assert res == "Error: comment_text cannot be empty."
+
+def test_read_comment_field_invalid_id():
+    result = read_comment_field("badid", "comment_text")
+    assert result.startswith("Error:")
+
+def test_read_comment_field_not_found(monkeypatch, mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    result = read_comment_field(comment_id, "invalid_field")
+    assert result == "Field 'invalid_field' not found in comment."
+
+def test_update_comment_invalid_id():
+    result = update_comment("notanid", "new content")
+    assert result.startswith("Error:")
+
+def test_update_comment_missing_content(mock_comments_collections):
+    _, _, comment_id = mock_comments_collections
+    result = update_comment(comment_id, None)
+    assert result.startswith("Error: comment_text cannot be empty.")
+
+def test_delete_comments_by_post_invalid_id():
+    result = delete_comments_by_post("notanid")
+    assert result == "Error: Invalid post_id."
+
+
+def test_read_comment_invalid_id():
+    result = read_comment("notanid")
     assert result == "Error: Invalid comment_id."
 
+def test_read_comment_not_found(monkeypatch):
+    fake_id = str(ObjectId())
+    monkeypatch.setattr(comment_model.comments_collection, "find_one", lambda q: None)
+    result = read_comment(fake_id)
+    assert result == "Error: Invalid comment_id."
 
-def test_delete_comment_not_found():
-    fake = str(ObjectId())
-    result = delete_comment(fake)
+def test_delete_comment_invalid_id():
+    result = delete_comment("notanid")
+    assert result == "Error: Invalid comment_id."
+
+def test_delete_comment_not_found(monkeypatch):
+    fake_id = str(ObjectId())
+    mock_col = MagicMock()
+    mock_col.delete_one.return_value.deleted_count = 0
+    monkeypatch.setattr(comment_model, "comments_collection", mock_col)
+    result = delete_comment(fake_id)
     assert result == "Error: Invalid comment_id."

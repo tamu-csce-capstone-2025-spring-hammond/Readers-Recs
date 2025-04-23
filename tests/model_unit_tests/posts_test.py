@@ -131,7 +131,7 @@ def test_create_post_schema_error(user_and_book):
 # -- READ_POST exception paths --
 def test_read_post_invalid_format():
     err = read_post("not_a_valid_id")
-    assert err == "Error: Invalid ObjectId format."
+    assert err == "Error: Invalid post_id."
 
 
 def test_read_post_not_found():
@@ -144,7 +144,7 @@ def test_read_post_not_found():
 # -- READ_POST_FIELD exception paths --
 def test_read_post_field_invalid_format():
     err = read_post_field("nope", "title")
-    assert err == "Error: Invalid ObjectId format."
+    assert err == "Error: Invalid post_id."
 
 
 def test_read_post_field_not_found():
@@ -156,7 +156,7 @@ def test_read_post_field_not_found():
 # -- UPDATE_POST exception paths --
 def test_update_post_invalid_format():
     err = update_post("xyz")
-    assert "is not a valid ObjectId" in err
+    assert err == "Error: Invalid post_id."
 
 
 def test_update_post_not_found():
@@ -168,7 +168,7 @@ def test_update_post_not_found():
 # -- DELETE_POST exception paths --
 def test_delete_post_invalid_format():
     err = delete_post("xxx")
-    assert err == "Error: Invalid ObjectId format."
+    assert err == "Error: Invalid post_id."
 
 
 def test_delete_post_not_found():
@@ -180,7 +180,7 @@ def test_delete_post_not_found():
 # -- GET_ALL_POSTS_FOR_BOOK exception paths --
 def test_get_all_posts_for_book_invalid_format():
     err = get_all_posts_for_book("bad_book_id")
-    assert "is not a valid ObjectId" in err
+    assert err == "Error: Invalid book_id."
 
 
 def test_get_all_posts_for_book_empty(user_and_book):
