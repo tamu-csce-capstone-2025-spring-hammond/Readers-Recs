@@ -7,6 +7,7 @@ from datetime import datetime
 
 app.testing = True
 
+
 @pytest.fixture
 def client():
     with app.test_client() as client:
@@ -19,18 +20,26 @@ def valid_user_and_book():
     fake_user_id = str(ObjectId())
     fake_book_id = str(ObjectId())
 
-    with patch("models.users.create_user", return_value=fake_user_id), \
-         patch("models.books.create_book", return_value=fake_book_id), \
-         patch("models.user_bookshelf.create_user_bookshelf", return_value=str(ObjectId())), \
-         patch("models.user_bookshelf.delete_user_bookshelf"), \
-         patch("models.users.delete_user"), \
-         patch("models.books.delete_book"):
+    with patch("models.users.create_user", return_value=fake_user_id), patch(
+        "models.books.create_book", return_value=fake_book_id
+    ), patch(
+        "models.user_bookshelf.create_user_bookshelf", return_value=str(ObjectId())
+    ), patch(
+        "models.user_bookshelf.delete_user_bookshelf"
+    ), patch(
+        "models.users.delete_user"
+    ), patch(
+        "models.books.delete_book"
+    ):
 
         yield fake_user_id, fake_book_id
 
 
 def test_get_chat_messages_invalid_book(client):
-    with patch("models.chat_messages.get_all_chat_messages_for_book", return_value="Error: Invalid book_id."):
+    with patch(
+        "models.chat_messages.get_all_chat_messages_for_book",
+        return_value="Error: Invalid book_id.",
+    ):
         response = client.get("/api/chat/invalid_id/messages")
         assert response.status_code in [400, 500]
         assert "error" in response.get_json()
@@ -40,7 +49,6 @@ def test_send_chat_message_missing_fields(client):
     response = client.post("/api/chat/invalid_id/send", json={})
     assert response.status_code == 400
     assert "error" in response.get_json()
-
 
 
 def test_send_chat_message_invalid_user_id(client):
@@ -81,6 +89,7 @@ def test_send_chat_message_valid(client, valid_user_and_book):
     assert "message_id" in data
     assert data["message_id"] == fake_message_id
 
+
 def test_get_chat_messages_valid(client, valid_user_and_book):
     user_id, book_id = valid_user_and_book
     mock_message = {
@@ -89,12 +98,15 @@ def test_get_chat_messages_valid(client, valid_user_and_book):
         "user_id": user_id,
         "message_text": "Hello!",
         "username": "mockuser",
-        "profile_image": ""
+        "profile_image": "",
     }
 
     # Patch where the route *uses* the functions
-    with patch("api.chat_messages.create_chat_message", return_value=str(ObjectId())), \
-         patch("api.chat_messages.get_all_chat_messages_for_book", return_value=[mock_message]):
+    with patch(
+        "api.chat_messages.create_chat_message", return_value=str(ObjectId())
+    ), patch(
+        "api.chat_messages.get_all_chat_messages_for_book", return_value=[mock_message]
+    ):
         client.post(
             f"/api/chat/{book_id}/send",
             json={"user_id": user_id, "message_text": "Hello!"},
@@ -110,14 +122,16 @@ def test_get_chat_messages_valid(client, valid_user_and_book):
 def test_get_last_read_book_valid(client, valid_user_and_book):
     user_id, book_id = valid_user_and_book
 
-    mock_read_books = [{
-        "user_id": user_id,
-        "book_id": book_id,
-        "title": "Mock Book",
-        "rating": "pos",
-        "status": "read",
-        "date_finished": datetime(2024, 1, 1),
-    }]
+    mock_read_books = [
+        {
+            "user_id": user_id,
+            "book_id": book_id,
+            "title": "Mock Book",
+            "rating": "pos",
+            "status": "read",
+            "date_finished": datetime(2024, 1, 1),
+        }
+    ]
 
     mock_book_details = {
         "_id": ObjectId(),
@@ -134,17 +148,19 @@ def test_get_last_read_book_valid(client, valid_user_and_book):
         "publisher": "TestPub",
         "summary": "A great book",
         "genre_tags": ["fiction"],
-        "embedding": []
+        "embedding": [],
     }
 
-    with patch("api.chat_messages.get_read_books", return_value=mock_read_books), \
-         patch("api.chat_messages.read_book_by_bookId", return_value=mock_book_details):
+    with patch("api.chat_messages.get_read_books", return_value=mock_read_books), patch(
+        "api.chat_messages.read_book_by_bookId", return_value=mock_book_details
+    ):
         response = client.get(f"/api/chat/user/{user_id}/lastread")
 
     assert response.status_code == 200
     data = response.get_json()
     assert "title" in data
     assert "rating" in data
+
 
 def test_send_chat_message_internal_error(monkeypatch, client, valid_user_and_book):
     user_id, book_id = valid_user_and_book
@@ -162,18 +178,6 @@ def test_send_chat_message_internal_error(monkeypatch, client, valid_user_and_bo
     assert response.status_code == 500
     assert "send error" in response.get_json()["error"]
 
-def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_book):
-    user_id, _ = valid_user_and_book
-
-    def boom(_):
-        raise Exception("lastread error")
-
-    monkeypatch.setattr("api.chat_messages.get_read_books", boom)
-
-    response = client.get(f"/api/chat/user/{user_id}/lastread")
-    assert response.status_code == 500
-    assert "lastread error" in response.get_json()["error"]
-
 
 def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_book):
     user_id, _ = valid_user_and_book
@@ -186,6 +190,20 @@ def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_b
     response = client.get(f"/api/chat/user/{user_id}/lastread")
     assert response.status_code == 500
     assert "lastread error" in response.get_json()["error"]
+
+
+def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_book):
+    user_id, _ = valid_user_and_book
+
+    def boom(_):
+        raise Exception("lastread error")
+
+    monkeypatch.setattr("api.chat_messages.get_read_books", boom)
+
+    response = client.get(f"/api/chat/user/{user_id}/lastread")
+    assert response.status_code == 500
+    assert "lastread error" in response.get_json()["error"]
+
 
 def test_get_chat_messages_for_book_exception(client):
     book_id = str(ObjectId())
@@ -193,11 +211,14 @@ def test_get_chat_messages_for_book_exception(client):
     def raise_error(_):
         raise Exception("simulated internal error")
 
-    with patch("api.chat_messages.get_all_chat_messages_for_book", side_effect=raise_error):
+    with patch(
+        "api.chat_messages.get_all_chat_messages_for_book", side_effect=raise_error
+    ):
         response = client.get(f"/api/chat/{book_id}/messages")
 
     assert response.status_code == 500
     assert "simulated internal error" in response.get_json()["error"]
+
 
 def test_get_last_read_book_no_books_finished(client):
     user_id = str(ObjectId())

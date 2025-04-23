@@ -23,10 +23,12 @@ def test_search_books_valid_query(client):
     assert isinstance(response.get_json(), list)
     assert response.get_json()[0]["title"].startswith("Harry Potter")
 
+
 def test_search_books_missing_query(client):
     response = client.get("/api/books")
     assert response.status_code == 400
     assert response.get_json()["error"] == "Query parameter is required"
+
 
 def test_search_books_by_author(client):
     mock_books = [

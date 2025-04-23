@@ -49,7 +49,9 @@ def read_post(post_id):
 
         post = posts_collection.find_one({"_id": ObjectId(post_id)})
         return (
-            PostSchema(**post).model_dump(by_alias=True) if post else "Error: Post not found."
+            PostSchema(**post).model_dump(by_alias=True)
+            if post
+            else "Error: Post not found."
         )
 
     except Exception as e:

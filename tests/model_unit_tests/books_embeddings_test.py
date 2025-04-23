@@ -4,6 +4,7 @@ from bson import ObjectId
 from unittest.mock import MagicMock
 import models.books as book_model
 
+
 @pytest.fixture
 def mock_books(monkeypatch):
     fake_id = str(ObjectId())
@@ -13,7 +14,9 @@ def mock_books(monkeypatch):
 
     # Patch find_one and update_one
     mock_collection = MagicMock()
-    mock_collection.find_one.side_effect = lambda query: fake_doc if query["_id"] == ObjectId(fake_id) else None
+    mock_collection.find_one.side_effect = lambda query: (
+        fake_doc if query["_id"] == ObjectId(fake_id) else None
+    )
 
     def mock_update_one(filter_, update_):
         # Simulate a change
@@ -30,7 +33,10 @@ def mock_books(monkeypatch):
 
 
 def test_invalid_book_id():
-    assert book_model.update_book_embedding("not_a_valid_id", [0.1, 0.2]) == "Invalid book ID."
+    assert (
+        book_model.update_book_embedding("not_a_valid_id", [0.1, 0.2])
+        == "Invalid book ID."
+    )
 
 
 def test_invalid_embedding_type(mock_books):
@@ -55,7 +61,10 @@ def test_success_with_ndarray(mock_books):
 
 def test_unchanged_embedding(mock_books):
     emb = [7.7, 8.8]
-    assert book_model.update_book_embedding(mock_books, emb) == "Embedding updated successfully."
+    assert (
+        book_model.update_book_embedding(mock_books, emb)
+        == "Embedding updated successfully."
+    )
     res2 = book_model.update_book_embedding(mock_books, emb)
     assert res2 == "Book not found or embedding unchanged."
 
@@ -79,6 +88,9 @@ def test_empty_list_embedding(mock_books):
 
 
 def test_empty_list_after_nonempty(mock_books):
-    assert book_model.update_book_embedding(mock_books, [0.5, 0.6]) == "Embedding updated successfully."
+    assert (
+        book_model.update_book_embedding(mock_books, [0.5, 0.6])
+        == "Embedding updated successfully."
+    )
     res = book_model.update_book_embedding(mock_books, [])
     assert res == "Embedding updated successfully."

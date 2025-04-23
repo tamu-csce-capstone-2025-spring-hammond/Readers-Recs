@@ -16,7 +16,7 @@ def is_valid_object_id(collection_name, obj_id):
     # skip database lookups in test mode
     if os.environ.get("TESTING") == "1":
         return True
-    
+
     try:
         if collection_name not in collections:
             return False

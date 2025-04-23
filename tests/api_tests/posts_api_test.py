@@ -5,6 +5,7 @@ from models.users import create_user, delete_user
 from models.books import create_book, delete_book
 from unittest.mock import patch
 from bson.objectid import ObjectId
+
 app.testing = True
 
 
@@ -13,35 +14,45 @@ def client():
     with app.test_client() as client:
         yield client
 
+
 @pytest.fixture
 def valid_user_book():
     fake_user_id = str(ObjectId())
     fake_book_id = str(ObjectId())
-    with patch("models.users.create_user", return_value=fake_user_id), \
-         patch("models.books.create_book", return_value=fake_book_id), \
-         patch("models.users.delete_user"), \
-         patch("models.books.delete_book"):
+    with patch("models.users.create_user", return_value=fake_user_id), patch(
+        "models.books.create_book", return_value=fake_book_id
+    ), patch("models.users.delete_user"), patch("models.books.delete_book"):
         yield fake_user_id, fake_book_id
+
 
 def test_create_post_missing_fields(client):
     response = client.post("/api/books/invalid_id/posts", json={})
     assert response.status_code == 400
     assert "error" in response.get_json()
 
+
 def test_create_post_invalid_user(client):
     with patch("api.posts.create_post", return_value="Error: Invalid user_id."):
         response = client.post(
             "/api/books/invalid_id/posts",
-            json={"user_id": "baduser", "title": "Test Title", "post_text": "Some text"},
+            json={
+                "user_id": "baduser",
+                "title": "Test Title",
+                "post_text": "Some text",
+            },
         )
     assert response.status_code == 400
     assert "error" in response.get_json()
 
+
 def test_get_posts_invalid_book(client):
-    with patch("api.posts.get_all_posts_for_book", return_value="Error: Invalid book_id."):
+    with patch(
+        "api.posts.get_all_posts_for_book", return_value="Error: Invalid book_id."
+    ):
         response = client.get("/api/books/invalid_id/posts")
     assert response.status_code in [400, 500]
     assert "error" in response.get_json()
+
 
 def test_create_post_valid(client, valid_user_book):
     user_id, book_id = valid_user_book
@@ -62,6 +73,7 @@ def test_create_post_valid(client, valid_user_book):
     data = response.get_json()
     assert "post_id" in data
     assert data["post_id"] == fake_post_id
+
 
 def test_get_all_posts_valid(client, valid_user_book):
     user_id, book_id = valid_user_book
@@ -89,8 +101,9 @@ def test_get_all_posts_valid(client, valid_user_book):
         },
     ]
 
-    with patch("api.posts.create_post", return_value=fake_post_id), \
-         patch("api.posts.get_all_posts_for_book", return_value=fake_posts):
+    with patch("api.posts.create_post", return_value=fake_post_id), patch(
+        "api.posts.get_all_posts_for_book", return_value=fake_posts
+    ):
 
         for i in range(2):
             client.post(
@@ -126,6 +139,7 @@ def test_create_post_internal_error(client, valid_user_book):
 
     assert response.status_code == 500
     assert "Create failure" in response.get_json()["error"]
+
 
 def test_get_all_posts_internal_error(client, valid_user_book):
     _, book_id = valid_user_book
