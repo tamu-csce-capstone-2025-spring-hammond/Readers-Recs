@@ -100,11 +100,16 @@ def get_user_by_id(user_id):
         if not isinstance(user, dict):
             return jsonify({"error": user}), 404
 
-        return jsonify({
-            "id": str(user["_id"]),
-            "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
-            "profile_picture": user.get("profile_image", ""),
-        }), 200
+        return (
+            jsonify(
+                {
+                    "id": str(user["_id"]),
+                    "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                    "profile_picture": user.get("profile_image", ""),
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

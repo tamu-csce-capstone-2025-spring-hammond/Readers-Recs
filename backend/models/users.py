@@ -5,6 +5,7 @@ from datetime import datetime, date
 from pydantic import ValidationError
 from schemas import UserSchema, OAuthSchema, DemographicSchema
 from database import collections
+from mongo_id_utils import is_valid_object_id
 
 # from pymongo import errors
 
@@ -212,14 +213,17 @@ def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": user_id})
-    if not user:
-        user = users_collection.find_one({"_id": ObjectId(user_id)})
-    # print("USER:", user)
-    # print("Genre weights:", user["genre_weights"])
-    if user:
-        return user["genre_weights"] if user else dict()
-    else:
+    try:
+        user = users_collection.find_one({"_id": user_id})
+        if not user:
+            user = users_collection.find_one({"_id": ObjectId(user_id)})
+        # print("USER:", user)
+        # print("Genre weights:", user["genre_weights"])
+        if user:
+            return user["genre_weights"] if user else dict()
+        else:
+            return "User not found"
+    except (ValueError, InvalidId):
         return "User not found"
 
 
@@ -229,17 +233,14 @@ def update_embedding(user_id, new_embedding):
     Expects new_embedding to be an array (list) of floats.
     """
     u_id = user_id
-    if not isinstance(user_id, ObjectId):
-        try:
-            u_id = ObjectId(user_id)
-        except (ValueError, InvalidId):
-            return "Error: Invalid ObjectId format."
+    try:
+        u_id = ObjectId(user_id)
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
+
     existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
-        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
-        u_id = ObjectId(user_id)
-        if not existing_user:
-            return "Error: User not found."
+        return "Error: User not found."
 
     if not isinstance(new_embedding, list) or not all(
         isinstance(x, (int, float)) for x in new_embedding
@@ -250,6 +251,7 @@ def update_embedding(user_id, new_embedding):
         {"_id": u_id},
         {"$set": {"embedding": new_embedding}},
     )
+
     return result
 
 
