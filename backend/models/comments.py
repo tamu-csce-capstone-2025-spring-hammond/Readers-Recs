@@ -21,29 +21,26 @@ comments_collection = collections["Comments"]
 
 def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
     try:
-        if not comment_text or comment_text.strip() == "" or comment_text is None:
+        if not comment_text or not isinstance(comment_text, str) or not comment_text.strip():
             return "Error: comment_text cannot be empty."
         
-        # Validate post_id, user_id, and parent_comment_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        # Ensure parent_comment_id exists (if it's not None, it's a reply to an existing comment)
-        if not is_valid_object_id("Comments", parent_comment_id) and parent_comment_id is not None:
-            return "Error: invalid parent_comment_id."
+        if parent_comment_id and not is_valid_object_id("Comments", parent_comment_id):
+            return "Error: Invalid parent_comment_id."
 
-        # Prepare comment data using CommentSchema
+
         comment_data = CommentSchema(
             post_id=post_id,
             user_id=user_id,
-            comment_text=comment_text,
+            comment_text=comment_text.strip(),
             parent_comment_id=parent_comment_id,
         )
 
         data = comment_data.model_dump(by_alias=True)
-        if not data.get("_id"):
-            data.pop("_id", None)
+        data.pop("_id", None)
 
         result = comments_collection.insert_one(data)
         return str(result.inserted_id)

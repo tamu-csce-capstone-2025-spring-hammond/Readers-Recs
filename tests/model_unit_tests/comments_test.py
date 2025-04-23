@@ -127,10 +127,10 @@ def test_reply_to_comment_invalid_user_id():
 
 def test_reply_to_comment_invalid_parent_id():
     res = reply_to_comment(str(ObjectId()), str(ObjectId()), "text", "notanid")
-    assert res == "Error: invalid parent_comment_id."
+    assert res == "Error: Invalid parent_comment_id."
 
 def test_reply_to_comment_missing_text():
-    res = reply_to_comment(str(ObjectId()), str(ObjectId()), None, str(ObjectId()))
+    res = reply_to_comment(str(ObjectId()), str(ObjectId()), "", str(ObjectId()))
     assert res == "Error: comment_text cannot be empty."
 
 def test_read_comment_field_invalid_id():

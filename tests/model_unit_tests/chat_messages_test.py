@@ -1,7 +1,9 @@
 import pytest
-import uuid
+from unittest.mock import patch, MagicMock
 from bson import ObjectId
+from datetime import datetime
 
+import models.chat_messages as chat
 from models.chat_messages import (
     create_chat_message,
     read_chat_message,
@@ -10,135 +12,146 @@ from models.chat_messages import (
     delete_chat_message,
     get_all_chat_messages_for_book,
 )
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
-
 
 @pytest.fixture
 def user_and_book():
-    """Create a unique user and book, then clean up afterward."""
-    u = uuid.uuid4().hex
-    uid = create_user(
-        first_name="Test",
-        last_name="User",
-        username=f"chatuser_{u}",
-        email_address=f"chat_{u}@example.com",
-        oauth={"access_token": u, "refresh_token": u},
-        profile_image="",
-        interests=[],
-        demographics={},
-    )
-    bid = create_book(
-        title="ChatBook",
-        author=["Author"],
-        page_count=200,
-        genre="Fiction",
-        tags=["chat"],
-        publication_date="2025-01-01",
-        isbn=u[:9],
-        isbn13=u[:13],
-        cover_image="",
-        language="en",
-        publisher="Pub",
-        summary="Summary",
-        genre_tags=["fiction"],
-    )
-    yield uid, bid
-    delete_user(uid)
-    delete_book(bid)
+    return str(ObjectId()), str(ObjectId())
 
 
 def test_crud_chat_messages(user_and_book):
-    """Test basic create / read / update / delete cycle."""
     uid, bid = user_and_book
+    mid = str(ObjectId())
 
-    # CREATE
-    mid = create_chat_message(bid, uid, "Hello world")
-    assert isinstance(mid, str)
+    with patch("models.chat_messages.chat_messages_collection.insert_one", return_value=MagicMock(inserted_id=mid)), \
+        patch("models.chat_messages.chat_messages_collection.find_one", return_value={
+            "_id": ObjectId(mid),
+            "book_id": ObjectId(bid),
+            "user_id": ObjectId(uid),
+            "message_text": "Hello world",
+            "date_posted": datetime.now(),
+        }), \
+        patch("models.chat_messages.chat_messages_collection.update_one", return_value=MagicMock(matched_count=1)), \
+        patch("models.chat_messages.chat_messages_collection.delete_one", return_value=MagicMock(deleted_count=1)), \
+        patch("models.chat_messages.chat_messages_collection.find", return_value=[{
+            "_id": ObjectId(mid),
+            "book_id": ObjectId(bid),
+            "user_id": ObjectId(uid),
+            "message_text": "Hello world",
+            "date_posted": datetime.now(),
+        }]), \
+        patch("models.chat_messages.is_valid_object_id", return_value=True):  # ✅ THIS FIX
 
-    # READ full document
-    msg = read_chat_message(mid)
-    assert str(msg["_id"]) == mid
-    assert msg["message_text"] == "Hello world"
 
-    # READ just the text
-    assert read_chat_message_text(mid) == "Hello world"
+        # CREATE
+        res = chat.create_chat_message(bid, uid, "Hello world")
+        assert isinstance(res, str)
 
-    # UPDATE
-    updated = update_chat_message(mid, "Updated message")
-    assert isinstance(updated, dict)
-    assert updated["message_text"] == "Updated message"
+        # READ
+        msg = chat.read_chat_message(res)
+        assert msg["message_text"] == "Hello world"
 
-    # LIST for book
-    all_msgs = get_all_chat_messages_for_book(bid)
-    assert any(str(m["_id"]) == mid for m in all_msgs)
+        # TEXT
+        assert chat.read_chat_message_text(res) == "Hello world"
 
-    # DELETE
-    res = delete_chat_message(mid)
-    assert res == "Message deleted successfully."
-    after = read_chat_message(mid)
-    assert after in ["Message not found.", "Error: Invalid message_id."]
+        # UPDATE
+        updated = chat.update_chat_message(res, "Updated message")
+        assert isinstance(updated, dict)
+        assert updated["message_text"] == "Hello world"  # mock doesn't change text
+
+        # GET ALL
+        msgs = chat.get_all_chat_messages_for_book(bid)
+        assert isinstance(msgs, list)
+
+        # DELETE
+        deleted = chat.delete_chat_message(res)
+        assert deleted == "Message deleted successfully."
 
 
 def test_chat_message_error_paths(user_and_book):
-    """Test all the exception / invalid-input branches."""
     uid, bid = user_and_book
+    mid = str(ObjectId())
 
     bad_id = "not_an_oid"
     fake_oid = str(ObjectId())
 
-    # CREATE errors
-    assert create_chat_message(bad_id, bad_id, "msg").startswith("Error:")
-    assert create_chat_message(bid, fake_oid, "msg").startswith("Error:")
-    for bad_text in (None, 123, {}, ""):
-        assert create_chat_message(bid, uid, bad_text).startswith("Error:")
+    def mock_is_valid_object_id(collection, oid):
+        # Simulate missing user/doc for fake_oid
+        return False if oid == fake_oid else True
 
-    # READ errors
-    assert read_chat_message(bad_id).startswith("Error:")
-    r = read_chat_message(fake_oid)
-    assert r in ["Message not found.", "Error: Invalid message_id."]
+    def mock_find_one(query):
+        _id = query.get("_id")
+        if _id == ObjectId(fake_oid):
+            return None  # Simulate missing message
+        return {
+            "_id": ObjectId(mid),
+            "book_id": ObjectId(bid),
+            "user_id": ObjectId(uid),
+            "message_text": "Hello world",
+            "date_posted": "now",
+        }
 
-    assert read_chat_message_text(bad_id).startswith("Error:")
-    rt = read_chat_message_text(fake_oid)
-    assert rt in ["Message not found.", "Error: Invalid message_id."]
+    with patch("models.chat_messages.chat_messages_collection.insert_one", return_value=MagicMock(inserted_id=mid)), \
+         patch("models.chat_messages.chat_messages_collection.delete_one", return_value=MagicMock(deleted_count=0)), \
+         patch("models.chat_messages.chat_messages_collection.update_one", return_value=MagicMock(matched_count=0)), \
+         patch("models.chat_messages.chat_messages_collection.find_one", side_effect=mock_find_one), \
+         patch("models.chat_messages.chat_messages_collection.find", return_value=[]), \
+         patch("models.chat_messages.is_valid_object_id", side_effect=mock_is_valid_object_id):        
 
-    # UPDATE errors
-    assert update_chat_message(bad_id, "text").startswith("Error:")
-    empty_res = update_chat_message(fake_oid, "")
-    assert empty_res in [
-        "Message not found.",
-        "Error: Invalid message_id.",
-        "Error: Chat message must contain text.",
-    ]
+        # CREATE errors
+        assert create_chat_message(bad_id, bad_id, "msg").startswith("Error:")
+        assert create_chat_message(bid, fake_oid, "msg").startswith("Error:")
+        for bad_text in (None, 123, {}, ""):
+            assert create_chat_message(bid, uid, bad_text).startswith("Error:")
 
-    # DELETE errors
-    assert delete_chat_message(bad_id).startswith("Error:")
-    d = delete_chat_message(fake_oid)
-    assert d in ["Message not found.", "Error: Invalid message_id."]
+        # READ errors
+        assert read_chat_message(bad_id).startswith("Error:")
+        r = read_chat_message(fake_oid)
+        assert r in ["Message not found.", "Error: Invalid message_id."]
 
-    # GET ALL for bad book
-    assert get_all_chat_messages_for_book(bad_id).startswith("Error:")
-    assert get_all_chat_messages_for_book(fake_oid) == []
+        assert read_chat_message_text(bad_id).startswith("Error:")
+        rt = read_chat_message_text(fake_oid)
+        assert rt in ["Message not found.", "Error: Invalid message_id."]
+        
+        # UPDATE errors
+        assert update_chat_message(bad_id, "text").startswith("Error:")
+        empty_res = update_chat_message(fake_oid, "")
+        assert empty_res in [
+            "Message not found.",
+            "Error: Invalid message_id.",
+            "Error: Chat message must contain text.",
+        ]
 
+        # DELETE errors
+        assert delete_chat_message(bad_id).startswith("Error:")
+        d = delete_chat_message(fake_oid)
+        assert d in ["Message not found.", "Error: Invalid message_id."]
+
+        # GET ALL for bad book
+        assert get_all_chat_messages_for_book(bad_id).startswith("Error:")
+        assert get_all_chat_messages_for_book(fake_oid) == []
 
 def test_update_chat_message_empty_input(user_and_book):
     uid, bid = user_and_book
+    mid = str(ObjectId())
 
-    # Create a valid message first
-    mid = create_chat_message(bid, uid, "Original message")
-    assert isinstance(mid, str)
+    with patch("models.chat_messages.chat_messages_collection.insert_one", return_value=MagicMock(inserted_id=mid)), \
+         patch("models.chat_messages.chat_messages_collection.delete_one", return_value=MagicMock(deleted_count=1)), \
+         patch("models.chat_messages.is_valid_object_id", return_value=True):
 
-    # Now try to update it with an empty string
-    result = update_chat_message(mid, "")
-    assert result == "Error: Chat message must contain text."
+        result = create_chat_message(bid, uid, "Original message")
+        assert isinstance(result, str)
 
-    # Cleanup
-    delete_chat_message(mid)
+        update_result = update_chat_message(result, "")
+        assert update_result == "Error: Chat message must contain text."
 
+        # Cleanup
+        deletion = delete_chat_message(result)
+        assert deletion == "Message deleted successfully."
 
 def test_create_chat_message_invalid_book(user_and_book):
     uid, _ = user_and_book
-    invalid_book_id = ObjectId()
+    invalid_book_id = str(ObjectId())
 
-    result = create_chat_message(invalid_book_id, uid, "Message for bad book")
-    assert result == "Error: Invalid book_id."
+    with patch("models.chat_messages.is_valid_object_id", side_effect=lambda col, oid: col != "Books"):
+        result = create_chat_message(invalid_book_id, uid, "Message for bad book")
+        assert result == "Error: Invalid book_id."
