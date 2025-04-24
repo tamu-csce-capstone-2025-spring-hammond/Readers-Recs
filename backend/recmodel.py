@@ -34,9 +34,9 @@ from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 
 redis_url = os.getenv("REDIS_URL")
 redis_client = (
-    redis.from_url(redis_url) #, decode_responses=True)
+    redis.from_url(redis_url)  # , decode_responses=True)
     if redis_url
-    else redis.Redis(host="localhost", port=6379) #, decode_responses=True)
+    else redis.Redis(host="localhost", port=6379)  # , decode_responses=True)
 )
 # Load SentenceTransformer model once
 # model = SentenceTransformer("all-MiniLM-L6-v2")
