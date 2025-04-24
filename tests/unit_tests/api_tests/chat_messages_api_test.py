@@ -210,7 +210,7 @@ def test_get_chat_messages_for_book_exception(client):
 def test_get_last_read_book_no_books_finished(client):
     user_id = str(ObjectId())
 
-    # All entries are missing a date_finished → should return 404
+    # All entries are missing a date_finished, should return 404
     mock_read_books = [
         {
             "user_id": user_id,
