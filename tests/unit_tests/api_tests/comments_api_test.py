@@ -44,8 +44,8 @@ def valid_user_post():
 
     with patch("models.users.read_user", return_value=mock_user), patch(
         "models.posts.read_post", return_value=mock_post
-    ), patch("models.users.is_valid_object_id", return_value=True), patch(
-        "models.posts.is_valid_object_id", return_value=True
+    ), patch("mongo_id_utils.is_valid_object_id", return_value=True), patch(
+        "mongo_id_utils.is_valid_object_id", return_value=True
     ):
         yield user_id, post_id
 

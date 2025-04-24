@@ -254,12 +254,16 @@ def generate_recs(user_id, top_n=6, count=1):
         and len(book["embedding"]) == 384
         and all(isinstance(x, (int, float)) for x in book["embedding"])
     ]
-    
-    book_embeddings = np.array([
-        np.array(book["embedding"], dtype=np.float64)
-        for book in valid_books
-        if "embedding" in book and isinstance(book["embedding"], list) and len(book["embedding"]) == 384
-    ])
+
+    book_embeddings = np.array(
+        [
+            np.array(book["embedding"], dtype=np.float64)
+            for book in valid_books
+            if "embedding" in book
+            and isinstance(book["embedding"], list)
+            and len(book["embedding"]) == 384
+        ]
+    )
 
     valid_books = []
 

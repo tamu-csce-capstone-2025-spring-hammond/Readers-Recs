@@ -68,7 +68,8 @@ def test_objectid_to_str_invalid_type():
 
 def test_parse_date_with_datetime():
     now = datetime.now()
-    assert parse_date(now) is now  # Should return original datetime object
+    result = parse_date(now)
+    assert result.replace(tzinfo=None) == now
 
 
 def test_parse_date_with_iso_string():
@@ -80,17 +81,17 @@ def test_parse_date_with_iso_string():
 
 def test_parse_date_with_invalid_string():
     result = parse_date("not-a-date")
-    assert result == datetime.min
+    assert result.replace(tzinfo=None) == datetime.min
 
 
 def test_parse_date_with_none():
     result = parse_date(None)
-    assert result == datetime.min
+    assert result.replace(tzinfo=None) == datetime.min
 
 
 def test_parse_date_with_integer():
     result = parse_date(12345)
-    assert result == datetime.min
+    assert result.replace(tzinfo=None) == datetime.min
 
 
 @patch("api.bookshelf.read_book_by_bookId")

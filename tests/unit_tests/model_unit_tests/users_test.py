@@ -50,9 +50,6 @@ def test_create_update_and_delete_user(monkeypatch):
     monkeypatch.setattr(users, "users_collection", mock_collection)
     monkeypatch.setattr(users, "read_user", lambda uid: {"_id": ObjectId(uid)})
 
-    # Patch is_valid_object_id used in your own models (optional if not used here)
-    monkeypatch.setattr(users, "is_valid_object_id", lambda col, oid: True)
-
     # Ensure uniqueness check returns no matches
     mock_collection.find_one.side_effect = [
         None,
@@ -469,9 +466,6 @@ def test_update_user_settings_no_fields_provided(monkeypatch):
 
     user_id = str(ObjectId())
 
-    # Patch is_valid_object_id to return True
-    monkeypatch.setattr(users, "is_valid_object_id", lambda col, oid: True)
-
     # Patch read_user to simulate a real user
     monkeypatch.setattr(users, "read_user", lambda uid: {"_id": ObjectId(uid)})
 
@@ -565,7 +559,6 @@ def test_update_user_settings_invalid_field_types(monkeypatch):
 
     mock_collection = MagicMock()
     monkeypatch.setattr(users, "users_collection", mock_collection)
-    monkeypatch.setattr(users, "is_valid_object_id", lambda col, oid: True)
 
     # First call = find user by ID, second call = uniqueness check (returns None to simulate unique)
     mock_collection.find_one.side_effect = [mock_user, None]
@@ -618,7 +611,6 @@ def test_update_user_validation_error_on_email(monkeypatch):
     user_id = str(ObjectId())
 
     monkeypatch.setattr(users, "users_collection", MagicMock())
-    monkeypatch.setattr(users, "is_valid_object_id", lambda col, oid: True)
 
     users.users_collection.find_one.return_value = {
         "_id": ObjectId(user_id),
@@ -644,7 +636,6 @@ def test_update_user_validation_error_on_demographics(monkeypatch):
     user_id = str(ObjectId())
 
     monkeypatch.setattr(users, "users_collection", MagicMock())
-    monkeypatch.setattr(users, "is_valid_object_id", lambda col, oid: True)
 
     users.users_collection.find_one.return_value = {
         "_id": ObjectId(user_id),

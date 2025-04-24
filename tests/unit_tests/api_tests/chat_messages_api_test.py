@@ -3,6 +3,8 @@ from unittest.mock import patch
 from main import app
 from bson import ObjectId
 from datetime import datetime
+import pytz
+from api.chat_messages import parse_date
 
 app.testing = True
 
@@ -225,3 +227,40 @@ def test_get_last_read_book_no_books_finished(client):
 
     assert response.status_code == 404
     assert response.get_json()["message"] == "No books marked as read yet."
+
+
+def test_parse_date_naive_datetime():
+    naive_dt = datetime(2024, 1, 1, 12, 0, 0)
+    result = parse_date(naive_dt)
+    assert result.tzinfo.zone == "US/Central"
+    assert result.hour == 12
+
+
+def test_parse_date_aware_datetime():
+    aware = pytz.timezone("US/Central").localize(datetime(2024, 1, 1, 12, 0, 0))
+    result = parse_date(aware)
+    assert result is aware
+
+
+def test_parse_date_naive_string():
+    result = parse_date("2024-01-01T12:00:00")
+    assert result.tzinfo.zone == "US/Central"
+    assert result.hour == 12
+
+
+def test_parse_date_invalid_string():
+    result = parse_date("not-a-date")
+    assert result.year == 1
+    assert result.tzinfo.zone == "US/Central"
+
+
+def test_parse_date_none_input():
+    result = parse_date(None)
+    assert result.year == 1
+    assert result.tzinfo.zone == "US/Central"
+
+
+def test_parse_date_int_input():
+    result = parse_date(12345)
+    assert result.year == 1
+    assert result.tzinfo.zone == "US/Central"

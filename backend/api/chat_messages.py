@@ -11,6 +11,21 @@ chat_bp = Blueprint("chat", __name__)
 CORS(chat_bp)
 
 
+def parse_date(date_val):
+    central = pytz.timezone("US/Central")
+    if isinstance(date_val, datetime):
+        if date_val.tzinfo is None:
+            return central.localize(date_val)
+        return date_val
+    try:
+        dt = datetime.fromisoformat(date_val)
+        if dt.tzinfo is None:
+            return central.localize(dt)
+        return dt
+    except Exception:
+        return datetime.min.replace(tzinfo=central)
+
+
 # GET: Get all chat messages for a book
 @chat_bp.route("/<book_id>/messages", methods=["GET"])
 def get_chat_messages_for_book(book_id):
@@ -51,20 +66,6 @@ def get_chat_last_read_book(user_id):
         books = get_read_books(user_id)
         if isinstance(books, str):
             return jsonify({"error": books}), 400
-
-        def parse_date(date_val):
-            central = pytz.timezone("US/Central")
-            if isinstance(date_val, datetime):
-                if date_val.tzinfo is None:
-                    return central.localize(date_val)
-                return date_val
-            try:
-                dt = datetime.fromisoformat(date_val)
-                if dt.tzinfo is None:
-                    return central.localize(dt)
-                return dt
-            except Exception:
-                return datetime.min.replace(tzinfo=central)
 
         books_with_finish_date = [
             book for book in books if book.get("date_finished") is not None

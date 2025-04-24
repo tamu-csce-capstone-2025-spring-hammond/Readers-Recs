@@ -66,7 +66,7 @@ class BookSchema(BaseModel):
             return None
 
         return v
-        
+
 
 # -----------------------------------------------
 # USERS SCHEMA
