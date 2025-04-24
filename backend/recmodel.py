@@ -34,9 +34,9 @@ from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 
 redis_url = os.getenv("REDIS_URL")
 redis_client = (
-    redis.from_url(redis_url, decode_responses=True)
+    redis.from_url(redis_url) #, decode_responses=True)
     if redis_url
-    else redis.Redis(host="localhost", port=6379, decode_responses=True)
+    else redis.Redis(host="localhost", port=6379) #, decode_responses=True)
 )
 # Load SentenceTransformer model once
 # model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -288,6 +288,7 @@ def generate_recs(user_id, top_n=6, count=1):
         user_embedding = user_embedding.reshape(1, -1)
 
     # Check if book_embeddings is None or empty
+    book_embeddings = np.array(book_embeddings)
     if book_embeddings is None or book_embeddings.size == 0:
         print("Error: book_embeddings is empty or None")
         return []
@@ -447,9 +448,9 @@ def onboarding_recommendations(user_id, interests):
 
 # Example usage:
 
-user_id = "67c64c27835dd5190e9d458b"
+# user_id = "67c64c27835dd5190e9d458b"
 # process_reading_history(user_id)
-print(recommend_books(user_id, 5))
+# print(recommend_books(user_id, 5))
 
 # user_id = "67f58b311c43cef5572babc2"
 

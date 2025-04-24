@@ -54,7 +54,7 @@ def test_crud_chat_messages(user_and_book):
         ],
     ), patch(
         "models.chat_messages.is_valid_object_id", return_value=True
-    ):  # ✅ THIS FIX
+    ):
 
         # CREATE
         res = chat.create_chat_message(bid, uid, "Hello world")

@@ -356,12 +356,17 @@ def remove_demographic(user_id, demographic_field):
 
 def delete_user(user_id):
     try:
+        db = collections
+        db["Posts"].delete_many({"user_id": user_id})
+        db["Comments"].delete_many({"user_id": user_id})
+        db["Chat_Messages"].delete_many({"user_id": user_id})
+        db["User_Bookshelf"].delete_many({"user_id": user_id})
+
         user_id = ObjectId(user_id)
 
         if not users_collection.find_one({"_id": user_id}):
             return "Error: User not found."
 
-        db = collections
         db["Posts"].delete_many({"user_id": user_id})
         db["Comments"].delete_many({"user_id": user_id})
         db["Chat_Messages"].delete_many({"user_id": user_id})
