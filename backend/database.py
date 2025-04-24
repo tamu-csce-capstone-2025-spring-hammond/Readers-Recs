@@ -21,7 +21,3 @@ collections = {
     "User_Bookshelf": db["User_Bookshelf"],
     "Users": db["Users"],
 }
-
-
-def close_connection():
-    client.close()

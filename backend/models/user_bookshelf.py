@@ -1,11 +1,13 @@
 # database/models/user_bookshelf.py
-from datetime import datetime
+from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from database import collections
-from schemas import UserBookshelfSchema  # , BookSchema, UserSchema
+from schemas import UserBookshelfSchema
 from bson import ObjectId
 from mongo_id_utils import is_valid_object_id
+from bson.errors import InvalidId
+import pytz
 
 books_collection = collections["Books"]
 users_collection = collections["Users"]
@@ -18,11 +20,12 @@ user_bookshelf_collection = collections["User_Bookshelf"]
 def create_user_bookshelf(
     user_id,
     book_id,
-    status="to read",
+    status="to-read",
     page_number=0,
     date_started=None,
     date_finished=None,
     rating="mid",
+    date_added=None,
 ):
     try:
         # Validate user_id and book_id
@@ -35,21 +38,37 @@ def create_user_bookshelf(
             {"user_id": user_id, "book_id": ObjectId(book_id)}
         )
         if existing:
-            return "Error: book already present in user bookshelves."
+            return "Error: book already present in user bookshelf."
 
-        # Convert date_added to datetime if it's a datetime.date object
-        date_added = datetime.today().date()  # Default to today's date
-        if isinstance(date_added, datetime):
-            date_added = datetime.combine(
-                date_added.date(), datetime.min.time()
-            )  # Ensure it's datetime, not date
+        central = pytz.timezone("America/Chicago")
 
-        # Convert date_started and date_finished if they are datetime.date objects
-        if date_started and isinstance(date_started, datetime):
-            date_started = datetime.combine(date_started.date(), datetime.min.time())
+        # Set default date_added if not provided
+        if date_added is None:
+            date_added = datetime.now(pytz.timezone("America/Chicago"))
 
-        if date_finished and isinstance(date_finished, datetime):
-            date_finished = datetime.combine(date_finished.date(), datetime.min.time())
+        # Convert to full datetime if date only
+        if isinstance(date_added, date) and not isinstance(date_added, datetime):
+            date_added = datetime.combine(date_added, datetime.min.time()).replace(
+                tzinfo=central
+            )
+
+        if (
+            date_started
+            and isinstance(date_started, date)
+            and not isinstance(date_started, datetime)
+        ):
+            date_started = datetime.combine(date_started, datetime.min.time()).replace(
+                tzinfo=central
+            )
+
+        if (
+            date_finished
+            and isinstance(date_finished, date)
+            and not isinstance(date_finished, datetime)
+        ):
+            central = pytz.timezone("US/Central")
+            current_datetime = datetime.now(central).isoformat()
+            date_finished = current_datetime
 
         # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
@@ -57,7 +76,7 @@ def create_user_bookshelf(
             book_id=book_id,
             status=status,
             page_number=page_number,
-            date_added=date_added,  # Correctly formatted date_added as datetime
+            date_added=date_added,
             date_started=date_started,
             date_finished=date_finished,
             rating=rating,
@@ -75,6 +94,8 @@ def create_user_bookshelf(
         return f"Schema Validation Error: {str(e)}"
     except DuplicateKeyError:
         return "Error: User and Book combination must be unique!"
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -84,17 +105,31 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
 
         # Validate new_status
-        if new_status not in ["to read", "currently reading", "read"]:
+        if new_status not in [
+            "to read",
+            "currently reading",
+            "read",
+            "to-read",
+            "currently-reading",
+        ]:
             return "Error: Invalid status value."
 
-        # Update the status
+        central = pytz.timezone("America/Chicago")
+
+        # If status is being set to "read", set date_finished to now
+        update_fields = {"status": new_status}
+
+        # Only add date_finished if moving to "read"
+        if new_status.lower() == "read":
+            current_datetime = datetime.now(central).isoformat()
+            update_fields["date_finished"] = current_datetime
+
         result = user_bookshelf_collection.update_one(
-            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": {"status": new_status, "date_finished": date_finished}}
+            {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": update_fields}
         )
 
         if result.matched_count:
@@ -102,6 +137,8 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
         else:
             return "UserBookshelf entry not found."
 
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -153,8 +190,8 @@ def get_read_books(user_id):
 def get_unread_books(user_id):
     try:
         # Validate user_id
-        # if not is_valid_object_id("Users", user_id):
-        #     return "Error: Invalid user_id."
+        if not is_valid_object_id("Users", user_id):
+            return "Error: Invalid user_id."
 
         # Get all books read by the user
         books = list(
@@ -186,12 +223,6 @@ def get_currently_reading_books(user_id):
 
 
 def rate_book(user_id, book_id, new_rating):
-    # TODO: add check that book has been completed
-    shelf_entry = user_bookshelf_collection.find(
-        {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
-    )
-    if not shelf_entry:
-        return "Error: Book has not been read yet."
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
@@ -199,6 +230,14 @@ def rate_book(user_id, book_id, new_rating):
 
         if not is_valid_object_id("Books", book_id):
             return "Error: Invalid book_id."
+
+        if (
+            user_bookshelf_collection.count_documents(
+                {"user_id": user_id, "book_id": ObjectId(book_id), "status": "read"}
+            )
+            == 0
+        ):
+            return "Error: Book has not been read yet."
 
         # Validate new_rating
         if new_rating not in ["pos", "neg", "mid"]:
@@ -224,11 +263,8 @@ def update_page_number(user_id, book_id, new_page_number):
     try:
         # Validate user_id and book_id
         if not is_valid_object_id("Users", user_id):
-            print("Error: Invalid user id")
             return "Error: Invalid user_id."
-
         if not is_valid_object_id("Books", book_id):
-            print("Error: Invalid book_id")
             return "Error: Invalid book_id."
 
         # Validate new_page_number
@@ -272,6 +308,8 @@ def update_page_number(user_id, book_id, new_page_number):
             print("UserBookshelf entry not found.")
             return "UserBookshelf entry not found."
 
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -298,7 +336,8 @@ def get_page_number(user_id, book_id):
             return book_entry.get("page_number", 0)
         else:
             return "UserBookshelf entry not found."
-
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -321,5 +360,5 @@ def delete_user_bookshelf(user_id, book_id):
         else:
             return "UserBookshelf entry not found."
 
-    except Exception as e:
-        return f"Error: {str(e)}"
+    except InvalidId:
+        return "Error: Invalid user_id or book_id."

@@ -1,6 +1,5 @@
 import collections
 import random
-from load_books import BookCollection
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -8,6 +7,7 @@ from models.books import books_collection
 import redis
 import json
 import re
+import os
 from fuzzywuzzy import fuzz
 
 
@@ -32,6 +32,12 @@ from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 # client = MongoClient(uri, server_api=ServerApi("1"))
 # db = client["book_recommendation"]
 redis_client = redis.Redis(host="localhost", port=6379, db=0)
+
+redis_url = os.getenv("REDIS_URL")
+if redis_url:
+    redis_client = redis.from_url(redis_url)
+else:
+    redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 # Load SentenceTransformer model once
 # model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -151,20 +157,18 @@ def process_user_rating(user_id, book_id, rating):
     update_genre_weights(user_id, genre_weights)
     # Embedding update
     if rating == "pos":
-        user_embedding = retrieve_user_embedding(user_id)  # Retrieve embedding from DB
-        book_embedding = np.array(book["embedding"], dtype=np.float64)
+        user_embedding = retrieve_user_embedding(user_id)
 
-        if isinstance(user_embedding, np.ndarray):
-            pass  # Already a NumPy array, no conversion needed
+        raw_embedding = book.get("embedding")
+        if raw_embedding is None or len(raw_embedding) == 0:
+            return
+
+        book_embedding = np.array(raw_embedding, dtype=np.float64)
 
         if user_embedding is None or len(user_embedding) == 0:
             print("empty user embedding")
-            user_embedding = np.zeros_like(book_embedding)  # Handle missing embeddings
+            user_embedding = np.zeros_like(book_embedding)
 
-        if book_embedding is None or len(book_embedding) == 0:
-            return
-
-        # Compute new embedding
         new_embedding = (user_embedding + book_embedding) / 2
         update_user_embedding(user_id, new_embedding.tolist())
 
@@ -243,11 +247,19 @@ def generate_recs(user_id, top_n=6, count=1):
     update_book_embeddings(books)
     books_read = {book["book_id"] for book in retrieve_user_bookshelf(user_id)}
     books_to_read = {book["book_id"] for book in get_unread_books(user_id)}
+    valid_books = [
+        book
+        for book in books
+        if isinstance(book.get("embedding"), list)
+        and len(book["embedding"]) == 384
+        and all(isinstance(x, (int, float)) for x in book["embedding"])
+    ]
+    
     book_embeddings = np.array([
-    np.array(book["embedding"], dtype=np.float64)
-    for book in books
-    if "embedding" in book and isinstance(book["embedding"], list) and len(book["embedding"]) == 384
-])
+        np.array(book["embedding"], dtype=np.float64)
+        for book in valid_books
+        if "embedding" in book and isinstance(book["embedding"], list) and len(book["embedding"]) == 384
+    ])
 
     valid_books = []
 

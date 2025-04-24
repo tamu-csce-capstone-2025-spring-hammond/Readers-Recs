@@ -18,6 +18,7 @@ Enhancing Book Discovery & Interaction with ML-Driven Recommendations
   - [Entering the Virtual Environment](#entering-the-virtual-environment)
 - [Testing](#testing)
   - [Running the Linter](#running-the-linter)
+  - [Running the Python Backend Tests](#running-the-python-backend-tests)
 - [Deploying](#deploying)
 - [Troubleshooting](#troubleshooting)
 
@@ -83,6 +84,13 @@ Run the following to analyze the code for programming errors, bugs, stylistic er
 ```
 flake8 .
 black .
+```
+
+## Running the Python Backend Tests
+Run the following command to generate a coverage report for the Python backend tests.
+```
+pytest --cov=backend --cov-config=.coveragerc --cov-report=html:htmlcov tests/
+
 ```
 
 # Deploying

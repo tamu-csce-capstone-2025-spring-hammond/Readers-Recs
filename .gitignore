@@ -5,11 +5,14 @@ __pycache__/
 backend/__pycache__
 backend/models/__pycache__
 tests/__pycache__
+__pycache__
 .coverage
+.coveragerc
 htmlcov/
+report.html
 
 # local environment files
-.env*.local
+.env.*
 .env
 
 .vscode

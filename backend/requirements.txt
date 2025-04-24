@@ -1,7 +1,4 @@
 accelerate
-black
-coverage
-flake8
 flask
 flask-cors
 fuzzywuzzy
@@ -13,8 +10,6 @@ numpy
 pydantic
 pydantic[email]
 pymongo
-pytest
-pytest-cov
 python-dotenv
 pytz
 redis

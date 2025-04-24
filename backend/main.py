@@ -18,13 +18,11 @@ CORS(
         r"/*": {
             "origins": [
                 "http://localhost:3000",
-                "https://*.vercel.app",
+                "https://readers-recs-git-testing-dev-kaitlyngrifs-projects.vercel.app",
                 "https://readers-recs-one.vercel.app",
-                "https://readers-recs-git-apis-dev-kaitlyngrifs-projects.vercel.app/",
-                "https://readers-recs-git-development-kaitlyngrifs-projects.vercel.app/",
+                "https://readers-recs-git-testing-dev-kaitlyngrifs-projects.vercel.app",
                 "https://readers-recs-git-development-kaitlyngrifs-projects.vercel.app",
                 "https://csce412kgriffin.xyz",
-                "https://readers-recs-backend.onrender.com",
                 "https://readers-recs-production.up.railway.app",
             ],
             "supports_credentials": True,
