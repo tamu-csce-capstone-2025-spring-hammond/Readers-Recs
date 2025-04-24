@@ -31,14 +31,13 @@ from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 # # Initialize MongoDB and Redis
 # client = MongoClient(uri, server_api=ServerApi("1"))
 # db = client["book_recommendation"]
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
 redis_url = os.getenv("REDIS_URL")
-if redis_url:
-    redis_client = redis.from_url(redis_url)
-else:
-    redis_client = redis.Redis(host="localhost", port=6379, db=0)
-
+redis_client = (
+    redis.from_url(redis_url, decode_responses=True)
+    if redis_url
+    else redis.Redis(host="localhost", port=6379, decode_responses=True)
+)
 # Load SentenceTransformer model once
 # model = SentenceTransformer("all-MiniLM-L6-v2")
 
