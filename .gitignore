@@ -12,7 +12,7 @@ htmlcov/
 report.html
 
 # local environment files
-.env*.local
+.env.*
 .env
 
 .vscode
