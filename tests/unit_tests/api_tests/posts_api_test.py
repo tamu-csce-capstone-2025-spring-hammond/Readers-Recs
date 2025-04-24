@@ -1,8 +1,5 @@
 import pytest
 from main import app
-import uuid
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
 from unittest.mock import patch
 from bson.objectid import ObjectId
 
@@ -110,7 +107,7 @@ def test_get_all_posts_valid(client, valid_user_book):
                 f"/api/books/{book_id}/posts",
                 json={
                     "user_id": user_id,
-                    "title": f"Post #{i+1}",
+                    "title": f"Post #{i + 1}",
                     "post_text": "More discussion",
                     "tags": ["test"],
                 },

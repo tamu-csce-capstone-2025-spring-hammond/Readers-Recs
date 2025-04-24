@@ -1,8 +1,7 @@
 import pytest
 import importlib.util
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from mongo_id_utils import is_valid_object_id
-from bson import ObjectId
 
 
 def test_missing_mongo_uri(monkeypatch):

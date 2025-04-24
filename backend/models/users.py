@@ -5,9 +5,6 @@ from datetime import datetime, date
 from pydantic import ValidationError
 from schemas import UserSchema, OAuthSchema, DemographicSchema
 from database import collections
-from mongo_id_utils import is_valid_object_id
-
-# from pymongo import errors
 
 users_collection = collections["Users"]
 

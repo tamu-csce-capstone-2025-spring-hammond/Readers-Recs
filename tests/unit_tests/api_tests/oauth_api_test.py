@@ -10,7 +10,7 @@ client = TestClient(app)
 
 
 def test_google_login_redirect():
-    response = client.get("/auth/google")
+    client.get("/auth/google")
     # assert response.status_code in [307, 200]
     # assert "https://accounts.google.com/o/oauth2/auth" in response.headers.get("location", "")
 

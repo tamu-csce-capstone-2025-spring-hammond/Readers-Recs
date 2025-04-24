@@ -1,5 +1,4 @@
 import pytest
-import uuid
 from unittest.mock import MagicMock
 from bson import ObjectId
 import models.books as book_model

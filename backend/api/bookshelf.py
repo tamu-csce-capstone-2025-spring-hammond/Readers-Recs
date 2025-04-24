@@ -3,6 +3,7 @@ from models.books import read_book_by_bookId
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 from bson import ObjectId
+import pytz
 
 from models.user_bookshelf import (
     create_user_bookshelf,
@@ -29,12 +30,18 @@ def objectid_to_str(obj):
 
 
 def parse_date(date_val):
+    central = pytz.timezone("US/Central")
     if isinstance(date_val, datetime):
+        if date_val.tzinfo is None:
+            return central.localize(date_val)
         return date_val
     try:
-        return datetime.fromisoformat(date_val)
-    except (TypeError, ValueError):
-        return datetime.min
+        dt = datetime.fromisoformat(date_val)
+        if dt.tzinfo is None:
+            return central.localize(dt)
+        return dt
+    except Exception:
+        return datetime.min.replace(tzinfo=central)
 
 
 @shelf_bp.route("/api/user/<user_id>/books/lastread", methods=["GET"])
@@ -178,6 +185,10 @@ def add_book_to_bookshelf(user_id):
     """
     Add a new book to the user's bookshelf.
     """
+    from pytz import timezone
+
+    central = timezone("US/Central")
+    current_datetime = datetime.now(central).isoformat()
     try:
         data = request.get_json()
         book_id = data["book_id"]
@@ -185,11 +196,10 @@ def add_book_to_bookshelf(user_id):
         rating = data["rating"]
         date_finished = None
         date_started = None
-        current_date = datetime.now().date().isoformat()  # "YYYY-MM-DD"
         if status == "read":
-            date_finished = current_date
+            date_finished = current_datetime
         else:
-            date_started = current_date
+            date_started = current_datetime
 
         if status == "currently-reading":
             books = get_currently_reading_books(user_id)
@@ -273,10 +283,11 @@ def update_bookshelf_status(user_id, book_id):
         data = request.get_json()
         new_status = data.get("status")
         date_finished = None
-        date_started = None
+        central = pytz.timezone("US/Central")
+        current_datetime = datetime.now(central).isoformat()
+
         if new_status == "read":
-            date_finished = datetime.now().date().isoformat()
-        # else:
+            date_finished = current_datetime
         #     date_started = datetime.now().date()
 
         result = update_user_bookshelf_status(

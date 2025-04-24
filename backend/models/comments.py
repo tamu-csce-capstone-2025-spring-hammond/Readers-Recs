@@ -2,7 +2,6 @@
 from datetime import datetime
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from schemas import CommentSchema
 from mongo_id_utils import is_valid_object_id

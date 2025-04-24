@@ -6,7 +6,6 @@ from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from schemas import BookSchema
 from database import collections
-from pymongo.errors import PyMongoError
 import numpy as np
 
 books_collection = collections["Books"]

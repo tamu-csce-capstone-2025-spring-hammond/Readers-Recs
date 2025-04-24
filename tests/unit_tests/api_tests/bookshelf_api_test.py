@@ -1,13 +1,7 @@
-import uuid
 from bson import ObjectId
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
-from models.user_bookshelf import delete_user_bookshelf
-from main import app
 from api.bookshelf import parse_date, objectid_to_str
 from datetime import datetime
-from unittest.mock import patch, MagicMock
-from flask import Flask
+from unittest.mock import patch
 import pytest
 
 

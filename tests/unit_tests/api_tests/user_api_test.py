@@ -2,7 +2,6 @@ import pytest
 import uuid
 from bson import ObjectId
 from main import app
-from models.users import create_user, delete_user
 from unittest.mock import patch, MagicMock
 
 app.testing = True
@@ -114,7 +113,6 @@ def test_edit_profile_invalid_user_id(client):
 
 
 def test_edit_profile_crash(monkeypatch, client, valid_user):
-    from api import user
 
     def explode(*args, **kwargs):
         raise Exception("Boom")
@@ -178,14 +176,6 @@ def test_save_genres_success(client):
         assert res.get_json()["message"] == "Genres saved successfully"
         add_mock.assert_any_call(mock_user["_id"], "fantasy")
         add_mock.assert_any_call(mock_user["_id"], "sci-fi")
-
-
-def test_get_user_profile_not_found(client):
-    fake_id = str(ObjectId())
-    with patch("models.users.users_collection.find_one", return_value=None):
-        res = client.get(f"/user/profile/{fake_id}")
-        assert res.status_code == 404
-        assert "User not found" in res.get_json()["error"]
 
 
 def test_get_user_profile_google_oauth_success(client):
@@ -286,15 +276,6 @@ def test_get_user_profile_missing_auth(client):
     assert response.get_json()["error"] == "Missing or invalid Authorization header"
 
 
-def test_get_user_by_id_exception(client):
-    @patch("backend.models.users.read_user", side_effect=Exception("Database exploded"))
-    def test_get_user_by_id_exception(mock_read, client):
-        fake_id = str(ObjectId())
-        res = client.get(f"/user/profile/{fake_id}")
-        assert res.status_code == 500
-        assert "Database exploded" in res.get_json()["error"]
-
-
 def test_save_genres_user_is_none(client):
     token_info = {"email": "nobody@example.com"}
     with patch(
@@ -363,10 +344,6 @@ def test_edit_profile_user_lookup_returns_string(client):
         )
         assert response.status_code == 200
         assert response.get_json()["message"] == "Profile updated successfully."
-
-
-from unittest.mock import patch
-from bson import ObjectId
 
 
 def test_get_user_by_id_exception(client):

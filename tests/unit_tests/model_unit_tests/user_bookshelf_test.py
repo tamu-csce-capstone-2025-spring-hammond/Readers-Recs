@@ -1,9 +1,8 @@
-from unittest.mock import patch, MagicMock
-import pytest
 from unittest.mock import patch
+import pytest
 from bson.errors import InvalidId
 from bson import ObjectId
-from datetime import datetime, date
+from datetime import date
 from models.user_bookshelf import (
     create_user_bookshelf,
     update_user_bookshelf_status,
@@ -17,7 +16,6 @@ from models.user_bookshelf import (
     get_page_number,
     delete_user_bookshelf,
 )
-import pytz
 
 # Mocked IDs used in all tests
 uid = str(ObjectId())

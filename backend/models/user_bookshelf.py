@@ -66,9 +66,9 @@ def create_user_bookshelf(
             and isinstance(date_finished, date)
             and not isinstance(date_finished, datetime)
         ):
-            date_finished = datetime.combine(
-                date_finished, datetime.min.time()
-            ).replace(tzinfo=central)
+            central = pytz.timezone("US/Central")
+            current_datetime = datetime.now(central).isoformat()
+            date_finished = current_datetime
 
         # Prepare data using UserBookshelfSchema
         user_bookshelf_data = UserBookshelfSchema(
@@ -125,7 +125,8 @@ def update_user_bookshelf_status(user_id, book_id, new_status, date_finished=Non
 
         # Only add date_finished if moving to "read"
         if new_status.lower() == "read":
-            update_fields["date_finished"] = datetime.now(central)
+            current_datetime = datetime.now(central).isoformat()
+            update_fields["date_finished"] = current_datetime
 
         result = user_bookshelf_collection.update_one(
             {"user_id": user_id, "book_id": ObjectId(book_id)}, {"$set": update_fields}

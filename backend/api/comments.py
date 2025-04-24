@@ -5,8 +5,6 @@ from models.comments import (
     get_all_comments_for_post,
     read_comment,
     reply_to_comment,
-    update_comment,
-    delete_comment,
 )
 
 comments_bp = Blueprint("comments", __name__)

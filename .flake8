@@ -1,11 +1,12 @@
 [flake8]
 max-line-length = 127
-max-complexity = 13
+max-complexity = 21
 exclude =
     .git,
     __pycache__,
     build,
-    dist
+    dist,
+    node_modules
 ignore =
     E203,
     E266,

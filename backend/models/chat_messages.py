@@ -1,7 +1,5 @@
 from bson.objectid import ObjectId
 from datetime import datetime
-from pymongo.errors import DuplicateKeyError
-from pydantic import ValidationError
 from schemas import ChatMessageSchema
 from mongo_id_utils import is_valid_object_id
 from database import collections
@@ -71,7 +69,7 @@ def update_chat_message(message_id, message_text):
             "message_text": message_text.strip(),
             "date_edited": datetime.now(pytz.timezone("America/Chicago")),
         }
-        result = chat_messages_collection.update_one(
+        chat_messages_collection.update_one(
             {"_id": ObjectId(message_id)}, {"$set": update_data}
         )
         updated_document = chat_messages_collection.find_one(
@@ -89,7 +87,7 @@ def delete_chat_message(message_id):
         if not is_valid_object_id("Chat_Messages", message_id):
             return "Error: Invalid message_id."
 
-        result = chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
+        chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
         return "Message deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"

@@ -1,11 +1,8 @@
 import numpy as np
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import recmodel
-from pymongo import MongoClient
 from bson import ObjectId
 import json
-import numpy as np
-import re
 
 
 @patch("recmodel.redis_client.get", return_value=json.dumps([0.1] * 384))

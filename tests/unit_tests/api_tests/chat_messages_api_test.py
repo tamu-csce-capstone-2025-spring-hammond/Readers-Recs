@@ -1,7 +1,6 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from main import app
-import uuid
 from bson import ObjectId
 from datetime import datetime
 
@@ -16,7 +15,6 @@ def client():
 
 @pytest.fixture
 def valid_user_and_book():
-    u = uuid.uuid4().hex
     fake_user_id = str(ObjectId())
     fake_book_id = str(ObjectId())
 
@@ -177,19 +175,6 @@ def test_send_chat_message_internal_error(monkeypatch, client, valid_user_and_bo
     )
     assert response.status_code == 500
     assert "send error" in response.get_json()["error"]
-
-
-def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_book):
-    user_id, _ = valid_user_and_book
-
-    def boom(_):
-        raise Exception("lastread error")
-
-    monkeypatch.setattr("api.chat_messages.get_read_books", boom)
-
-    response = client.get(f"/api/chat/user/{user_id}/lastread")
-    assert response.status_code == 500
-    assert "lastread error" in response.get_json()["error"]
 
 
 def test_get_last_read_book_internal_error(monkeypatch, client, valid_user_and_book):

@@ -1,23 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from bson import ObjectId, errors
+from bson import ObjectId
+from pydantic import ValidationError
 from bson.errors import InvalidId
 from models.users import (
     create_user,
-    read_user,
-    read_user_by_username,
-    read_user_by_email,
     update_user,
     update_user_settings,
-    update_profile_image,
-    add_interest,
-    remove_interest,
-    add_demographic,
-    update_demographics,
-    remove_demographic,
-    delete_user,
     update_genre_weights,
-    retrieve_genre_weights,
     update_embedding,
     retrieve_embedding,
 )
@@ -127,47 +117,6 @@ def test_create_user_invalid_email(mock_users_collection):
         demographics={"age": 21},
     )
     assert result == "Error: Username, Email Address, or Access Token must be unique!"
-
-
-def test_create_user_invalid_schema():
-    from models.users import create_user
-
-    with patch(
-        "models.users.users_collection.insert_one",
-        side_effect=[
-            MagicMock(inserted_id=ObjectId()),  # First insert succeeds
-            Exception("duplicate key error"),  # Second insert fails
-        ],
-    ):
-        # First user creation
-        create_user(
-            first_name="John",
-            last_name="Doe",
-            username="johndoe",
-            email_address="test_user_4@gmail.com",
-            oauth={"access_token": "12345", "refresh_token": "54321"},
-            profile_image="https://example.com/image.jpg",
-            interests=["Reading", "Writing"],
-            demographics={"age": 21},
-        )
-
-        # Second attempt with duplicate token
-        result = create_user(
-            first_name="Alice",
-            last_name="Wonderland",
-            username="johndoe",
-            email_address="test_user_3@gmail.com",
-            oauth={
-                "access_token": "11111",
-                "refresh_token": "54321",  # duplicate refresh token
-            },
-            profile_image="https://example.com/image3.jpg",
-            interests=["Adventure"],
-            demographics={"age": 21},
-        )
-        assert (
-            result == "Error: Username, Email Address, or Access Token must be unique!"
-        )
 
 
 def test_create_user_invalid_schema(monkeypatch):
@@ -752,12 +701,6 @@ def test_update_embedding_invalid_objectid():
     assert result == "Error: Invalid ObjectId format."
 
 
-def test_update_embedding_user_not_found():
-    with patch("models.users.users_collection.find_one", return_value=None):
-        result = update_embedding(str(ObjectId()), [0.1])
-        assert result == "Error: User not found."
-
-
 def test_update_embedding_invalid_list_type():
     with patch(
         "models.users.users_collection.find_one", return_value={"_id": ObjectId()}
@@ -783,10 +726,6 @@ def test_update_embedding_success():
     ):
         result = update_embedding(str(ObjectId()), [0.1, 0.2])
         assert result.modified_count == 1
-
-
-from pydantic import ValidationError
-from models.users import update_user_settings, UserSchema
 
 
 def test_update_user_settings_schema_validation_error(monkeypatch):

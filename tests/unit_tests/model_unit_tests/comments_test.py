@@ -16,9 +16,7 @@ from models.comments import (
     serialize_comment,
 )
 import models.comments as comment_model
-from pydantic import ValidationError
 from bson.errors import InvalidId
-from schemas import CommentSchema
 
 VALID_POST_ID = "507f1f77bcf86cd799439011"
 VALID_USER_ID = "507f1f77bcf86cd799439012"

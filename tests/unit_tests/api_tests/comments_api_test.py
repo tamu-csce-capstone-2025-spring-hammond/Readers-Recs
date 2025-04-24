@@ -1,13 +1,9 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from bson import ObjectId
 from main import app
 from models.comments import serialize_comment
 from datetime import datetime
-import uuid
-from models.users import create_user, delete_user
-from models.books import create_book, delete_book
-from models.posts import create_post, delete_post
 
 app.testing = True
 

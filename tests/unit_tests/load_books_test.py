@@ -1,12 +1,9 @@
 import json
-import os
-import pytest
 from unittest.mock import patch, mock_open
 from load_books import BookCollection
 from bson import ObjectId
 from datetime import datetime
 import threading
-import time
 
 
 @patch(

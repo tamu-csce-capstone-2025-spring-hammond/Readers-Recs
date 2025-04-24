@@ -28,5 +28,5 @@ def is_valid_object_id(collection_name, obj_id):
         else:
             collection = collections[collection_name]
             return collection.find_one({"_id": ObjectId(obj_id)}) is not None
-    except InvalidId as e:
+    except InvalidId:
         return False

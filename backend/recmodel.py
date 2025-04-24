@@ -1,6 +1,5 @@
 import collections
 import random
-from load_books import BookCollection
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer

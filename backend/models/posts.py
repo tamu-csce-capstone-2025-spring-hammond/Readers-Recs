@@ -1,5 +1,4 @@
 from bson.objectid import ObjectId
-from bson.errors import InvalidId
 from datetime import datetime
 from pydantic import ValidationError
 from schemas import PostSchema
