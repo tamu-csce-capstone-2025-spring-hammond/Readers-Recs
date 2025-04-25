@@ -38,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MONGO_URI: ${{ secrets.MONGO_URI }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -54,4 +55,4 @@ jobs:
 
       - name: Test with pytest and generate coverage report
         run: |
-          pytest --cov=. --cov-report=term-missing tests/
+          pytest --cov=backend --cov-config=.coveragerc --cov-report=term-missing tests/

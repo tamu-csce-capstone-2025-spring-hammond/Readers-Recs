@@ -1,7 +1,7 @@
 # database/models/comments.py
 from datetime import datetime
 from bson.objectid import ObjectId
-from pymongo.errors import DuplicateKeyError
+from bson.errors import InvalidId
 from pydantic import ValidationError
 from schemas import CommentSchema
 from mongo_id_utils import is_valid_object_id
@@ -20,34 +20,37 @@ comments_collection = collections["Comments"]
 
 def create_comment(post_id, user_id, comment_text, parent_comment_id=None):
     try:
-        # Validate post_id, user_id, and parent_comment_id
+        if (
+            not comment_text
+            or not isinstance(comment_text, str)
+            or not comment_text.strip()
+        ):
+            return "Error: comment_text cannot be empty."
+
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
         if not is_valid_object_id("Users", user_id):
             return "Error: Invalid user_id."
-        # Ensure parent_comment_id exists (if it's not None, it's a reply to an existing comment)
         if parent_comment_id and not is_valid_object_id("Comments", parent_comment_id):
             return "Error: Invalid parent_comment_id."
 
-        # Prepare comment data using CommentSchema
         comment_data = CommentSchema(
             post_id=post_id,
             user_id=user_id,
-            comment_text=comment_text,
+            comment_text=comment_text.strip(),
             parent_comment_id=parent_comment_id,
         )
 
         data = comment_data.model_dump(by_alias=True)
-        if not data.get("_id"):
-            data.pop("_id", None)
+        data.pop("_id", None)
 
         result = comments_collection.insert_one(data)
         return str(result.inserted_id)
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except DuplicateKeyError:
-        return "Error: Duplicate comment!"
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -63,6 +66,8 @@ def reply_to_comment(post_id, user_id, comment_text, parent_comment_id):
     """
     Creates a reply to an existing comment.
     """
+    if not parent_comment_id:
+        return "Error: parent_comment_id cannot be None for replies."
     return create_comment(post_id, user_id, comment_text, parent_comment_id)
 
 
@@ -80,7 +85,7 @@ def read_comment(comment_id):
             else "Comment not found."
         )
 
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -102,7 +107,7 @@ def read_comment_field(comment_id, field):
         else:
             return f"Field '{field}' not found in comment."
 
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -113,6 +118,9 @@ def update_comment(comment_id, comment_text):
         # Validate comment_id
         if not is_valid_object_id("Comments", comment_id):
             return "Error: Invalid comment_id."
+
+        if not comment_text or comment_text.strip() == "":
+            return "Error: comment_text cannot be empty."
 
         # Prepare update data including the date_edited field
         update_data = {
@@ -129,6 +137,8 @@ def update_comment(comment_id, comment_text):
             return "Comment updated successfully."
         else:
             return "Comment not found."
+    except InvalidId:
+        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -144,8 +154,10 @@ def delete_comment(comment_id):
             return "Comment deleted successfully."
         else:
             return "Comment not found."
-    except ValueError:
-        return "Error: Invalid ObjectId format."
+    except (ValueError, InvalidId):
+        return "Error: Invalid comment_id."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 # Used to delete all comments associated with a post when the post is deleted
@@ -161,7 +173,7 @@ def delete_comments_by_post(post_id):
         else:
             return "No comments found for this post."
 
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -197,6 +209,8 @@ def get_all_comments_for_post(post_id):
 
         return nested_comments
 
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 

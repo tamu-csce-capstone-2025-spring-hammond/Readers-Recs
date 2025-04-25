@@ -36,8 +36,6 @@ def create_post(user_id, book_id, title, post_text, tags):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    # except DuplicateKeyError:
-    #     return "Error: Duplicate post!"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -50,11 +48,11 @@ def read_post(post_id):
 
         post = posts_collection.find_one({"_id": ObjectId(post_id)})
         return (
-            PostSchema(**post).model_dump(by_alias=True) if post else "Post not found."
+            PostSchema(**post).model_dump(by_alias=True)
+            if post
+            else "Error: Post not found."
         )
 
-    except ValueError:
-        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -69,10 +67,8 @@ def read_post_field(post_id, field):
         post = posts_collection.find_one(
             {"_id": ObjectId(post_id)}, {field: 1, "_id": 0}
         )
-        return post[field] if post else "Post not found."
+        return post[field] if post else "Error: Post not found."
 
-    except ValueError:
-        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -103,7 +99,7 @@ def update_post(post_id, title="", post_text="", tags=None):
         if result.matched_count:
             return "Post updated successfully."
         else:
-            return "Post not found."
+            return "Error: Post not found."
 
     except Exception as e:
         return f"Error: {str(e)}"
@@ -111,19 +107,18 @@ def update_post(post_id, title="", post_text="", tags=None):
 
 def delete_post(post_id):
     try:
-        # Validate post_id
         if not is_valid_object_id("Posts", post_id):
             return "Error: Invalid post_id."
 
-        # delete post and associated comments
         delete_comments_by_post(post_id)
         result = posts_collection.delete_one({"_id": ObjectId(post_id)})
         if result.deleted_count:
             return "Post deleted successfully."
         else:
-            return "Post not found."
-    except ValueError:
-        return "Error: Invalid ObjectId format."
+            return "Error: Post not found."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 users_collection = collections["Users"]

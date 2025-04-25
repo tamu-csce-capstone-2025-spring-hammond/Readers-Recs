@@ -1,6 +1,5 @@
 import collections
 import random
-from load_books import BookCollection
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -8,6 +7,7 @@ from models.books import books_collection
 import redis
 import json
 import re
+import os
 from fuzzywuzzy import fuzz
 
 
@@ -31,8 +31,13 @@ from models.user_bookshelf import get_unread_books, retrieve_user_bookshelf
 # # Initialize MongoDB and Redis
 # client = MongoClient(uri, server_api=ServerApi("1"))
 # db = client["book_recommendation"]
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
 
+redis_url = os.getenv("REDIS_URL")
+redis_client = (
+    redis.from_url(redis_url)  # , decode_responses=True)
+    if redis_url
+    else redis.Redis(host="localhost", port=6379)  # , decode_responses=True)
+)
 # Load SentenceTransformer model once
 # model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -65,7 +70,7 @@ def update_genre_weights_only(user_id, interested_genres):
 def process_wishlist(user_id):
     to_read_shelf = get_unread_books(user_id)
     books_to_read = []
-    print("To read:", to_read_shelf)
+    # print("To read:", to_read_shelf)
     for book in to_read_shelf:
         book_id = book["book_id"]
         book_obj = books_collection.find_one({"_id": book_id})
@@ -77,7 +82,7 @@ def process_wishlist(user_id):
         print("USER NOT FOUND")
     for book in books_to_read:
         genres = book["genre_tags"]
-        print("BOOK GENRES:", genres)
+        # print("BOOK GENRES:", genres)
         weight_change = 0.5
         genre_weights = retrieve_genre_weights(user_id)
         if isinstance(genre_weights, str):
@@ -89,11 +94,12 @@ def process_wishlist(user_id):
             else:
                 genre_weights[genre] += weight_change
 
-        print("NEW genre weights:", genre_weights)
-        print("UPDATING...:", update_genre_weights(user_id, genre_weights))
+        # print("NEW genre weights:", genre_weights)
+        # print("UPDATING...:", update_genre_weights(user_id, genre_weights))
+        update_genre_weights(user_id, genre_weights)
 
         # print(update_user_gw(user_id, genre_weights))
-        print("genre weights:", retrieve_genre_weights(user_id))
+        # print("genre weights:", retrieve_genre_weights(user_id))
 
         # Embedding update
         user_embedding = retrieve_embedding(user_id)  # Retrieve embedding from DB
@@ -150,20 +156,18 @@ def process_user_rating(user_id, book_id, rating):
     update_genre_weights(user_id, genre_weights)
     # Embedding update
     if rating == "pos":
-        user_embedding = retrieve_user_embedding(user_id)  # Retrieve embedding from DB
-        book_embedding = np.array(book["embedding"], dtype=np.float64)
+        user_embedding = retrieve_user_embedding(user_id)
 
-        if isinstance(user_embedding, np.ndarray):
-            pass  # Already a NumPy array, no conversion needed
+        raw_embedding = book.get("embedding")
+        if raw_embedding is None or len(raw_embedding) == 0:
+            return
+
+        book_embedding = np.array(raw_embedding, dtype=np.float64)
 
         if user_embedding is None or len(user_embedding) == 0:
             print("empty user embedding")
-            user_embedding = np.zeros_like(book_embedding)  # Handle missing embeddings
+            user_embedding = np.zeros_like(book_embedding)
 
-        if book_embedding is None or len(book_embedding) == 0:
-            return
-
-        # Compute new embedding
         new_embedding = (user_embedding + book_embedding) / 2
         update_user_embedding(user_id, new_embedding.tolist())
 
@@ -242,7 +246,23 @@ def generate_recs(user_id, top_n=6, count=1):
     update_book_embeddings(books)
     books_read = {book["book_id"] for book in retrieve_user_bookshelf(user_id)}
     books_to_read = {book["book_id"] for book in get_unread_books(user_id)}
-    book_embeddings = np.array([np.array(book["embedding"]) for book in books])
+    valid_books = [
+        book
+        for book in books
+        if isinstance(book.get("embedding"), list)
+        and len(book["embedding"]) == 384
+        and all(isinstance(x, (int, float)) for x in book["embedding"])
+    ]
+
+    book_embeddings = np.array(
+        [
+            np.array(book["embedding"], dtype=np.float64)
+            for book in valid_books
+            if "embedding" in book
+            and isinstance(book["embedding"], list)
+            and len(book["embedding"]) == 384
+        ]
+    )
 
     valid_books = []
 
@@ -268,6 +288,7 @@ def generate_recs(user_id, top_n=6, count=1):
         user_embedding = user_embedding.reshape(1, -1)
 
     # Check if book_embeddings is None or empty
+    book_embeddings = np.array(book_embeddings)
     if book_embeddings is None or book_embeddings.size == 0:
         print("Error: book_embeddings is empty or None")
         return []
@@ -420,8 +441,6 @@ def recommend_books(user_id, count):
     return generate_recs(user_id=user_id, count=1)
 
 
-
-
 def onboarding_recommendations(user_id, interests):
     update_genre_weights_only(user_id, interests)
     return True
@@ -431,7 +450,7 @@ def onboarding_recommendations(user_id, interests):
 
 # user_id = "67c64c27835dd5190e9d458b"
 # process_reading_history(user_id)
-# print(recommend_books(user_id))
+# print(recommend_books(user_id, 5))
 
 # user_id = "67f58b311c43cef5572babc2"
 

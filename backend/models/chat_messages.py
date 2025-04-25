@@ -1,7 +1,5 @@
 from bson.objectid import ObjectId
 from datetime import datetime
-from pymongo.errors import DuplicateKeyError
-from pydantic import ValidationError
 from schemas import ChatMessageSchema
 from mongo_id_utils import is_valid_object_id
 from database import collections
@@ -29,10 +27,6 @@ def create_chat_message(book_id, user_id, message_text):
         data.pop("_id", None)
         result = chat_messages_collection.insert_one(data)
         return str(result.inserted_id)
-    except ValidationError as e:
-        return f"Schema Validation Error: {str(e)}"
-    except DuplicateKeyError:
-        return "Error: Duplicate chat message!"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -58,11 +52,8 @@ def read_chat_message_text(message_id):
             return "Error: Invalid message_id."
 
         document = chat_messages_collection.find_one({"_id": ObjectId(message_id)})
-        if document:
-            chat_message = ChatMessageSchema(**document)
-            return chat_message.message_text
-        else:
-            return "Message not found."
+        chat_message = ChatMessageSchema(**document)
+        return chat_message.message_text
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -78,17 +69,15 @@ def update_chat_message(message_id, message_text):
             "message_text": message_text.strip(),
             "date_edited": datetime.now(pytz.timezone("America/Chicago")),
         }
-        result = chat_messages_collection.update_one(
+        chat_messages_collection.update_one(
             {"_id": ObjectId(message_id)}, {"$set": update_data}
         )
-        if result.matched_count:
-            updated_document = chat_messages_collection.find_one(
-                {"_id": ObjectId(message_id)}
-            )
-            chat_message = ChatMessageSchema(**updated_document)
-            return chat_message.model_dump(by_alias=True)
-        else:
-            return "Message not found."
+        updated_document = chat_messages_collection.find_one(
+            {"_id": ObjectId(message_id)}
+        )
+        chat_message = ChatMessageSchema(**updated_document)
+        return chat_message.model_dump(by_alias=True)
+
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -98,11 +87,8 @@ def delete_chat_message(message_id):
         if not is_valid_object_id("Chat_Messages", message_id):
             return "Error: Invalid message_id."
 
-        result = chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
-        if result.deleted_count:
-            return "Message deleted successfully."
-        else:
-            return "Message not found."
+        chat_messages_collection.delete_one({"_id": ObjectId(message_id)})
+        return "Message deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 

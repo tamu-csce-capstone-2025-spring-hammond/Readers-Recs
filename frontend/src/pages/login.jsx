@@ -84,6 +84,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import '../style/style.css';
 import { jwtDecode } from 'jwt-decode';
+import BACKEND_URL from "../api";
 
 
 const Login = ({ setShowGenreModal, setIsFirstTimeUser }) => {
@@ -105,7 +106,7 @@ const Login = ({ setShowGenreModal, setIsFirstTimeUser }) => {
         const userEmail = decoded.email;
         
         // Check if user exists in your database
-        const userExistsResponse = await fetch(`http://localhost:8000/user/check-email-exists?email=${encodeURIComponent(userEmail)}`, {
+        const userExistsResponse = await fetch(`${BACKEND_URL}/user/check-email-exists?email=${encodeURIComponent(userEmail)}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

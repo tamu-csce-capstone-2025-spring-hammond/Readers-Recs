@@ -4,9 +4,26 @@ from models.chat_messages import create_chat_message, get_all_chat_messages_for_
 from bson import ObjectId
 from models.books import read_book_by_bookId
 from models.user_bookshelf import get_read_books
+import pytz
+from datetime import datetime
 
 chat_bp = Blueprint("chat", __name__)
 CORS(chat_bp)
+
+
+def parse_date(date_val):
+    central = pytz.timezone("US/Central")
+    if isinstance(date_val, datetime):
+        if date_val.tzinfo is None:
+            return central.localize(date_val)
+        return date_val
+    try:
+        dt = datetime.fromisoformat(date_val)
+        if dt.tzinfo is None:
+            return central.localize(dt)
+        return dt
+    except Exception:
+        return datetime.min.replace(tzinfo=central)
 
 
 # GET: Get all chat messages for a book
@@ -55,7 +72,15 @@ def get_chat_last_read_book(user_id):
         ]
 
         books_with_finish_date.sort(
-            key=lambda x: x.get("date_finished", ""), reverse=True
+            key=lambda x: (
+                parse_date(x.get("date_finished")),
+                (
+                    x.get("_id").generation_time
+                    if isinstance(x.get("_id"), ObjectId)
+                    else datetime.min
+                ),
+            ),
+            reverse=True,
         )
 
         if books_with_finish_date:
@@ -79,37 +104,3 @@ def get_chat_last_read_book(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# # UPDATE: Update a chat message
-# @chat_bp.route("/<book_id>/update/<message_id>", methods=["PUT"])
-# def update_chat_message_api(book_id, message_id):
-#     try:
-#         data = request.get_json()
-#         message_text = data.get("message_text")
-
-#         if not message_text:
-#             return jsonify({"error": "Missing message_text"}), 400
-
-#         result = update_chat_message(message_id, message_text)
-#         if isinstance(result, str) and "Error" in result:
-#             return jsonify({"error": result}), 400
-
-#         return jsonify(result), 200
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
-
-
-# # DELETE: Delete a chat message
-# @chat_bp.route("/<book_id>/delete/<message_id>", methods=["DELETE"])
-# def delete_chat_message_api(book_id, message_id):
-#     try:
-#         result = delete_chat_message(message_id)
-#         if isinstance(result, str) and "Error" in result:
-#             return jsonify({"error": result}), 400
-
-#         return jsonify({"message": result}), 200
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500

@@ -115,7 +115,7 @@ const Home = () => {
     try {
       console.log("Fetching recs");
       // console.log("from http://localhost:8000/recs/api/user/${userId}/recommendations ");
-      const response = await fetch(`http://localhost:8000/recs/api/user/${userId}/recommendations?refresh_count=${refresh_count}`);
+      const response = await fetch(`${BACKEND_URL}/recs/api/user/${userId}/recommendations?refresh_count=${refresh_count}`);
       
       if (!response.ok) throw new Error('Failed to fetch recommendations');
       const data = await response.json();
@@ -175,6 +175,7 @@ const Home = () => {
           body: JSON.stringify({ status: "read" }),
         });
         if (!finishResponse.ok) throw new Error('Failed to mark book as read');
+        
         setBookshelf((prev) => ({
           ...prev,
           currentRead: null,

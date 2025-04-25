@@ -10,11 +10,11 @@ from models.users import (
     read_user_by_email,
     update_user_settings,
     read_user_by_username,
+    add_interest,
 )
 
 user_bp = Blueprint("user", __name__)
 CORS(user_bp)
-CORS(user_bp, origins=["http://localhost:3000"])  # added debugging
 
 
 @user_bp.route("/profile", methods=["GET"])
@@ -93,25 +93,26 @@ def get_user_profile():
 
 @user_bp.route("/profile/<user_id>", methods=["GET"])
 def get_user_by_id(user_id):
-    """
-    Fetch a user's profile by user_id (NOT by access token).
-    """
-    from backend.models.users import read_user_by_id
+    try:
+        from backend.models.users import read_user
 
-    user = read_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+        user = read_user(user_id)
+        if not isinstance(user, dict):
+            return jsonify({"error": user}), 404
 
-    return (
-        jsonify(
-            {
-                "id": str(user["_id"]),
-                "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
-                "profile_picture": user.get("profile_image", ""),
-            }
-        ),
-        200,
-    )
+        return (
+            jsonify(
+                {
+                    "id": str(user["_id"]),
+                    "name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                    "profile_picture": user.get("profile_image", ""),
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @user_bp.route("/profile/<user_id>/edit-profile", methods=["POST"])
@@ -127,6 +128,9 @@ def edit_profile(user_id):
         # if there is a username, validate that it is unique
         if username:
             existing_user = read_user_by_username(username)
+            if isinstance(existing_user, str):
+                existing_user = None
+
             if existing_user and str(existing_user["_id"]) != user_id:
                 return jsonify({"error": "Username already exists."}), 400
             if existing_user and str(existing_user["_id"]) == user_id:
@@ -196,4 +200,3 @@ def save_genres():
         add_interest(user_id, genre)
 
     return jsonify({"message": "Genres saved successfully"}), 200
-

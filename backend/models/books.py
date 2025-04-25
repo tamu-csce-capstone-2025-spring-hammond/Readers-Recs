@@ -1,11 +1,11 @@
 # database/models/books.py
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from datetime import datetime, date
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
 from schemas import BookSchema
 from database import collections
-from pymongo.errors import PyMongoError
 import numpy as np
 
 books_collection = collections["Books"]
@@ -92,7 +92,7 @@ def read_book_field(book_id, field):
         else:
             return "Field not found"
     else:
-        return "Book not found"
+        return "Book not found."
 
 
 def read_book_by_bookId(book_id):
@@ -210,7 +210,7 @@ def update_book_details(book_id: str, **kwargs):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except InvalidId:
         return "Error: Invalid ObjectId format."
 
 
@@ -222,16 +222,13 @@ def add_book_author(book_id, new_author):
     if not new_author:
         return "Author name cannot be empty."
 
-    try:
-        result = books_collection.update_one(
-            {"_id": ObjectId(book_id)}, {"$addToSet": {"author": new_author}}
-        )
-        if result.modified_count > 0:
-            return "Author added successfully."
-        else:
-            return "Author was already in the list or book not found."
-    except PyMongoError as e:
-        return f"An error occurred: {str(e)}"
+    result = books_collection.update_one(
+        {"_id": ObjectId(book_id)}, {"$addToSet": {"author": new_author}}
+    )
+    if result.modified_count > 0:
+        return "Author added successfully."
+    else:
+        return "Author was already in the list or book not found."
 
 
 def add_book_tag(book_id, new_tag):
@@ -241,16 +238,13 @@ def add_book_tag(book_id, new_tag):
     if not new_tag:
         return "Tag cannot be empty."
 
-    try:
-        result = books_collection.update_one(
-            {"_id": ObjectId(book_id)}, {"$addToSet": {"tags": new_tag}}
-        )
-        if result.modified_count > 0:
-            return "Tag added successfully."
-        else:
-            return "Tag was already in the list or book not found."
-    except PyMongoError as e:
-        return f"An error occurred: {str(e)}"
+    result = books_collection.update_one(
+        {"_id": ObjectId(book_id)}, {"$addToSet": {"tags": new_tag}}
+    )
+    if result.modified_count > 0:
+        return "Tag added successfully."
+    else:
+        return "Tag was already in the list or book not found."
 
 
 # I ADDED FOR ML MODEL
@@ -262,21 +256,18 @@ def update_book_embedding(book_id, new_embedding):
     if not isinstance(new_embedding, (list, np.ndarray)):
         return "Embedding must be a list or NumPy array."
 
-    try:
-        # Convert NumPy array to list if needed
-        if isinstance(new_embedding, np.ndarray):
-            new_embedding = new_embedding.tolist()
+    # Convert NumPy array to list if needed
+    if isinstance(new_embedding, np.ndarray):
+        new_embedding = new_embedding.tolist()
 
-        result = books_collection.update_one(
-            {"_id": ObjectId(book_id)}, {"$set": {"embedding": new_embedding}}
-        )
+    result = books_collection.update_one(
+        {"_id": ObjectId(book_id)}, {"$set": {"embedding": new_embedding}}
+    )
 
-        if result.modified_count > 0:
-            return "Embedding updated successfully."
-        else:
-            return "Book not found or embedding unchanged."
-    except PyMongoError as e:
-        return f"An error occurred: {str(e)}"
+    if result.modified_count > 0:
+        return "Embedding updated successfully."
+    else:
+        return "Book not found or embedding unchanged."
 
 
 def remove_book_author(book_id, author_to_remove):
@@ -286,16 +277,13 @@ def remove_book_author(book_id, author_to_remove):
     if not author_to_remove:
         return "Author name cannot be empty."
 
-    try:
-        result = books_collection.update_one(
-            {"_id": ObjectId(book_id)}, {"$pull": {"author": author_to_remove}}
-        )
-        if result.modified_count > 0:
-            return "Author removed successfully."
-        else:
-            return "Author not found in the list or book not found."
-    except PyMongoError as e:
-        return f"An error occurred: {str(e)}"
+    result = books_collection.update_one(
+        {"_id": ObjectId(book_id)}, {"$pull": {"author": author_to_remove}}
+    )
+    if result.modified_count > 0:
+        return "Author removed successfully."
+    else:
+        return "Author not found in the list or book not found."
 
 
 def remove_book_tag(book_id, tag_to_remove):
@@ -305,16 +293,13 @@ def remove_book_tag(book_id, tag_to_remove):
     if not tag_to_remove:
         return "Tag cannot be empty."
 
-    try:
-        result = books_collection.update_one(
-            {"_id": ObjectId(book_id)}, {"$pull": {"tags": tag_to_remove}}
-        )
-        if result.modified_count > 0:
-            return "Tag removed successfully."
-        else:
-            return "Tag not found in the list or book not found."
-    except PyMongoError as e:
-        return f"An error occurred: {str(e)}"
+    result = books_collection.update_one(
+        {"_id": ObjectId(book_id)}, {"$pull": {"tags": tag_to_remove}}
+    )
+    if result.modified_count > 0:
+        return "Tag removed successfully."
+    else:
+        return "Tag not found in the list or book not found."
 
 
 def delete_book(book_id):
@@ -345,5 +330,5 @@ def delete_book(book_id):
         books_collection.delete_one({"_id": book_id})
         return "Book and related records deleted successfully."
 
-    except ValueError:
-        return "Error: Invalid ObjectId format."
+    except InvalidId:
+        return "Invalid book ID format"

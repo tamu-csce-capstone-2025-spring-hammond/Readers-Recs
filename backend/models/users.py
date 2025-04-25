@@ -6,8 +6,6 @@ from pydantic import ValidationError
 from schemas import UserSchema, OAuthSchema, DemographicSchema
 from database import collections
 
-# from pymongo import errors
-
 users_collection = collections["Users"]
 
 # require username, email address, and refresh tokens to be unique
@@ -118,7 +116,7 @@ def update_user(user_id, **kwargs):
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except ValueError:
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
 
 
@@ -168,7 +166,7 @@ def update_user_settings(
 
     except ValidationError as e:
         return f"Schema Validation Error: {str(e)}"
-    except (ValueError, TypeError):
+    except (ValueError, InvalidId):
         return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -202,6 +200,8 @@ def update_genre_weights(user_id, new_genre_weights):
 
         return "Success. Genre weights updated."
 
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -210,14 +210,17 @@ def retrieve_genre_weights(user_id):
     """
     Retrieve the genre weight dictionary for a user.
     """
-    user = users_collection.find_one({"_id": user_id})
-    if not user:
-        user = users_collection.find_one({"_id": ObjectId(user_id)})
-    # print("USER:", user)
-    print("Genre weights:", user["genre_weights"])
-    if user:
-        return user["genre_weights"] if user else dict()
-    else:
+    try:
+        user = users_collection.find_one({"_id": user_id})
+        if not user:
+            user = users_collection.find_one({"_id": ObjectId(user_id)})
+        # print("USER:", user)
+        # print("Genre weights:", user["genre_weights"])
+        if user:
+            return user["genre_weights"] if user else dict()
+        else:
+            return "User not found"
+    except (ValueError, InvalidId):
         return "User not found"
 
 
@@ -227,12 +230,14 @@ def update_embedding(user_id, new_embedding):
     Expects new_embedding to be an array (list) of floats.
     """
     u_id = user_id
+    try:
+        u_id = ObjectId(user_id)
+    except (ValueError, InvalidId):
+        return "Error: Invalid ObjectId format."
+
     existing_user = users_collection.find_one({"_id": u_id})
     if not existing_user:
-        existing_user = users_collection.find_one({"_id": ObjectId(user_id)})
-        u_id = ObjectId(user_id)
-        if not existing_user:
-            return "Error: User not found."
+        return "Error: User not found."
 
     if not isinstance(new_embedding, list) or not all(
         isinstance(x, (int, float)) for x in new_embedding
@@ -243,10 +248,7 @@ def update_embedding(user_id, new_embedding):
         {"_id": u_id},
         {"$set": {"embedding": new_embedding}},
     )
-    # if result.modified_count == 0:
-    #     print("Embedding was not updated.")
-    # else:
-    #     print("Success. Updated user embedding.")
+
     return result
 
 
@@ -354,12 +356,17 @@ def remove_demographic(user_id, demographic_field):
 
 def delete_user(user_id):
     try:
+        db = collections
+        db["Posts"].delete_many({"user_id": user_id})
+        db["Comments"].delete_many({"user_id": user_id})
+        db["Chat_Messages"].delete_many({"user_id": user_id})
+        db["User_Bookshelf"].delete_many({"user_id": user_id})
+
         user_id = ObjectId(user_id)
 
         if not users_collection.find_one({"_id": user_id}):
             return "Error: User not found."
 
-        db = collections
         db["Posts"].delete_many({"user_id": user_id})
         db["Comments"].delete_many({"user_id": user_id})
         db["Chat_Messages"].delete_many({"user_id": user_id})
