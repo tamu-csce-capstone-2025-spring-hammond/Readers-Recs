@@ -307,6 +307,44 @@ h3 {
   position: absolute;
   right: 10px;
 }
+.profile-bottom .add-more-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 2/3;
+  border-radius: 5px;
+  border: 2px dashed rgba(121, 104, 85, 0.5);
+  color: #796855;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  height: 145px;
+}
+.profile-bottom .add-more-card .add-more-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.profile-bottom .add-more-card .add-more-content svg {
+  stroke: #796855;
+  transition: all 0.3s ease;
+  height: 24px;
+  width: 24px;
+}
+.profile-bottom .add-more-card .add-more-content span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.profile-bottom .add-more-card:hover {
+  background-color: rgba(121, 104, 85, 0.1);
+  border-color: #796855;
+  transform: translateY(-3px);
+}
+.profile-bottom .add-more-card:hover svg {
+  stroke: #2A664D;
+  transform: scale(1.1);
+}
 
 .book-cover-profile {
   position: relative;
@@ -343,7 +381,7 @@ h3 {
   background-color: rgba(0, 28, 8, 0.6);
   color: white;
   padding: 5px;
-  font-size: 11px;
+  font-size: 9px;
   text-align: center;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -815,6 +853,51 @@ h3 {
   background: linear-gradient(90deg, #2A664D, #7e4f34);
   transition: width 1s ease-in-out;
 }
+.current-book .loading-text {
+  font-size: 12px;
+  color: #EBE8E1;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.current-book .add-more-card {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 2/3;
+  border-radius: 5px;
+  border: 2px dashed rgba(235, 232, 225, 0.5);
+  color: #EBE8E1;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  width: 160px;
+}
+.current-book .add-more-card .add-more-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.current-book .add-more-card .add-more-content svg {
+  stroke: #EBE8E1;
+  transition: all 0.3s ease;
+  height: 24px;
+  width: 24px;
+}
+.current-book .add-more-card .add-more-content span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.current-book .add-more-card:hover {
+  background-color: rgba(235, 232, 225, 0.1);
+  border-color: #EBE8E1;
+  transform: translateY(-3px);
+}
+.current-book .add-more-card:hover svg {
+  stroke: #7e4f34;
+  transform: scale(1.1);
+}
 
 .last-finished {
   flex: 1;
@@ -881,6 +964,51 @@ h3 {
   opacity: 0.8;
   transform: scale(1.05);
 }
+.last-finished .loading-text {
+  font-size: 12px;
+  color: #EBE8E1;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.last-finished .add-more-card {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 2/3;
+  border-radius: 5px;
+  border: 2px dashed rgba(235, 232, 225, 0.5);
+  color: #EBE8E1;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  width: 160px;
+}
+.last-finished .add-more-card .add-more-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.last-finished .add-more-card .add-more-content svg {
+  stroke: #EBE8E1;
+  transition: all 0.3s ease;
+  height: 24px;
+  width: 24px;
+}
+.last-finished .add-more-card .add-more-content span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.last-finished .add-more-card:hover {
+  background-color: rgba(235, 232, 225, 0.1);
+  border-color: #EBE8E1;
+  transform: translateY(-3px);
+}
+.last-finished .add-more-card:hover svg {
+  stroke: #7e4f34;
+  transform: scale(1.1);
+}
 
 .to-read-section {
   height: 430px;
@@ -888,13 +1016,18 @@ h3 {
 
 .to-read-shelf {
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding-bottom: 10px;
 }
 .to-read-shelf .to-read-grid {
   display: flex;
-  width: 100%;
   gap: 10px;
   justify-content: flex-start;
   flex-wrap: nowrap;
+  width: -moz-max-content;
+  width: max-content;
 }
 .to-read-shelf .wishlist-book {
   padding: 10px;
@@ -996,6 +1129,21 @@ body {
   margin-left: 250px;
   margin-top: 200px;
   margin-bottom: 300px;
+}
+
+::-webkit-scrollbar {
+  height: 5px;
+  width: 0px;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  background: #EBE8E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  background: #7e4f34;
+  border-radius: 4px;
 }
 
 * {

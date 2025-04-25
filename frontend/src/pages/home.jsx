@@ -97,7 +97,7 @@ const Home = () => {
             }
             
             setBookshelf((prev) => ({ ...prev, [key]: data }));
-          }
+          } 
         }
       } catch (error) {
         console.error('Error fetching bookshelf data:', error);
@@ -278,7 +278,7 @@ const Home = () => {
                 <div className="current-book">
                   {loadingBookshelf ? (
                     <p>Loading currently reading book...</p>
-                  ) : bookshelf.currentRead ? (
+                  ) : bookshelf.lastRead && bookshelf.lastRead.title ? (
                     <div className="book-display">
                       <div
                         className="home-book-cover featured-cover"
@@ -308,7 +308,9 @@ const Home = () => {
                       )}
                     </div>
                   ) : (
-                    <p>No book currently being read.</p>
+                    <p className="loading-text">
+                      Loading currently reading book...
+                    </p>
                   )}
                 </div>
               </div>
@@ -365,7 +367,9 @@ const Home = () => {
                       </div>
                     </div>
                   ) : (
-                    <p>No books finished.</p>
+                    <p className="loading-text">
+                      Loading last finished book...
+                    </p>
                   )}
                 </div>
               </div>
@@ -505,7 +509,12 @@ const Home = () => {
                       )}
                     </div>
                   ) : (
-                    <p>No book currently being read.</p>
+                    <Link to="/search" className="add-more-card">
+                      <div className="add-more-content">
+                        <PlusCircle size={24} />
+                        <span>Find a book to start!</span>
+                      </div>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -562,7 +571,12 @@ const Home = () => {
                       </div>
                     </div>
                   ) : (
-                    <p>No books finished.</p>
+                    <Link to="/search" className="add-more-card">
+                      <div className="add-more-content">
+                        <PlusCircle size={24} />
+                        <span>Search our database!</span>
+                      </div>
+                    </Link>
                   )}
                 </div>
               </div>

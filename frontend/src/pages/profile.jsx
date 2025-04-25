@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, PlusCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import '../style/style.css';
 import Navbar from '../components/navbar';
 import EditProfile from '../components/edit-profile';
@@ -210,25 +211,40 @@ const Profile = () => {
             )}
           </div>
           <div className="profile-bottom-right">
-            {[{ key: 'booksRead', title: 'Books Read' }, { key: 'toReadShelf', title: 'To-Read Shelf' }].map(({ key, title }) => (
-              <div className="bookshelf-section" key={key}>
-                <h2 className="section-title shelves">{title}</h2>
-                <div className="books-grid" id={key}>
-                  {bookshelf[key].map((book, index) => (
-                    <div key={`${key}-${index}`} className="book-cover-profile">
-                      <img src={book.cover_image} alt={book.title} />
-                      <button className="book-delete-button" onClick={() => handleDeleteBook(book._id, key)}>X</button>
-                      <div className="book-title">{book.title}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="scroll-buttons">
-                  <button className="scroll-button left" onClick={() => scrollBooks(key, -1)}><ChevronLeft size={24} /></button>
-                  <button className="scroll-button right" onClick={() => scrollBooks(key, 1)}><ChevronRight size={24} /></button>
-                </div>
+  {[{ key: 'booksRead', title: 'Books Read' }, { key: 'toReadShelf', title: 'To-Read Shelf' }].map(({ key, title }) => (
+    <div className="bookshelf-section" key={key}>
+      <h2 className="section-title shelves">{title}</h2>
+      
+      {bookshelf[key].length > 0 ? (
+        <>
+          <div className="books-grid" id={key}>
+            {bookshelf[key].map((book, index) => (
+              <div key={`${key}-${index}`} className="book-cover-profile">
+                <img src={book.cover_image} alt={book.title} />
+                <button className="book-delete-button" onClick={() => handleDeleteBook(book._id, key)}>X</button>
+                <div className="book-title">{book.title}</div>
               </div>
             ))}
           </div>
+          <div className="scroll-buttons">
+            <button className="scroll-button left" onClick={() => scrollBooks(key, -1)}><ChevronLeft size={24} /></button>
+            <button className="scroll-button right" onClick={() => scrollBooks(key, 1)}><ChevronRight size={24} /></button>
+          </div>
+        </>
+      ) : (
+        <p>
+          <Link to="/search" className="add-more-card">
+                      <div className="add-more-content">
+                        <PlusCircle size={24} />
+                        <span>Fill your shelf!</span>
+                      </div>
+                    </Link>
+        </p>
+      )}
+    </div>
+  ))}
+</div>
+
         </div>
       </div>
       {editProfilePopup && (

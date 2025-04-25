@@ -239,6 +239,49 @@
       right: 10px;
     }
   }
+  .add-more-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 2/3;
+    border-radius: 5px;
+    border: 2px dashed rgba($-brown, 0.5);
+    color: $-brown;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    height: 145px;
+    
+    .add-more-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      
+      svg {
+        stroke: $-brown;
+        transition: all 0.3s ease;
+        height: 24px;
+        width: 24px;
+      }
+      
+      span {
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+    
+    &:hover {
+      background-color: rgba($-brown, 0.1);
+      border-color: $-brown;
+      transform: translateY(-3px);
+      
+      svg {
+        stroke: $-green;
+        transform: scale(1.1);
+      }
+    }
+  }
 }
 
 .book-cover-profile {
@@ -276,7 +319,7 @@
     background-color: rgba(0, 28, 8, 0.6);
     color: white;
     padding: 5px;
-    font-size: 11px;
+    font-size: 9px;
     text-align: center;
     opacity: 0;
     transition: opacity 0.3s ease;
