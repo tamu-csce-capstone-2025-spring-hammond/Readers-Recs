@@ -2,13 +2,17 @@ import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import "../style/style.css";
 import logo from "../assets/logo.png";
-import { Search, MessageSquare, User } from "lucide-react";
+import { Search, MessageSquare, User, Home } from "lucide-react";
 
 const Navbar = () => {
   return (
     <nav className="navbar">
       <Link to="/home" className="logo-button">
         <img src={logo} alt="Reader's Recs Logo" />
+      </Link>
+      <Link to="/home" className="nav-button">
+        <Home />
+        <span>Home</span>
       </Link>
       <Link to="/search" className="nav-button">
         <Search />
