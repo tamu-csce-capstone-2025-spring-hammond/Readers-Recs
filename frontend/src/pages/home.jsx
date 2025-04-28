@@ -278,7 +278,7 @@ const Home = () => {
                 <div className="current-book">
                   {loadingBookshelf ? (
                     <p>Loading currently reading book...</p>
-                  ) : bookshelf.lastRead && bookshelf.lastRead.title ? (
+                  ) : bookshelf.currentRead && bookshelf.currentRead.title ? (
                     <div className="book-display">
                       <div
                         className="home-book-cover featured-cover"
