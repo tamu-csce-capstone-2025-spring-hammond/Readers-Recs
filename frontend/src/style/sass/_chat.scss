@@ -1,5 +1,5 @@
 .chat-page-container {
-  // background-color: $-brown;
+  background-color: $-brown;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -15,71 +15,79 @@
 // Left section - Book info
 .book-section {
   width: 30%;
-  padding: 20px;
-  border-right: 1px solid rgba($-tan, 0.2);
-  background-color: $-brown;
+  // border-right: 1px solid rgba($-tan, 0.2);
+  // background-color: $-brown;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative; 
   z-index: 2; 
-  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3); 
-}
-
-.book-cover {
-  background-color: white;
-  width: 330px;
-  aspect-ratio: 3/4;
-  border-radius: 0px;
-  border: 20px solid $-dark-green;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-bottom: 15px;
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0px;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+  background-color: $-dark-green;
+  border-radius: 5px;
+  margin: 30px;
+  padding: 30px;
+  
+  .book-cover {
+    background-color: white;
+    width: 150px;
+    aspect-ratio: 2/3;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 25px;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0px;
+    }
+    border-radius: 0px;;
   }
+
+  .book-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: left;
+  
+    .book-title {
+      font-family: "Open Sans", sans-serif;
+      font-weight: 600;
+      color: $-tan;
+      margin: 0;
+      font-size: 30px;
+    }
+    
+    .book-author {
+      font-family: "Open Sans", sans-serif;
+      color: $-tan;
+      margin: 0;
+      font-size: 20px;
+      font-style: italic;
+    }
+    
+    .book-description {
+      font-family: "Open Sans", sans-serif;
+      color: $-tan;
+      margin: 5px 0 0;
+      font-size: 16px;
+      line-height: 1.4;
+      text-align: justify;
+    }
+  }  
 }
 
-.book-details {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
 
-.book-title {
-  font-family: "Open Sans", sans-serif;
-  font-weight: 600;
-  color: $-tan;
-  margin: 0;
-  font-size: 36px;
-}
-
-.book-author {
-  font-family: "Open Sans", sans-serif;
-  color: $-tan;
-  margin: 0;
-  font-size: 26px;
-  font-style: italic;
-}
-
-.book-description {
-  font-family: "Open Sans", sans-serif;
-  color: $-tan;
-  margin: 5px 0 0;
-  font-size: 22px;
-  line-height: 1.4;
-}
 
 // Right section - Chat
 .chat-section {
   width: 70%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   background-color: $-dark-green;
+  margin: 30px;
+  padding: 30px;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
 }
 
 .chat-messages {
