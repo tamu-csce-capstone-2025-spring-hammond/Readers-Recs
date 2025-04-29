@@ -27,7 +27,7 @@
   border-radius: 5px;
   margin: 30px;
   padding: 30px;
-  
+
   .book-cover {
     background-color: white;
     width: 150px;
@@ -109,8 +109,22 @@
     justify-content: flex-end;
     
     .message {
-      background-color: $-brown;
-      border: 2px solid darken($-brown, 5%);
+      background-color: $-tan;
+      color: $-green;
+      border: 2px solid darken($-tan, 5%);
+    }
+    .message-text {
+      color: $-green;
+      font-family: "Open Sans", sans-serif;
+      margin: 0;
+      font-size: 22px;
+    }
+    
+    .message-username {
+      color: rgba($-green, 0.8);
+      font-family: "Open Sans", sans-serif;
+      font-size: 16px;
+      margin: 5px 0 0;
     }
   }
   
@@ -126,19 +140,19 @@
 
 .message {
   padding: 10px 15px;
-  border-radius: 10px;
+  border-radius: 5px;
   max-width: 70%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   
   .message-text {
-    color: white;
+    color: $-tan;
     font-family: "Open Sans", sans-serif;
     margin: 0;
     font-size: 22px;
   }
   
   .message-username {
-    color: rgba(white, 0.8);
+    color: rgba($-tan, 0.8);
     font-family: "Open Sans", sans-serif;
     font-size: 16px;
     margin: 5px 0 0;
@@ -152,12 +166,13 @@
   padding: 10px 0;
   max-height: 200px;
   position: relative;
+
 }
 
 .message-input {
   flex: 1;
   padding: 12px 15px;
-  border-radius: 25px;
+  border-radius: 5px;
   border: none;
   background-color: $-tan;
   font-family: "Open Sans", sans-serif;
@@ -172,8 +187,8 @@
 }
 
 .send-button {
-  bottom: 0;
-  right: 0;
+  bottom: 25px;
+  right: 15px;
   position: absolute;
   background-color: $-green;
   border: none;

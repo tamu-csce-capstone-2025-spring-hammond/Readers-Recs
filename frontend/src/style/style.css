@@ -518,8 +518,21 @@ h3 {
   justify-content: flex-end;
 }
 .message-container.mine .message {
-  background-color: #796855;
-  border: 2px solid #6a5b4a;
+  background-color: #EBE8E1;
+  color: #2A664D;
+  border: 2px solid #e1dcd2;
+}
+.message-container.mine .message-text {
+  color: #2A664D;
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  font-size: 22px;
+}
+.message-container.mine .message-username {
+  color: rgba(42, 102, 77, 0.8);
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  margin: 5px 0 0;
 }
 .message-container.other {
   justify-content: flex-start;
@@ -531,18 +544,18 @@ h3 {
 
 .message {
   padding: 10px 15px;
-  border-radius: 10px;
+  border-radius: 5px;
   max-width: 70%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 .message .message-text {
-  color: white;
+  color: #EBE8E1;
   font-family: "Open Sans", sans-serif;
   margin: 0;
   font-size: 22px;
 }
 .message .message-username {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(235, 232, 225, 0.8);
   font-family: "Open Sans", sans-serif;
   font-size: 16px;
   margin: 5px 0 0;
@@ -560,7 +573,7 @@ h3 {
 .message-input {
   flex: 1;
   padding: 12px 15px;
-  border-radius: 25px;
+  border-radius: 5px;
   border: none;
   background-color: #EBE8E1;
   font-family: "Open Sans", sans-serif;
@@ -577,8 +590,8 @@ h3 {
 }
 
 .send-button {
-  bottom: 0;
-  right: 0;
+  bottom: 25px;
+  right: 15px;
   position: absolute;
   background-color: #2A664D;
   border: none;
