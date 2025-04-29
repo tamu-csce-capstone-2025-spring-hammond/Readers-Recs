@@ -310,7 +310,11 @@ export default function BookPopup({ book, onClose, userId }) {
                         </p>
                     </div>
                 </div>
-                <p className="popup-description">{book.summary}</p>
+                <p className="popup-description">
+                    {book.summary?.split(" ").length > 250
+                    ? book.summary.split(" ").slice(0, 250).join(" ") + "..."
+                    : book.summary}
+                </p>
 
                 {/* Discussion Section */}
                 <div className="popup-discussion">

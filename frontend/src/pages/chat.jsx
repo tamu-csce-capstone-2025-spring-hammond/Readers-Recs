@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import Navbar from '../components/navbar';
 import '../style/style.css';
 import BACKEND_URL from "../api";
+import { Link } from 'react-router-dom';
 
 const Chat = () => {
   const [message, setMessage] = useState('');

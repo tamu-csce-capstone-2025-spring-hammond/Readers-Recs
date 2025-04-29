@@ -13,7 +13,7 @@ def test_full_user_lifecycle_with_ratings(mock_get):
     unique = uuid.uuid4().hex
     email = f"user_{unique}@example.com"
     token = f"token_{unique}"
-    user_id = post_id = comment_id = chat_msg_id = None
+    user_id = post_id = None
     book_ids = []
 
     fake_token_info = {
@@ -93,7 +93,7 @@ def test_full_user_lifecycle_with_ratings(mock_get):
             json={"user_id": user_id, "comment_text": "Loved this discussion!"},
         )
         assert res.status_code == 201
-        comment_id = res.json["comment_id"]
+        res.json["comment_id"]
 
         # Step 10: Send a group chat message for second book
         res = client.post(
@@ -104,7 +104,7 @@ def test_full_user_lifecycle_with_ratings(mock_get):
             },
         )
         assert res.status_code == 201
-        chat_msg_id = res.json["message_id"]
+        res.json["message_id"]
 
         # Step 11: Final recommendation refresh
         res = client.get(f"/recs/api/user/{user_id}/recommendations")

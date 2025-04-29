@@ -418,6 +418,7 @@ h3 {
 }
 
 .chat-page-container {
+  background-color: #796855;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -432,71 +433,70 @@ h3 {
 
 .book-section {
   width: 30%;
-  padding: 20px;
-  border-right: 1px solid rgba(235, 232, 225, 0.2);
-  background-color: #796855;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   z-index: 2;
   box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+  background-color: #0e3523;
+  border-radius: 5px;
+  margin: 30px;
+  padding: 30px;
 }
-
-.book-cover {
+.book-section .book-cover {
   background-color: white;
-  width: 330px;
-  aspect-ratio: 3/4;
-  border-radius: 0px;
-  border: 20px solid #0e3523;
+  width: 150px;
+  aspect-ratio: 2/3;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-bottom: 15px;
+  margin-bottom: 25px;
+  border-radius: 0px;
 }
-.book-cover img {
+.book-section .book-cover img {
   width: 100%;
   height: 100%;
   -o-object-fit: cover;
      object-fit: cover;
   border-radius: 0px;
 }
-
-.book-details {
+.book-section .book-details {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  align-items: center;
+  align-items: left;
 }
-
-.book-title {
+.book-section .book-details .book-title {
   font-family: "Open Sans", sans-serif;
   font-weight: 600;
   color: #EBE8E1;
   margin: 0;
-  font-size: 36px;
+  font-size: 30px;
 }
-
-.book-author {
+.book-section .book-details .book-author {
   font-family: "Open Sans", sans-serif;
   color: #EBE8E1;
   margin: 0;
-  font-size: 26px;
+  font-size: 20px;
   font-style: italic;
 }
-
-.book-description {
+.book-section .book-details .book-description {
   font-family: "Open Sans", sans-serif;
   color: #EBE8E1;
   margin: 5px 0 0;
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1.4;
+  text-align: justify;
 }
 
 .chat-section {
   width: 70%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   background-color: #0e3523;
+  margin: 30px;
+  padding: 30px;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
 }
 
 .chat-messages {
@@ -518,8 +518,21 @@ h3 {
   justify-content: flex-end;
 }
 .message-container.mine .message {
-  background-color: #796855;
-  border: 2px solid #6a5b4a;
+  background-color: #EBE8E1;
+  color: #2A664D;
+  border: 2px solid #e1dcd2;
+}
+.message-container.mine .message-text {
+  color: #2A664D;
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  font-size: 22px;
+}
+.message-container.mine .message-username {
+  color: rgba(42, 102, 77, 0.8);
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  margin: 5px 0 0;
 }
 .message-container.other {
   justify-content: flex-start;
@@ -531,18 +544,18 @@ h3 {
 
 .message {
   padding: 10px 15px;
-  border-radius: 10px;
+  border-radius: 5px;
   max-width: 70%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 .message .message-text {
-  color: white;
+  color: #EBE8E1;
   font-family: "Open Sans", sans-serif;
   margin: 0;
   font-size: 22px;
 }
 .message .message-username {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(235, 232, 225, 0.8);
   font-family: "Open Sans", sans-serif;
   font-size: 16px;
   margin: 5px 0 0;
@@ -560,7 +573,7 @@ h3 {
 .message-input {
   flex: 1;
   padding: 12px 15px;
-  border-radius: 25px;
+  border-radius: 5px;
   border: none;
   background-color: #EBE8E1;
   font-family: "Open Sans", sans-serif;
@@ -577,8 +590,8 @@ h3 {
 }
 
 .send-button {
-  bottom: 0;
-  right: 0;
+  bottom: 25px;
+  right: 15px;
   position: absolute;
   background-color: #2A664D;
   border: none;
